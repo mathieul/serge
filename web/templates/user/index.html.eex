@@ -1,0 +1,9 @@
+<h1>Users</h1>
+<p><%= link "New User", to: user_path(@conn, :new) %></p>
+<table class="table">
+  <%= for user <- @users do %>
+    <tr>
+      <td><%= user.email %> </td>
+    </tr>
+  <% end %>
+</table>
