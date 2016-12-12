@@ -7,6 +7,14 @@ defmodule Serge.Router do
     plug :fetch_flash
     plug :protect_from_forgery
     plug :put_secure_browser_headers
+    plug Guardian.Plug.VerifySession
+    plug Guardian.Plug.LoadResource
+  end
+
+  pipeline :browser_auth do
+    plug Guardian.Plug.VerifySession
+    plug Guardian.Plug.EnsureAuthenticated, handler: Serge.Token
+    plug Guardian.Plug.LoadResource
   end
 
   pipeline :api do
@@ -14,13 +22,15 @@ defmodule Serge.Router do
   end
 
   scope "/", Serge do
-    pipe_through :browser # Use the default browser stack
+    pipe_through :browser
 
-    resources "/users", UserController
+    get "/", HomeController, :index
+    resources "/users", UserController, only: [:new, :create]
+    resources "/sessions", SessionController, only: [:new, :create, :delete]
   end
 
-  # Other scopes may use custom stacks.
-  # scope "/api", Serge do
-  #   pipe_through :api
-  # end
+  scope "/", Serge do
+    pipe_through [:browser, :browser_auth]
+    resources "/users", UserController, [:show, :update]
+  end
 end
