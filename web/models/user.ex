@@ -12,6 +12,7 @@ defmodule Serge.User do
   def changeset(struct, params \\ %{}) do
     struct
     |> cast(params, [:email])
+    |> unique_constraint(:email)
     |> validate_required([:email])
     |> validate_format(:email, ~r/@/)
   end

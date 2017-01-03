@@ -12,7 +12,7 @@ defmodule Serge.UserController do
     case Repo.insert(changeset) do
       {:ok, user} ->
         conn
-        |> Serge.Auth.login(conn, user)
+        |> Serge.Auth.login(user)
         |> put_flash(:info, "User created")
         |> redirect(to: user_path(conn, :index))
       {:error, changeset} ->
