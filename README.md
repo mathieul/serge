@@ -18,3 +18,9 @@ Ready to run in production? Please [check our deployment guides](http://www.phoe
   * Docs: https://hexdocs.pm/phoenix
   * Mailing list: http://groups.google.com/group/phoenix-talk
   * Source: https://github.com/phoenixframework/phoenix
+
+## OAuth
+
+export GITHUB_REDIRECT_URI=http://localhost:4000/auth/github/callback
+export GITHUB_CLIENT_ID=18e2f95af473d367c294
+export GITHUB_CLIENT_SECRET=e3b62ba98785a95a88d6238a865ce15a72e78756

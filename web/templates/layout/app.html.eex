@@ -16,7 +16,15 @@
       <header class="header">
         <nav role="navigation">
           <div class="nav nav-pills pull-right">
-            TODO
+            <%= if @current_user do %>
+              <pre><%= inspect @current_user %></pre>
+              <img src="<%= @current_user.avatar %>" class="img-circle"/>
+              <%= link "Logout", to: auth_path(@conn, :delete), method: :delete, class: "btn btn-danger btn-lg" %>
+            <% else %>
+              <a class="btn btn-primary btn-lg" href="<%= auth_path @conn, :index, "github" %>">
+                Sign in with GitHub
+              </a>
+            <% end %>
           </div>
         </nav>
         <span class="logo"></span>
