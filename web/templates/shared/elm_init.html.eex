@@ -1,0 +1,10 @@
+<%= if @elm_module do %>
+  <script>
+    (function () {
+      var interface = new <%= @elm_module %>Interface(<%=
+        raw if @elm_app_config, do: Poison.encode!(@elm_app_config), else: "{}"
+      %>)
+      interface.start()
+    })()
+  </script>
+<% end %>
