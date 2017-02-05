@@ -17,9 +17,20 @@ defmodule Serge.Mixfile do
   #
   # Type `mix help compile.app` for more information.
   def application do
-    [mod: {Serge, []},
-     applications: [:phoenix, :phoenix_pubsub, :phoenix_html, :cowboy, :logger, :gettext,
-                    :phoenix_ecto, :postgrex]]
+    [
+      mod: {Serge, []},
+      applications: [
+       :cowboy,
+       :gettext,
+       :logger,
+       :oauth2,
+       :phoenix_ecto,
+       :phoenix_html,
+       :phoenix_pubsub,
+       :phoenix,
+       :postgrex
+      ]
+    ]
   end
 
   # Specifies which paths to compile per environment.
@@ -32,11 +43,11 @@ defmodule Serge.Mixfile do
   defp deps do
     [
      {:comeonin, "~> 3.0"},
-     {:cowboy, "~> 1.0.4"},
-     {:gettext, "~> 0.12.2"},
-     {:guardian, "~> 0.13.0"},
+     {:cowboy, "~> 1.1.0"},
+     {:gettext, "~> 0.13.1"},
+     {:oauth2, "~> 0.9"},
      {:phoenix_ecto, "~> 3.0"},
-     {:phoenix_html, "~> 2.8.0"},
+     {:phoenix_html, "~> 2.9.3"},
      {:phoenix_live_reload, "~> 1.0", only: :dev},
      {:phoenix_pubsub, "~> 1.0"},
      {:phoenix, "~> 1.2.1"},

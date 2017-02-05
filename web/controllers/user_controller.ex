@@ -10,9 +10,8 @@ defmodule Serge.UserController do
   def create(conn, %{"user" => user_params}) do
     changeset = User.registration_changeset(%User{}, user_params)
     case Repo.insert(changeset) do
-      {:ok, user} ->
+      {:ok, _user} ->
         conn
-        |> Serge.Auth.login(user)
         |> put_flash(:info, "User created")
         |> redirect(to: user_path(conn, :index))
       {:error, changeset} ->
@@ -23,12 +22,6 @@ defmodule Serge.UserController do
 
   def show(conn, %{"id" => id}) do
     user = Repo.get(User, id)
-    if user == Guardian.Plug.current_resource(conn) do
-      render(conn, "show.html", user: user)
-    else
-      conn
-      |> put_flash(:info, "No access")
-      |> redirect(to: "/")
-    end
+    render(conn, "show.html", user: user)
   end
 end

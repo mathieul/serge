@@ -16,7 +16,7 @@
       <header class="header">
         <nav role="navigation">
           <div class="nav nav-pills pull-right">
-            <%= render "sign_in_sign_out.html", conn: @conn %><br><br>
+            TODO
           </div>
         </nav>
         <span class="logo"></span>
