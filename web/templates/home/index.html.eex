@@ -1,4 +1,25 @@
-<h2>Home Page</h2>
-<%= render Serge.SharedView, "elm_init.html",
-                             elm_module:     assigns[:elm_module],
-                             elm_app_config: assigns[:elm_app_config] %>
+<div class="container">
+  <header class="header">
+    <nav role="navigation">
+      <div class="nav nav-pills pull-right">
+        <%= if @current_user do %>
+          <%= link "Logout", to: auth_path(@conn, :delete), method: :delete, class: "btn btn-danger btn-lg" %>
+        <% else %>
+          <a class="btn btn-primary btn-lg" href="<%= auth_path @conn, :index, "github" %>">
+            Sign in with GitHub
+          </a>
+        <% end %>
+      </div>
+    </nav>
+    <span class="logo"></span>
+  </header>
+
+  <p class="alert alert-info" role="alert"><%= get_flash(@conn, :info) %></p>
+  <p class="alert alert-danger" role="alert"><%= get_flash(@conn, :error) %></p>
+
+  <main role="main">
+    <h3>Home Page</h3>
+    <img src="<%= @current_user.avatar_url %>" class="img-circle"/>
+  </main>
+
+</div>

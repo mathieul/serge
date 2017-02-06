@@ -52,7 +52,6 @@ defmodule Serge.Web do
       import Serge.Router.Helpers
       import Serge.ErrorHelpers
       import Serge.Gettext
-      import Serge.ViewHelper
     end
   end
 

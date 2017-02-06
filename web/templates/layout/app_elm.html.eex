@@ -12,6 +12,9 @@
   </head>
 
   <body>
+    <%= link "Logout", to: auth_path(@conn, :delete), method: :delete, class: "btn btn-danger btn-lg" %>
+    <div id="elm-main"></div>
+    <script src="<%= static_path(@conn, "/js/app.js") %>"></script>
     <%= render @view_module, @view_template, assigns %>
   </body>
 </html>

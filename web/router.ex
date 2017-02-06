@@ -10,15 +10,26 @@ defmodule Serge.Router do
     plug :assign_current_user
   end
 
-  pipeline :api do
-    plug :accepts, ["json"]
+  pipeline :authenticated do
+    plug :accepts, ["html"]
+    plug :fetch_session
+    plug :fetch_flash
+    plug :protect_from_forgery
+    plug :put_secure_browser_headers
+    plug :assign_current_user
+    plug :redirect_if_not_authenticated
   end
 
   scope "/", Serge do
     pipe_through :browser
 
     get "/", HomeController, :index
-    resources "/users", UserController, only: [:new, :create, :show]
+  end
+
+  scope "/", Serge do
+    pipe_through :authenticated
+
+    get "/authenticated", HomeController, :authenticated
   end
 
   scope "/auth", Serge do
@@ -33,6 +44,17 @@ defmodule Serge.Router do
   # will allow you to have access to the current user in your views with
   # `@current_user`.
   defp assign_current_user(conn, _) do
-    assign(conn, :current_user, get_session(conn, :current_user))
+    current_user = get_session(conn, :current_user)
+    assign(conn, :current_user, current_user)
+  end
+
+  defp redirect_if_not_authenticated(conn, _) do
+    if get_session(conn, :current_user) do
+      conn
+    else
+      conn
+      |> put_flash(:error, "You need to be signed in to view this page")
+      |> redirect(to: "/")
+    end
   end
 end

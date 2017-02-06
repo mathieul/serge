@@ -1,5 +1,6 @@
 defmodule Serge.AuthController do
   use Serge.Web, :controller
+  alias Serge.User
 
   @doc """
   This action is reached via `/auth/:provider` and redirects to the OAuth2 provider
@@ -42,15 +43,29 @@ defmodule Serge.AuthController do
     |> redirect(to: "/")
   end
 
-  defp authorize_url!("github"),   do: GitHub.authorize_url!
+  defp authorize_url!("github"), do: GitHub.authorize_url!
   defp authorize_url!(_), do: raise "No matching provider available"
 
-  defp get_token!("github", code),   do: GitHub.get_token!(code: code)
+  defp get_token!("github", code), do: GitHub.get_token!(code: code)
   defp get_token!(_, _), do: raise "No matching provider available"
 
-  defp get_user!("github", client) do
-    %{body: user} = OAuth2.Client.get!(client, "/user")
-    IO.puts "user: #{inspect user}"
-    %{name: user["name"], avatar: user["avatar_url"]}
+  defp get_user!(provider, client) do
+    params = params_for(provider, client)
+    case Repo.get_by(User, uid: params.uid) do
+      nil ->
+        User.changeset(%User{}, params) |> Repo.insert!
+      user ->
+        user
+    end
+  end
+
+  defp params_for("github", client) do
+    %{body: payload} = OAuth2.Client.get!(client, "/user")
+    %{
+      uid: User.provider_uid("github", payload["id"]),
+      name: payload["name"],
+      avatar_url: payload["avatar_url"],
+      email: payload["email"]
+    }
   end
 end

@@ -3,12 +3,14 @@ defmodule Serge.Repo.Migrations.CreateUser do
 
   def change do
     create table(:users) do
-      add :email, :string
-      add :password_hash, :string
+      add :uid,         :string
+      add :email,       :string
+      add :name,        :string
+      add :avatar_url,  :string
 
       timestamps()
     end
 
-    create unique_index(:users, [:email])
+    create unique_index(:users, [:uid])
   end
 end
