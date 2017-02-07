@@ -17,9 +17,17 @@
   <p class="alert alert-info" role="alert"><%= get_flash(@conn, :info) %></p>
   <p class="alert alert-danger" role="alert"><%= get_flash(@conn, :error) %></p>
 
-  <main role="main">
-    <h3>Home Page</h3>
-    <img src="<%= @current_user.avatar_url %>" class="img-circle"/>
-  </main>
+  <%= if @current_user do %>
+    <div id="elm-tasker"></div>
+
+    <script src="<%= static_path(@conn, "/js/app.js") %>"></script>
+    <%= render Serge.SharedView, "elm_init.html",
+                                 elm_module:     assigns[:elm_module],
+                                 elm_app_config: assigns[:elm_app_config] %>
+  <% else %>
+    <main role="main">
+      <h3>Please authenticate to access the application</h3>
+    </main>
+  <% end %>
 
 </div>

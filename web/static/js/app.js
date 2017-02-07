@@ -1,4 +1,4 @@
 import "phoenix_html"
-import MainInterface from "./main-interface"
+import TaskerInterface from "./tasker-interface"
 
-window.MainInterface = MainInterface
+window.TaskerInterface = TaskerInterface

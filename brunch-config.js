@@ -56,7 +56,7 @@ exports.config = {
       ignore: [/web\/static\/vendor/]
     },
     elmBrunch: {
-      mainModules: ['web/static/elm/Main.elm'],
+      mainModules: ['web/static/elm/Tasker.elm'],
       outputFolder: 'web/static/vendor',
       makeParameters: ['--debug']
     },

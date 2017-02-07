@@ -1,8 +1,7 @@
-export default class OnlineInterface {
+export default class TaskerInterface {
   constructor(config) {
-    this.node = document.getElementById('elm-main')
-    // this.app = Elm.Main.embed(this.node, config)
-    this.app = Elm.Main.embed(this.node)
+    this.node = document.getElementById('elm-tasker')
+    this.app = Elm.Tasker.embed(this.node, config)
   }
 
   start() {
@@ -16,5 +15,4 @@ function setupPorts(app) {
 
   // send to Elm, received as subscription
   // app.ports.doSomething.send("string", 42)
-  // app.ports.initApplication.send(null)
 }

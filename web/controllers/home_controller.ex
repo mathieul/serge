@@ -2,10 +2,17 @@ defmodule Serge.HomeController do
   use Serge.Web, :controller
 
   def index(conn, _params) do
-    render conn, "index.html"
+    config = elm_app_config(conn.assigns.current_user, conn.assigns.access_token)
+    render(conn, "index.html", elm_module: "Tasker", elm_app_config: config)
   end
 
-  def authenticated(conn, _params) do
-    render conn, "authenticated.html", elm_module: "Main", elm_app_config: %{}
+  defp elm_app_config(nil, _), do: %{}
+  defp elm_app_config(current_user, access_token) do
+    %{
+      "id"           => current_user.id,
+      "name"         => current_user.name,
+      "email"        => current_user.email,
+      "access_token" => access_token
+    }
   end
 end

@@ -38,7 +38,7 @@ defmodule Serge.AuthController do
     # If you need to make additional resource requests, you may want to store
     # the access token as well.
     conn
-    |> put_session(:current_user, user)
+    |> put_session(:current_user_id, user.id)
     |> put_session(:access_token, client.token.access_token)
     |> redirect(to: "/")
   end
