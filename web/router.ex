@@ -19,9 +19,9 @@ defmodule Serge.Router do
   scope "/auth", Serge do
     pipe_through :browser
 
+    get "/logout", AuthController, :delete
     get "/:provider", AuthController, :index
     get "/:provider/callback", AuthController, :callback
-    delete "/logout", AuthController, :delete
   end
 
   # Fetch the current user from the session and add it to `conn.assigns`. This
