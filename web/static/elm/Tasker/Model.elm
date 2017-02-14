@@ -6,7 +6,12 @@ import Navigation
 type alias Model =
     { config : AppConfig
     , route : Route
+    , tasks : List Task
     }
+
+
+type alias Task =
+    String
 
 
 type Route
