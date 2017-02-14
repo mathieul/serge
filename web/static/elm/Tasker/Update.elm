@@ -11,3 +11,13 @@ update msg model =
 
         UrlChange location ->
             model ! []
+
+        UpdateCurrentTask label ->
+            { model | currentTask = label } ! []
+
+        AddCurrentTask ->
+            let
+                tasks =
+                    model.currentTask :: model.tasks
+            in
+                { model | tasks = tasks, currentTask = "" } ! []

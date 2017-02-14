@@ -35,9 +35,6 @@ initialModel : ConfigFromJs -> Route -> Model
 initialModel rawConfig route =
     { config = initialAppConfig rawConfig
     , route = route
-    , tasks =
-        [ "Testing"
-        , "some test task"
-        , "other test"
-        ]
+    , currentTask = ""
+    , tasks = []
     }

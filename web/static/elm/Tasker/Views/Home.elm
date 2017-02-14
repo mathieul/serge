@@ -1,8 +1,9 @@
 module Tasker.Views.Home exposing (view)
 
 import Html exposing (..)
-import Html.Attributes exposing (class, href, type_, placeholder)
-import Tasker.Model exposing (Model, Msg(..), Task)
+import Html.Attributes exposing (class, href, type_, placeholder, value)
+import Html.Events exposing (onInput, onSubmit)
+import Tasker.Model exposing (Model, Msg(..))
 
 
 view : Model -> Html Msg
@@ -56,13 +57,15 @@ cardBody model =
 
 taskForm : Model -> Html Msg
 taskForm model =
-    form []
+    form [ onSubmit AddCurrentTask ]
         [ div [ class "form-group row" ]
             [ div [ class "col-sm-10" ]
                 [ input
                     [ type_ "text"
                     , class "form-control form-control-lg"
                     , placeholder "Enter new task..."
+                    , value model.currentTask
+                    , onInput UpdateCurrentTask
                     ]
                     []
                 ]
@@ -77,7 +80,7 @@ taskForm model =
         ]
 
 
-taskView : Task -> Html Msg
+taskView : String -> Html Msg
 taskView task =
     li [ class "list-group-item" ]
         [ text task ]

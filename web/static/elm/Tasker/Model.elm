@@ -6,12 +6,9 @@ import Navigation
 type alias Model =
     { config : AppConfig
     , route : Route
-    , tasks : List Task
+    , currentTask : String
+    , tasks : List String
     }
-
-
-type alias Task =
-    String
 
 
 type Route
@@ -30,3 +27,5 @@ type alias AppConfig =
 type Msg
     = NoOp
     | UrlChange Navigation.Location
+    | UpdateCurrentTask String
+    | AddCurrentTask
