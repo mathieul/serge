@@ -21,3 +21,17 @@ update msg model =
                     model.currentTask :: model.tasks
             in
                 { model | tasks = tasks, currentTask = "" } ! []
+
+        FetchTasks (Ok response) ->
+            let
+                _ =
+                    Debug.log "FetchTasks Ok" response
+            in
+                model ! []
+
+        FetchTasks (Err error) ->
+            let
+                _ =
+                    Debug.log "FetchTasks Err" error
+            in
+                model ! []

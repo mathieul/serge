@@ -11,7 +11,7 @@ defmodule Serge.Resolvers.Task do
   end
 
   def all(_parent, _args, _info) do
-    { :ok, Repo.all(Task) }
+    { :ok, Repo.all(Task) |> Repo.preload(:user) }
   end
 
   def create(_parent, attributes, _info) do

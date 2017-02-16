@@ -1,7 +1,8 @@
 module Tasker.Init exposing (ConfigFromJs, init)
 
+import Http
 import Navigation exposing (Location)
-import Tasker.Model exposing (Model, Msg, Route, AppConfig)
+import Tasker.Model exposing (Model, Msg(..), Route, AppConfig)
 import Tasker.Routing as Routing
 
 
@@ -19,7 +20,9 @@ init rawConfig result =
         currentRoute =
             Routing.parseLocation result
     in
-        ( initialModel rawConfig currentRoute, Cmd.none )
+        ( initialModel rawConfig currentRoute
+        , Http.send FetchTasks fetchTasksRequest
+        )
 
 
 initialAppConfig : ConfigFromJs -> AppConfig
@@ -38,3 +41,29 @@ initialModel rawConfig route =
     , currentTask = ""
     , tasks = []
     }
+
+
+fetchTasksQuery : String
+fetchTasksQuery =
+    """
+    query {
+      tasks {
+        id
+        label
+        rank
+        user {
+          id
+          name
+        }
+      }
+    }
+  """
+
+
+fetchTasksRequest : Http.Request String
+fetchTasksRequest =
+    let
+        encodedQuery =
+            Http.encodeUri fetchTasksQuery
+    in
+        Http.getString ("/graphql?query=" ++ encodedQuery)

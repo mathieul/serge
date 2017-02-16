@@ -1,6 +1,7 @@
 module Tasker.Model exposing (..)
 
 import Navigation
+import Http
 
 
 type alias Model =
@@ -29,3 +30,4 @@ type Msg
     | UrlChange Navigation.Location
     | UpdateCurrentTask String
     | AddCurrentTask
+    | FetchTasks (Result Http.Error String)
