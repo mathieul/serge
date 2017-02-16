@@ -20,6 +20,7 @@ defmodule Serge.Mixfile do
     [
       mod: {Serge, []},
       applications: [
+        :absinthe,
         :absinthe_plug,
         :cowboy,
         :gettext,
@@ -29,7 +30,8 @@ defmodule Serge.Mixfile do
         :phoenix_html,
         :phoenix_pubsub,
         :phoenix,
-        :postgrex
+        :postgrex,
+        :timex
       ]
     ]
   end
@@ -54,7 +56,8 @@ defmodule Serge.Mixfile do
       {:phoenix_live_reload, "~> 1.0", only: :dev},
       {:phoenix_pubsub, "~> 1.0"},
       {:phoenix, "~> 1.2.1"},
-      {:postgrex, ">= 0.0.0"}
+      {:postgrex, ">= 0.0.0"},
+      {:timex, "~> 3.0"}
    ]
   end
 
