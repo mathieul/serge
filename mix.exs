@@ -20,15 +20,16 @@ defmodule Serge.Mixfile do
     [
       mod: {Serge, []},
       applications: [
-       :cowboy,
-       :gettext,
-       :logger,
-       :oauth2,
-       :phoenix_ecto,
-       :phoenix_html,
-       :phoenix_pubsub,
-       :phoenix,
-       :postgrex
+        :absinthe_plug,
+        :cowboy,
+        :gettext,
+        :logger,
+        :oauth2,
+        :phoenix_ecto,
+        :phoenix_html,
+        :phoenix_pubsub,
+        :phoenix,
+        :postgrex
       ]
     ]
   end
@@ -42,16 +43,18 @@ defmodule Serge.Mixfile do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
-     {:comeonin, "~> 3.0"},
-     {:cowboy, "~> 1.1.0"},
-     {:gettext, "~> 0.13.1"},
-     {:oauth2, "~> 0.9"},
-     {:phoenix_ecto, "~> 3.0"},
-     {:phoenix_html, "~> 2.9.3"},
-     {:phoenix_live_reload, "~> 1.0", only: :dev},
-     {:phoenix_pubsub, "~> 1.0"},
-     {:phoenix, "~> 1.2.1"},
-     {:postgrex, ">= 0.0.0"}
+      {:absinthe, "~> 1.2.1"},
+      {:absinthe_plug, "~> 1.2.2"},
+      {:comeonin, "~> 3.0"},
+      {:cowboy, "~> 1.1.2"},
+      {:gettext, "~> 0.13.1"},
+      {:oauth2, "~> 0.9"},
+      {:phoenix_ecto, "~> 3.0"},
+      {:phoenix_html, "~> 2.9.3"},
+      {:phoenix_live_reload, "~> 1.0", only: :dev},
+      {:phoenix_pubsub, "~> 1.0"},
+      {:phoenix, "~> 1.2.1"},
+      {:postgrex, ">= 0.0.0"}
    ]
   end
 

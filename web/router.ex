@@ -10,10 +10,22 @@ defmodule Serge.Router do
     plug :assign_user_and_token
   end
 
+  pipeline :graphql do
+    plug Serge.Context
+  end
+
   scope "/", Serge do
     pipe_through :browser
 
     get "/", HomeController, :index
+  end
+
+  scope "/" do
+    pipe_through :graphql
+
+    get "/graphiql",    Absinthe.Plug.GraphiQL, schema: Serge.Schema
+    post "/graphiql",   Absinthe.Plug.GraphiQL, schema: Serge.Schema
+    forward "/graphql", Absinthe.Plug, schema: Serge.Schema
   end
 
   scope "/auth", Serge do
