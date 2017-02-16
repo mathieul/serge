@@ -1,8 +1,11 @@
 module Tasker.Init exposing (ConfigFromJs, init)
 
 import Http
+import Json.Encode as Encode
+import Json.Decode as Decode
+import Json.Decode.Pipeline as Pipeline
 import Navigation exposing (Location)
-import Tasker.Model exposing (Model, Msg(..), Route, AppConfig)
+import Tasker.Model exposing (Model, Msg(..), Route, AppConfig, Task)
 import Tasker.Routing as Routing
 
 
@@ -51,19 +54,33 @@ fetchTasksQuery =
         id
         label
         rank
-        user {
-          id
-          name
-        }
       }
     }
   """
 
 
-fetchTasksRequest : Http.Request String
+taskDecoder : Decode.Decoder Task
+taskDecoder =
+    Pipeline.decode Task
+        |> Pipeline.required "id" Decode.string
+        |> Pipeline.required "label" Decode.string
+        |> Pipeline.required "rank" Decode.int
+
+
+tasksResponseDecoder : Decode.Decoder (List Task)
+tasksResponseDecoder =
+    Decode.list taskDecoder
+        |> Decode.at [ "data", "tasks" ]
+
+
+fetchTasksRequest : Http.Request (List Task)
 fetchTasksRequest =
     let
-        encodedQuery =
-            Http.encodeUri fetchTasksQuery
+        url =
+            "/graphql"
+
+        body =
+            Encode.object [ ( "query", Encode.string fetchTasksQuery ) ]
+                |> Http.jsonBody
     in
-        Http.getString ("/graphql?query=" ++ encodedQuery)
+        Http.post url body tasksResponseDecoder

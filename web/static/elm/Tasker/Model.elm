@@ -12,6 +12,13 @@ type alias Model =
     }
 
 
+type alias Task =
+    { id : String
+    , label : String
+    , rank : Int
+    }
+
+
 type Route
     = HomeRoute
     | NotFoundRoute
@@ -30,4 +37,4 @@ type Msg
     | UrlChange Navigation.Location
     | UpdateCurrentTask String
     | AddCurrentTask
-    | FetchTasks (Result Http.Error String)
+    | FetchTasks (Result Http.Error (List Task))
