@@ -7,6 +7,14 @@ defmodule Serge.Schema.Types do
     field :name, :string
     field :email, :string
     field :avatar_url, :string
+    field :tasks, list_of(:task)
+  end
+
+  object :task do
+    field :id, :id
+    field :label, :string
+    field :rank, :integer
+    field :user, :user
   end
 
   scalar :time do
