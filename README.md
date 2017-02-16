@@ -24,3 +24,26 @@ Ready to run in production? Please [check our deployment guides](http://www.phoe
 export GITHUB_REDIRECT_URI=http://localhost:4000/auth/github/callback
 export GITHUB_CLIENT_ID=18e2f95af473d367c294
 export GITHUB_CLIENT_SECRET=e3b62ba98785a95a88d6238a865ce15a72e78756
+
+
+## Queries &amp; Mutations
+
+    mutation ($label: String!, $rank: Int!, $userId: ID!) {
+      createTask(label: $label, rank: $rank, userId: $userId) {
+        id
+        label
+        rank
+        user {
+          id
+          name
+        }
+      }
+    }
+
+with:
+
+    {
+      "label": "allo la terre???",
+      "rank": 1,
+      "userId": 2
+    }

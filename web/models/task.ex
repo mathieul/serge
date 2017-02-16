@@ -13,7 +13,8 @@ defmodule Serge.Task do
 
   def changeset(struct, params \\ %{}) do
     struct
-    |> cast(params, [:label, :completed_at, :rank])
-    |> validate_required([:label, :rank])
+    |> cast(params, [:label, :completed_at, :rank, :user_id])
+    |> assoc_constraint(:user)
+    |> validate_required([:label, :rank, :user_id])
   end
 end

@@ -3,10 +3,10 @@ defmodule Serge.Repo.Migrations.CreateTask do
 
   def change do
     create table(:tasks) do
-      add :label, :string
+      add :label, :string, null: false
       add :completed_at, :utc_datetime
-      add :rank, :integer
-      add :user_id, references(:users, on_delete: :nothing)
+      add :rank, :integer, null: false
+      add :user_id, references(:users, on_delete: :nothing), null: false
 
       timestamps()
     end
