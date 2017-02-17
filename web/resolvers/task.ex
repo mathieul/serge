@@ -15,11 +15,10 @@ defmodule Serge.Resolvers.Task do
   end
 
   def create(_parent, attributes, _info) do
-    IO.inspect attributes
     changeset = Task.changeset(%Task{}, attributes)
     case Repo.insert(changeset) do
-      {:ok, task} -> {:ok, task}
-      {:error, changeset} -> {:error, changeset.errors}
+      { :ok, task }         -> { :ok, task }
+      { :error, changeset } -> { :error, changeset.errors }
     end
   end
 end

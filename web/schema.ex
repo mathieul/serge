@@ -30,7 +30,7 @@ defmodule Serge.Schema do
   mutation do
     field :create_task, :task do
       arg :label, non_null(:string)
-      arg :rank, non_null(:integer)
+      arg :position, non_null(:integer)
       arg :user_id, non_null(:id)
 
       resolve &Resolvers.Task.create/3

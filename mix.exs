@@ -49,6 +49,7 @@ defmodule Serge.Mixfile do
       {:absinthe_plug, "~> 1.2.2"},
       {:comeonin, "~> 3.0"},
       {:cowboy, "~> 1.1.2"},
+      {:ecto_ordered, "~> 0.2.0-beta1"},
       {:gettext, "~> 0.13.1"},
       {:oauth2, "~> 0.9"},
       {:phoenix_ecto, "~> 3.0"},
