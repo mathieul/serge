@@ -20,4 +20,12 @@ defmodule Serge.Task do
     |> assoc_constraint(:user)
     |> validate_required([:label, :user_id])
   end
+
+  def all_ordered_for_user_id(user_id) do
+    from(t in __MODULE__, where: t.user_id == ^user_id, order_by: t.rank)
+  end
+
+  def all_ordered do
+    from(t in __MODULE__, order_by: t.rank)
+  end
 end
