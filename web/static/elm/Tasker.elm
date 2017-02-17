@@ -39,8 +39,8 @@ type alias ConfigFromJs =
 type alias Model =
     { config : AppConfig
     , route : Route
-    , currentTask : String
-    , tasks : List String
+    , currentTaskLabel : String
+    , tasks : List Task
     }
 
 
@@ -100,7 +100,7 @@ initialModel : ConfigFromJs -> Route -> Model
 initialModel rawConfig route =
     { config = initialAppConfig rawConfig
     , route = route
-    , currentTask = ""
+    , currentTaskLabel = ""
     , tasks = []
     }
 
@@ -119,21 +119,20 @@ update msg model =
             model ! []
 
         UpdateCurrentTask label ->
-            { model | currentTask = label } ! []
+            { model | currentTaskLabel = label } ! []
 
         AddCurrentTask ->
             let
-                tasks =
-                    model.currentTask :: model.tasks
-            in
-                { model | tasks = tasks, currentTask = "" } ! []
+                newTask =
+                    Task "" model.currentTaskLabel 0
 
-        FetchTasks (Ok response) ->
-            let
-                _ =
-                    Debug.log "FetchTasks Ok" response
+                tasks =
+                    newTask :: model.tasks
             in
-                model ! []
+                { model | tasks = tasks, currentTaskLabel = "" } ! []
+
+        FetchTasks (Ok tasks) ->
+            { model | tasks = tasks } ! []
 
         FetchTasks (Err error) ->
             let
@@ -333,7 +332,7 @@ taskForm model =
                     [ type_ "text"
                     , class "form-control form-control-lg"
                     , placeholder "Enter new task..."
-                    , value model.currentTask
+                    , value model.currentTaskLabel
                     , onInput UpdateCurrentTask
                     ]
                     []
@@ -349,7 +348,7 @@ taskForm model =
         ]
 
 
-taskView : String -> Html Msg
+taskView : Task -> Html Msg
 taskView task =
     li [ class "list-group-item" ]
-        [ text task ]
+        [ text task.label ]
