@@ -1,14 +1,11 @@
 port module Tasker exposing (main)
 
-import Http
-import Json.Encode as Encode
-import Json.Decode as Decode
-import Json.Decode.Pipeline as Pipeline
 import Html exposing (..)
 import Html.Attributes exposing (class, href, type_, placeholder, value)
-import Html.Events exposing (onInput, onSubmit)
+import Http
 import Navigation exposing (Location)
 import UrlParser
+import StoryTask exposing (StoryTask, storyTaskForm)
 
 
 -- MAIN
@@ -40,14 +37,7 @@ type alias Model =
     { config : AppConfig
     , route : Route
     , currentTaskLabel : String
-    , tasks : List Task
-    }
-
-
-type alias Task =
-    { id : String
-    , label : String
-    , rank : Int
+    , tasks : List StoryTask
     }
 
 
@@ -69,7 +59,7 @@ type Msg
     | UrlChange Navigation.Location
     | UpdateCurrentTask String
     | AddCurrentTask
-    | FetchTasks (Result Http.Error (List Task))
+    | FetchTasks (Result Http.Error (List StoryTask))
 
 
 
@@ -83,7 +73,7 @@ init rawConfig result =
             parseLocation result
     in
         ( initialModel rawConfig currentRoute
-        , Http.send FetchTasks fetchTasksRequest
+        , Http.send FetchTasks StoryTask.fetchTasksRequest
         )
 
 
@@ -124,7 +114,7 @@ update msg model =
         AddCurrentTask ->
             let
                 newTask =
-                    Task "" model.currentTaskLabel 0
+                    StoryTask "" model.currentTaskLabel 0
 
                 tasks =
                     newTask :: model.tasks
@@ -140,79 +130,6 @@ update msg model =
                     Debug.log "FetchTasks Err" error
             in
                 model ! []
-
-
-
--- ROUTING
-
-
-matchers : UrlParser.Parser (Route -> a) a
-matchers =
-    UrlParser.oneOf
-        [ UrlParser.map HomeRoute UrlParser.top
-        ]
-
-
-parseLocation : Location -> Route
-parseLocation location =
-    let
-        _ =
-            Debug.log "location" location
-    in
-        case UrlParser.parseHash matchers location of
-            Just route ->
-                route
-
-            Nothing ->
-                NotFoundRoute
-
-
-
--- DECODERS / ENCODERS
-
-
-taskDecoder : Decode.Decoder Task
-taskDecoder =
-    Pipeline.decode Task
-        |> Pipeline.required "id" Decode.string
-        |> Pipeline.required "label" Decode.string
-        |> Pipeline.required "rank" Decode.int
-
-
-tasksResponseDecoder : Decode.Decoder (List Task)
-tasksResponseDecoder =
-    Decode.list taskDecoder
-        |> Decode.at [ "data", "tasks" ]
-
-
-
--- API
-
-
-fetchTasksQuery : String
-fetchTasksQuery =
-    """
-    query {
-      tasks {
-        id
-        label
-        rank
-      }
-    }
-  """
-
-
-fetchTasksRequest : Http.Request (List Task)
-fetchTasksRequest =
-    let
-        url =
-            "/graphql"
-
-        body =
-            Encode.object [ ( "query", Encode.string fetchTasksQuery ) ]
-                |> Http.jsonBody
-    in
-        Http.post url body tasksResponseDecoder
 
 
 
@@ -315,7 +232,7 @@ cardBody : Model -> Html Msg
 cardBody model =
     div [ class "card-block" ]
         [ h4 [ class "card-title" ] [ text "Tasks" ]
-        , taskForm model
+        , storyTaskForm model.currentTaskLabel AddCurrentTask UpdateCurrentTask
         , div [ class "card w-50" ]
             [ ul [ class "list-group list-group-flush" ]
                 (List.map taskView model.tasks)
@@ -323,32 +240,32 @@ cardBody model =
         ]
 
 
-taskForm : Model -> Html Msg
-taskForm model =
-    form [ onSubmit AddCurrentTask ]
-        [ div [ class "form-group row" ]
-            [ div [ class "col-sm-10" ]
-                [ input
-                    [ type_ "text"
-                    , class "form-control form-control-lg"
-                    , placeholder "Enter new task..."
-                    , value model.currentTaskLabel
-                    , onInput UpdateCurrentTask
-                    ]
-                    []
-                ]
-            , div [ class "col-sm-2" ]
-                [ button
-                    [ type_ "submit"
-                    , class "btn btn-outline-primary btn-block btn-lg"
-                    ]
-                    [ text "Create" ]
-                ]
-            ]
-        ]
-
-
-taskView : Task -> Html Msg
+taskView : StoryTask -> Html Msg
 taskView task =
     li [ class "list-group-item" ]
         [ text task.label ]
+
+
+
+-- ROUTING
+
+
+matchers : UrlParser.Parser (Route -> a) a
+matchers =
+    UrlParser.oneOf
+        [ UrlParser.map HomeRoute UrlParser.top
+        ]
+
+
+parseLocation : Location -> Route
+parseLocation location =
+    let
+        _ =
+            Debug.log "location" location
+    in
+        case UrlParser.parseHash matchers location of
+            Just route ->
+                route
+
+            Nothing ->
+                NotFoundRoute
