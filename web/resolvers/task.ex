@@ -10,15 +10,16 @@ defmodule Serge.Resolvers.Task do
     end
   end
 
-  def all(_parent, _args, _info) do
-    tasks = Task.all_ordered
+  def all(_parent, _args, %{context: ctx}) do
+    tasks = Task.all_ordered_for_user_id(ctx.current_user.id)
       |> Repo.all
       |> Repo.preload(:user)
     { :ok, tasks }
   end
 
-  def create(_parent, attributes, _info) do
-    changeset = Task.changeset(%Task{}, attributes)
+  def create(_parent, attributes, %{context: ctx}) do
+    params = Map.put_new(attributes, :user_id, ctx.current_user.id)
+    changeset = Task.changeset(%Task{}, params)
     case Repo.insert(changeset) do
       { :ok, task }         -> { :ok, task }
       { :error, changeset } -> { :error, changeset.errors }

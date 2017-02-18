@@ -11,6 +11,8 @@ defmodule Serge.Router do
   end
 
   pipeline :graphql do
+    plug :fetch_session
+    plug :assign_user_and_token
     plug Serge.Context
   end
 
