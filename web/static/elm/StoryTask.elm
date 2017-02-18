@@ -1,6 +1,12 @@
-module StoryTask exposing (StoryTask, storyTaskForm, fetchTasksRequest)
+module StoryTask
+    exposing
+        ( StoryTask
+        , storyTaskForm
+        , fetchTasksRequest
+        , storyTaskView
+        )
 
-import Html exposing (Html, form, div, input, button, text)
+import Html exposing (Html, form, div, input, button, text, li)
 import Html.Attributes exposing (class, type_, placeholder, value)
 import Html.Events exposing (onInput, onSubmit)
 import Json.Encode as JE
@@ -46,6 +52,12 @@ storyTaskForm currentLabel addTaskMsg updateTaskMsg =
                 ]
             ]
         ]
+
+
+storyTaskView : StoryTask -> Html msg
+storyTaskView task =
+    li [ class "list-group-item" ]
+        [ text task.label ]
 
 
 

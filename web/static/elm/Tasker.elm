@@ -1,11 +1,11 @@
 port module Tasker exposing (main)
 
-import Html exposing (..)
+import Html exposing (Html, div, span, text, nav, button, a, ul, li, h2, h4, small)
 import Html.Attributes exposing (class, href, type_, placeholder, value)
 import Http
 import Navigation exposing (Location)
 import UrlParser
-import StoryTask exposing (StoryTask, storyTaskForm)
+import StoryTask exposing (StoryTask)
 
 
 -- MAIN
@@ -232,18 +232,15 @@ cardBody : Model -> Html Msg
 cardBody model =
     div [ class "card-block" ]
         [ h4 [ class "card-title" ] [ text "Tasks" ]
-        , storyTaskForm model.currentTaskLabel AddCurrentTask UpdateCurrentTask
+        , StoryTask.storyTaskForm
+            model.currentTaskLabel
+            AddCurrentTask
+            UpdateCurrentTask
         , div [ class "card w-50" ]
             [ ul [ class "list-group list-group-flush" ]
-                (List.map taskView model.tasks)
+                (List.map StoryTask.storyTaskView model.tasks)
             ]
         ]
-
-
-taskView : StoryTask -> Html Msg
-taskView task =
-    li [ class "list-group-item" ]
-        [ text task.label ]
 
 
 
