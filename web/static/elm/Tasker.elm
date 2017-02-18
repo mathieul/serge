@@ -114,7 +114,7 @@ update msg model =
         AddCurrentTask ->
             let
                 newTask =
-                    StoryTask "" model.currentTaskLabel 0
+                    StoryTask.makeNewTask model.currentTaskLabel (List.length model.tasks)
 
                 tasks =
                     newTask :: model.tasks

@@ -1,6 +1,7 @@
 module StoryTask
     exposing
         ( StoryTask
+        , makeNewTask
         , storyTaskForm
         , fetchTasksRequest
         , storyTaskView
@@ -23,6 +24,11 @@ type alias StoryTask =
     , label : String
     , rank : Int
     }
+
+
+makeNewTask : String -> Int -> StoryTask
+makeNewTask label count =
+    StoryTask "" label (count + 1)
 
 
 
@@ -82,6 +88,11 @@ tasksResponseDecoder =
 -- API
 
 
+graphqlUrl : String
+graphqlUrl =
+    "/graphql"
+
+
 fetchTasksQuery : String
 fetchTasksQuery =
     """
@@ -98,11 +109,34 @@ fetchTasksQuery =
 fetchTasksRequest : Http.Request (List StoryTask)
 fetchTasksRequest =
     let
-        url =
-            "/graphql"
-
         body =
             JE.object [ ( "query", JE.string fetchTasksQuery ) ]
                 |> Http.jsonBody
     in
-        Http.post url body tasksResponseDecoder
+        Http.post graphqlUrl body tasksResponseDecoder
+
+
+makeTaskMutation : String
+makeTaskMutation =
+    """
+    mutation($label:String!, $position:Int!, $userId:ID!) {
+      createTask(label:$label, position:$position, userId:$userId) {
+        id
+        label
+        rank
+      }
+    }
+  """
+
+
+
+-- makeTaskRequest : HttpRequest StoryTask
+-- makeTaskRequest variables =
+--   let
+--     body =
+--       JE.object
+--       [ ( "query", JE.string makeTaskMutation)
+--       , ("variables", ... TODO ...)
+--       ]
+--   in
+--     Http.post graphqlUrl body taskResponseDecoder
