@@ -17,6 +17,11 @@ defmodule Serge.Schema.Types do
     field :user, :user
   end
 
+  object :create_task_response do
+    field :tid, :string
+    field :task, :task
+  end
+
   scalar :time do
     description "ISOz time",
     parse &Timex.parse(&1, "{ISOz}")

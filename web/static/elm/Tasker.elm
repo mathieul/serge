@@ -6,7 +6,7 @@ import Html.Events exposing (onClick)
 import Http
 import Navigation exposing (Location)
 import UrlParser
-import StoryTask exposing (StoryTask)
+import StoryTask exposing (StoryTask, CreateTaskResponse)
 
 
 -- MAIN
@@ -39,6 +39,7 @@ type alias Model =
     , route : Route
     , message : AppMessage
     , currentTaskLabel : String
+    , currentTaskSeq : Int
     , tasks : List StoryTask
     }
 
@@ -60,7 +61,7 @@ type Msg
     = NoOp
     | UrlChange Navigation.Location
     | FetchTasks (Result Http.Error (List StoryTask))
-    | CreateTask (Result Http.Error StoryTask)
+    | CreateTask (Result Http.Error CreateTaskResponse)
     | ClearMessage
     | UpdateCurrentTask String
     | AddCurrentTask
@@ -81,9 +82,12 @@ init rawConfig result =
     let
         currentRoute =
             parseLocation result
+
+        request =
+            StoryTask.fetchTasksRequest
     in
         ( initialModel rawConfig currentRoute
-        , Http.send FetchTasks StoryTask.fetchTasksRequest
+        , Http.send FetchTasks request
         )
 
 
@@ -102,6 +106,7 @@ initialModel rawConfig route =
     , route = route
     , message = MessageNone
     , currentTaskLabel = ""
+    , currentTaskSeq = 1
     , tasks = []
     }
 
@@ -126,22 +131,28 @@ update msg model =
             { model | currentTaskLabel = label } ! []
 
         AddCurrentTask ->
-            let
-                newTask =
-                    StoryTask.makeNewTask model.currentTaskLabel (List.length model.tasks)
+            case model.currentTaskLabel of
+                "" ->
+                    model ! []
 
-                tasks =
-                    newTask :: model.tasks
+                _ ->
+                    let
+                        newTask =
+                            StoryTask.makeNewTask
+                                model.currentTaskSeq
+                                model.currentTaskLabel
+                                (List.length model.tasks)
 
-                createTaskRequest =
-                    StoryTask.makeTaskRequest newTask.label newTask.rank
-            in
-                ( { model
-                    | tasks = tasks
-                    , currentTaskLabel = ""
-                  }
-                , Http.send CreateTask createTaskRequest
-                )
+                        request =
+                            StoryTask.makeTaskRequest newTask
+                    in
+                        ( { model
+                            | tasks = List.append model.tasks [ newTask ]
+                            , currentTaskLabel = ""
+                            , currentTaskSeq = model.currentTaskSeq + 1
+                          }
+                        , Http.send CreateTask request
+                        )
 
         FetchTasks (Ok tasks) ->
             { model | tasks = tasks } ! []
@@ -149,11 +160,51 @@ update msg model =
         FetchTasks (Err error) ->
             { model | message = MessageError "An error occurred while fetching tasks." } ! []
 
-        CreateTask (Ok task) ->
-            { model | tasks = task :: model.tasks } ! []
+        CreateTask (Ok response) ->
+            let
+                tasks =
+                    List.map
+                        (\item ->
+                            if item.id == response.tid then
+                                response.task
+                            else
+                                item
+                        )
+                        model.tasks
+            in
+                { model | tasks = tasks } ! []
 
         CreateTask (Err error) ->
-            { model | message = MessageError "Creating the task failed, please try again." } ! []
+            let
+                errorMessage =
+                    "Creating the task failed: " ++ (httpErrorToMessage error)
+            in
+                { model | message = MessageError errorMessage } ! []
+
+
+httpErrorToMessage : Http.Error -> String
+httpErrorToMessage error =
+    case error of
+        Http.BadUrl message ->
+            "error in URL: " ++ message
+
+        Http.NetworkError ->
+            "error with the network connection"
+
+        Http.BadStatus response ->
+            let
+                _ =
+                    Debug.log "BadStatus error" response.body
+            in
+                (toString response.status.code)
+                    ++ " "
+                    ++ response.status.message
+
+        Http.BadPayload message _ ->
+            "decoding Failed: " ++ message
+
+        _ ->
+            (toString error)
 
 
 
@@ -287,7 +338,7 @@ cardBody model =
             model.currentTaskLabel
             AddCurrentTask
             UpdateCurrentTask
-        , div [ class "card w-50" ]
+        , div [ class "card" ]
             [ ul [ class "list-group list-group-flush" ]
                 (List.map StoryTask.storyTaskView model.tasks)
             ]

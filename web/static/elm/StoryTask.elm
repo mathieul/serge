@@ -1,6 +1,7 @@
 module StoryTask
     exposing
         ( StoryTask
+        , CreateTaskResponse
         , makeNewTask
         , storyTaskForm
         , storyTaskView
@@ -9,7 +10,7 @@ module StoryTask
         )
 
 import Html exposing (Html, form, div, input, button, text, li)
-import Html.Attributes exposing (class, type_, placeholder, value)
+import Html.Attributes exposing (class, type_, placeholder, value, autofocus, disabled)
 import Html.Events exposing (onInput, onSubmit)
 import Json.Encode as JE
 import Json.Decode as JD
@@ -27,9 +28,19 @@ type alias StoryTask =
     }
 
 
-makeNewTask : String -> Int -> StoryTask
-makeNewTask label count =
-    StoryTask "" label (count + 1)
+type alias CreateTaskResponse =
+    { tid : String
+    , task : StoryTask
+    }
+
+
+makeNewTask : Int -> String -> Int -> StoryTask
+makeNewTask sequence label count =
+    let
+        tid =
+            "TMP:" ++ (toString sequence)
+    in
+        StoryTask tid label (count + 1)
 
 
 
@@ -45,6 +56,7 @@ storyTaskForm currentLabel addTaskMsg updateTaskMsg =
                     [ type_ "text"
                     , class "form-control form-control-lg"
                     , placeholder "Enter new task..."
+                    , autofocus True
                     , value currentLabel
                     , onInput updateTaskMsg
                     ]
@@ -54,6 +66,7 @@ storyTaskForm currentLabel addTaskMsg updateTaskMsg =
                 [ button
                     [ type_ "submit"
                     , class "btn btn-outline-primary btn-block btn-lg"
+                    , disabled (currentLabel == "")
                     ]
                     [ text "Create" ]
                 ]
@@ -84,9 +97,12 @@ tasksResponseDecoder =
     JD.at [ "data", "tasks" ] (JD.list taskDecoder)
 
 
-taskResponseDecoder : JD.Decoder StoryTask
-taskResponseDecoder =
-    JD.at [ "data", "task" ] taskDecoder
+createTaskResponseDecoder : JD.Decoder CreateTaskResponse
+createTaskResponseDecoder =
+    JP.decode CreateTaskResponse
+        |> JP.required "tid" JD.string
+        |> JP.required "task" taskDecoder
+        |> JD.at [ "data", "createTask" ]
 
 
 
@@ -124,23 +140,27 @@ fetchTasksRequest =
 makeTaskMutation : String
 makeTaskMutation =
     """
-    mutation($label:String!, $position:Int!) {
-      createTask(label:$label, position:$position) {
-        id
-        label
-        rank
+    mutation($tid: String!, $label: String!, $position: Int!) {
+      createTask(tid: $tid, label:$label, position:$position) {
+        tid
+        task {
+          id
+          label
+          rank
+        }
       }
     }
   """
 
 
-makeTaskRequest : String -> Int -> Http.Request StoryTask
-makeTaskRequest label position =
+makeTaskRequest : StoryTask -> Http.Request CreateTaskResponse
+makeTaskRequest task =
     let
         variables =
             JE.object
-                [ ( "label", JE.string label )
-                , ( "position", JE.int position )
+                [ ( "tid", JE.string task.id )
+                , ( "label", JE.string task.label )
+                , ( "position", JE.int task.rank )
                 ]
 
         body =
@@ -150,4 +170,4 @@ makeTaskRequest label position =
                 ]
                 |> Http.jsonBody
     in
-        Http.post graphqlUrl body taskResponseDecoder
+        Http.post graphqlUrl body createTaskResponseDecoder

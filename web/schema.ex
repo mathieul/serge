@@ -28,7 +28,8 @@ defmodule Serge.Schema do
   end
 
   mutation do
-    field :create_task, :task do
+    field :create_task, :create_task_response do
+      arg :tid, non_null(:string)
       arg :label, non_null(:string)
       arg :position, non_null(:integer)
 
