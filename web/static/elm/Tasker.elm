@@ -2,6 +2,7 @@ port module Tasker exposing (main)
 
 import Html exposing (Html, div, span, text, nav, button, a, ul, li, h2, h4, small)
 import Html.Attributes exposing (class, href, type_, placeholder, value)
+import Html.Events exposing (onClick)
 import Http
 import Navigation exposing (Location)
 import UrlParser
@@ -36,6 +37,7 @@ type alias ConfigFromJs =
 type alias Model =
     { config : AppConfig
     , route : Route
+    , message : AppMessage
     , currentTaskLabel : String
     , tasks : List StoryTask
     }
@@ -57,9 +59,17 @@ type alias AppConfig =
 type Msg
     = NoOp
     | UrlChange Navigation.Location
+    | FetchTasks (Result Http.Error (List StoryTask))
+    | CreateTask (Result Http.Error StoryTask)
+    | ClearMessage
     | UpdateCurrentTask String
     | AddCurrentTask
-    | FetchTasks (Result Http.Error (List StoryTask))
+
+
+type AppMessage
+    = MessageNone
+    | MessageNotice String
+    | MessageError String
 
 
 
@@ -90,6 +100,7 @@ initialModel : ConfigFromJs -> Route -> Model
 initialModel rawConfig route =
     { config = initialAppConfig rawConfig
     , route = route
+    , message = MessageNone
     , currentTaskLabel = ""
     , tasks = []
     }
@@ -108,6 +119,9 @@ update msg model =
         UrlChange location ->
             model ! []
 
+        ClearMessage ->
+            { model | message = MessageNone } ! []
+
         UpdateCurrentTask label ->
             { model | currentTaskLabel = label } ! []
 
@@ -118,18 +132,28 @@ update msg model =
 
                 tasks =
                     newTask :: model.tasks
+
+                createTaskRequest =
+                    StoryTask.makeTaskRequest newTask.label newTask.rank
             in
-                { model | tasks = tasks, currentTaskLabel = "" } ! []
+                ( { model
+                    | tasks = tasks
+                    , currentTaskLabel = ""
+                  }
+                , Http.send CreateTask createTaskRequest
+                )
 
         FetchTasks (Ok tasks) ->
             { model | tasks = tasks } ! []
 
         FetchTasks (Err error) ->
-            let
-                _ =
-                    Debug.log "FetchTasks Err" error
-            in
-                model ! []
+            { model | message = MessageError "An error occurred while fetching tasks." } ! []
+
+        CreateTask (Ok task) ->
+            { model | tasks = task :: model.tasks } ! []
+
+        CreateTask (Err error) ->
+            { model | message = MessageError "Creating the task failed, please try again." } ! []
 
 
 
@@ -142,21 +166,21 @@ view model =
         view =
             case model.route of
                 HomeRoute ->
-                    homeView model
+                    homeView
 
                 NotFoundRoute ->
                     notFoundView
     in
-        layoutView view
+        layoutView model view
 
 
-notFoundView : Html msg
-notFoundView =
+notFoundView : Model -> Html msg
+notFoundView _ =
     div [] [ text "NOT FOUND ROUTE" ]
 
 
-layoutView : Html Msg -> Html Msg
-layoutView view =
+layoutView : Model -> (Model -> Html Msg) -> Html Msg
+layoutView model view =
     div []
         [ nav
             [ class "navbar navbar-toggleable-md navbar-inverse bg-inverse fixed-top" ]
@@ -187,8 +211,35 @@ layoutView view =
             ]
         , div
             [ class "container below-navbar" ]
-            [ view ]
+            [ messageView model.message
+            , view model
+            ]
         ]
+
+
+messageView : AppMessage -> Html Msg
+messageView message =
+    let
+        view level content =
+            div [ class ("my-4 alert " ++ level) ]
+                [ button
+                    [ type_ "button"
+                    , class "close"
+                    , onClick ClearMessage
+                    ]
+                    [ span [] [ text "×" ] ]
+                , text content
+                ]
+    in
+        case message of
+            MessageNone ->
+                div [] []
+
+            MessageNotice content ->
+                view "alert-notice" content
+
+            MessageError content ->
+                view "alert-danger" content
 
 
 homeView : Model -> Html Msg

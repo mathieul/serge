@@ -3,8 +3,9 @@ module StoryTask
         ( StoryTask
         , makeNewTask
         , storyTaskForm
-        , fetchTasksRequest
         , storyTaskView
+        , fetchTasksRequest
+        , makeTaskRequest
         )
 
 import Html exposing (Html, form, div, input, button, text, li)
@@ -80,8 +81,12 @@ taskDecoder =
 
 tasksResponseDecoder : JD.Decoder (List StoryTask)
 tasksResponseDecoder =
-    JD.list taskDecoder
-        |> JD.at [ "data", "tasks" ]
+    JD.at [ "data", "tasks" ] (JD.list taskDecoder)
+
+
+taskResponseDecoder : JD.Decoder StoryTask
+taskResponseDecoder =
+    JD.at [ "data", "task" ] taskDecoder
 
 
 
@@ -119,8 +124,8 @@ fetchTasksRequest =
 makeTaskMutation : String
 makeTaskMutation =
     """
-    mutation($label:String!, $position:Int!, $userId:ID!) {
-      createTask(label:$label, position:$position, userId:$userId) {
+    mutation($label:String!, $position:Int!) {
+      createTask(label:$label, position:$position) {
         id
         label
         rank
@@ -129,14 +134,20 @@ makeTaskMutation =
   """
 
 
+makeTaskRequest : String -> Int -> Http.Request StoryTask
+makeTaskRequest label position =
+    let
+        variables =
+            JE.object
+                [ ( "label", JE.string label )
+                , ( "position", JE.int position )
+                ]
 
--- makeTaskRequest : HttpRequest StoryTask
--- makeTaskRequest variables =
---   let
---     body =
---       JE.object
---       [ ( "query", JE.string makeTaskMutation)
---       , ("variables", ... TODO ...)
---       ]
---   in
---     Http.post graphqlUrl body taskResponseDecoder
+        body =
+            JE.object
+                [ ( "query", JE.string makeTaskMutation )
+                , ( "variables", variables )
+                ]
+                |> Http.jsonBody
+    in
+        Http.post graphqlUrl body taskResponseDecoder
