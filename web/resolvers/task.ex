@@ -26,9 +26,7 @@ defmodule Serge.Resolvers.Task do
     changeset = Task.changeset(%Task{}, params)
     case Repo.insert(changeset) do
       { :ok, task } ->
-        data = %{ tid: tid, task: task }
-        IO.inspect %{ attributes: attributes, ctx: ctx, data: data }
-        { :ok, data }
+        { :ok, %{ tid: tid, task: task } }
 
       { :error, changeset } ->
         { :error, changeset.errors }
