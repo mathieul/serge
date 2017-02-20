@@ -4,12 +4,12 @@ module StoryTask
         , CreateTaskResponse
         , makeNewTask
         , storyTaskForm
-        , storyTaskView
+        , storyTasksView
         , fetchTasksRequest
         , makeTaskRequest
         )
 
-import Html exposing (Html, form, div, input, button, text, li)
+import Html exposing (Html, form, div, input, button, text, ul, li)
 import Html.Attributes exposing (class, type_, placeholder, value, autofocus, disabled)
 import Html.Events exposing (onInput, onSubmit)
 import Json.Encode as JE
@@ -65,7 +65,7 @@ storyTaskForm currentLabel addTaskMsg updateTaskMsg =
             , div [ class "col-sm-2" ]
                 [ button
                     [ type_ "submit"
-                    , class "btn btn-outline-primary btn-block btn-lg"
+                    , class "btn btn-primary btn-block btn-lg"
                     , disabled (currentLabel == "")
                     ]
                     [ text "Create" ]
@@ -74,8 +74,19 @@ storyTaskForm currentLabel addTaskMsg updateTaskMsg =
         ]
 
 
-storyTaskView : StoryTask -> Html msg
-storyTaskView task =
+storyTasksView : List StoryTask -> Html msg
+storyTasksView tasks =
+    if List.isEmpty tasks then
+        div [] []
+    else
+        div [ class "card" ]
+            [ ul [ class "list-group list-group-flush" ]
+                (List.map oneTaskView tasks)
+            ]
+
+
+oneTaskView : StoryTask -> Html msg
+oneTaskView task =
     li [ class "list-group-item" ]
         [ text task.label ]
 

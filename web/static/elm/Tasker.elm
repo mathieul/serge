@@ -4,8 +4,6 @@ import Html exposing (Html, div, span, text, nav, button, a, ul, li, h2, h4, sma
 import Html.Attributes exposing (class, href, type_, placeholder, value)
 import Html.Events exposing (onClick)
 import Http
-import Navigation exposing (Location)
-import UrlParser
 import StoryTask exposing (StoryTask, CreateTaskResponse)
 
 
@@ -14,7 +12,7 @@ import StoryTask exposing (StoryTask, CreateTaskResponse)
 
 main : Program ConfigFromJs Model Msg
 main =
-    Navigation.programWithFlags UrlChange
+    Html.programWithFlags
         { init = init
         , update = update
         , subscriptions = (\_ -> Sub.none)
@@ -36,17 +34,11 @@ type alias ConfigFromJs =
 
 type alias Model =
     { config : AppConfig
-    , route : Route
     , message : AppMessage
     , currentTaskLabel : String
     , currentTaskSeq : Int
     , tasks : List StoryTask
     }
-
-
-type Route
-    = HomeRoute
-    | NotFoundRoute
 
 
 type alias AppConfig =
@@ -58,9 +50,7 @@ type alias AppConfig =
 
 
 type Msg
-    = NoOp
-    | UrlChange Navigation.Location
-    | FetchTasks (Result Http.Error (List StoryTask))
+    = FetchTasks (Result Http.Error (List StoryTask))
     | CreateTask (Result Http.Error CreateTaskResponse)
     | ClearMessage
     | UpdateCurrentTask String
@@ -77,16 +67,13 @@ type AppMessage
 -- INIT
 
 
-init : ConfigFromJs -> Location -> ( Model, Cmd Msg )
-init rawConfig result =
+init : ConfigFromJs -> ( Model, Cmd Msg )
+init rawConfig =
     let
-        currentRoute =
-            parseLocation result
-
         request =
             StoryTask.fetchTasksRequest
     in
-        ( initialModel rawConfig currentRoute
+        ( initialModel rawConfig
         , Http.send FetchTasks request
         )
 
@@ -100,10 +87,9 @@ initialAppConfig rawConfig =
     }
 
 
-initialModel : ConfigFromJs -> Route -> Model
-initialModel rawConfig route =
+initialModel : ConfigFromJs -> Model
+initialModel rawConfig =
     { config = initialAppConfig rawConfig
-    , route = route
     , message = MessageNone
     , currentTaskLabel = ""
     , currentTaskSeq = 1
@@ -118,12 +104,6 @@ initialModel rawConfig route =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        NoOp ->
-            model ! []
-
-        UrlChange location ->
-            model ! []
-
         ClearMessage ->
             { model | message = MessageNone } ! []
 
@@ -213,25 +193,6 @@ httpErrorToMessage error =
 
 view : Model -> Html Msg
 view model =
-    let
-        view =
-            case model.route of
-                HomeRoute ->
-                    homeView
-
-                NotFoundRoute ->
-                    notFoundView
-    in
-        layoutView model view
-
-
-notFoundView : Model -> Html msg
-notFoundView _ =
-    div [] [ text "NOT FOUND ROUTE" ]
-
-
-layoutView : Model -> (Model -> Html Msg) -> Html Msg
-layoutView model view =
     div []
         [ nav
             [ class "navbar navbar-toggleable-md navbar-inverse bg-inverse fixed-top" ]
@@ -263,34 +224,9 @@ layoutView model view =
         , div
             [ class "container below-navbar" ]
             [ messageView model.message
-            , view model
+            , homeView model
             ]
         ]
-
-
-messageView : AppMessage -> Html Msg
-messageView message =
-    let
-        view level content =
-            div [ class ("my-4 alert " ++ level) ]
-                [ button
-                    [ type_ "button"
-                    , class "close"
-                    , onClick ClearMessage
-                    ]
-                    [ span [] [ text "×" ] ]
-                , text content
-                ]
-    in
-        case message of
-            MessageNone ->
-                div [] []
-
-            MessageNotice content ->
-                view "alert-notice" content
-
-            MessageError content ->
-                view "alert-danger" content
 
 
 homeView : Model -> Html Msg
@@ -338,33 +274,30 @@ cardBody model =
             model.currentTaskLabel
             AddCurrentTask
             UpdateCurrentTask
-        , div [ class "card" ]
-            [ ul [ class "list-group list-group-flush" ]
-                (List.map StoryTask.storyTaskView model.tasks)
-            ]
+        , StoryTask.storyTasksView model.tasks
         ]
 
 
-
--- ROUTING
-
-
-matchers : UrlParser.Parser (Route -> a) a
-matchers =
-    UrlParser.oneOf
-        [ UrlParser.map HomeRoute UrlParser.top
-        ]
-
-
-parseLocation : Location -> Route
-parseLocation location =
+messageView : AppMessage -> Html Msg
+messageView message =
     let
-        _ =
-            Debug.log "location" location
+        view level content =
+            div [ class ("my-4 alert " ++ level) ]
+                [ button
+                    [ type_ "button"
+                    , class "close"
+                    , onClick ClearMessage
+                    ]
+                    [ span [] [ text "×" ] ]
+                , text content
+                ]
     in
-        case UrlParser.parseHash matchers location of
-            Just route ->
-                route
+        case message of
+            MessageNone ->
+                div [] []
 
-            Nothing ->
-                NotFoundRoute
+            MessageNotice content ->
+                view "alert-notice" content
+
+            MessageError content ->
+                view "alert-danger" content
