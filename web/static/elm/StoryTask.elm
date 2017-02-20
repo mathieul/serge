@@ -25,9 +25,15 @@ type alias StoryTask =
     { id : String
     , label : String
     , rank : Int
-    , scheduledOn : String
-    , completedOn : String
+    , completedOn : Maybe String
+    , scheduledOn : Maybe String
     }
+
+
+type Scheduled
+    = ScheduledToday
+    | ScheduledTomorrow
+    | ScheduledLater
 
 
 type alias CreateTaskResponse =
@@ -38,11 +44,12 @@ type alias CreateTaskResponse =
 
 makeNewTask : Int -> String -> Int -> StoryTask
 makeNewTask sequence label count =
-    let
-        tid =
-            "TMP:" ++ (toString sequence)
-    in
-        StoryTask tid label (count + 1) "" ""
+    { id = "TMP:" ++ (toString sequence)
+    , label = label
+    , rank = count + 1
+    , completedOn = Nothing
+    , scheduledOn = Nothing
+    }
 
 
 
@@ -133,8 +140,16 @@ taskDecoder =
         |> JP.required "id" JD.string
         |> JP.required "label" JD.string
         |> JP.required "rank" JD.int
-        |> JP.optional "scheduledOn" JD.string ""
-        |> JP.optional "completedOn" JD.string ""
+        |> JP.required "scheduledOn" (nullOr JD.string)
+        |> JP.required "completedOn" (nullOr JD.string)
+
+
+nullOr : JD.Decoder a -> JD.Decoder (Maybe a)
+nullOr decoder =
+    JD.oneOf
+        [ JD.null Nothing
+        , JD.map Just decoder
+        ]
 
 
 tasksResponseDecoder : JD.Decoder (List StoryTask)
