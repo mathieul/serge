@@ -25,6 +25,8 @@ type alias StoryTask =
     { id : String
     , label : String
     , rank : Int
+    , scheduledOn : String
+    , completedOn : String
     }
 
 
@@ -40,7 +42,7 @@ makeNewTask sequence label count =
         tid =
             "TMP:" ++ (toString sequence)
     in
-        StoryTask tid label (count + 1)
+        StoryTask tid label (count + 1) "" ""
 
 
 
@@ -131,6 +133,8 @@ taskDecoder =
         |> JP.required "id" JD.string
         |> JP.required "label" JD.string
         |> JP.required "rank" JD.int
+        |> JP.optional "scheduledOn" JD.string ""
+        |> JP.optional "completedOn" JD.string ""
 
 
 tasksResponseDecoder : JD.Decoder (List StoryTask)
@@ -163,6 +167,8 @@ fetchTasksQuery =
         id
         label
         rank
+        scheduledOn
+        completedOn
       }
     }
   """
@@ -188,6 +194,8 @@ makeTaskMutation =
           id
           label
           rank
+          scheduledOn
+          completedOn
         }
       }
     }

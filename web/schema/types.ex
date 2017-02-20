@@ -15,6 +15,8 @@ defmodule Serge.Schema.Types do
     field :label, :string
     field :rank, :integer
     field :user, :user
+    field :completed_on, :date
+    field :scheduled_on, :date
   end
 
   object :create_task_response do
@@ -23,8 +25,14 @@ defmodule Serge.Schema.Types do
   end
 
   scalar :time do
-    description "ISOz time",
+    description "ISOz time"
     parse &Timex.parse(&1, "{ISOz}")
     serialize &Timex.format!(&1, "{ISOz}")
+  end
+
+  scalar :date do
+    description "ISO8601 date"
+    parse &Ecto.Date.cast1/1
+    serialize &Ecto.Date.to_iso8601/1
   end
 end

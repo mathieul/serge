@@ -4,9 +4,10 @@ defmodule Serge.Task do
 
   schema "tasks" do
     field :label,         :string
-    field :completed_at,  Ecto.DateTime
     field :position,      :integer, virtual: true
     field :rank,          :integer
+    field :completed_on,  Ecto.Date
+    field :scheduled_on,  Ecto.Date
 
     belongs_to :user, Serge.User
 
@@ -15,7 +16,7 @@ defmodule Serge.Task do
 
   def changeset(struct, params \\ %{}) do
     struct
-    |> cast(params, [:label, :completed_at, :position, :user_id])
+    |> cast(params, [:label, :completed_on, :scheduled_on, :position, :user_id])
     |> set_order(:position, :rank, :user_id)
     |> assoc_constraint(:user)
     |> validate_required([:label, :user_id])
