@@ -1,5 +1,8 @@
 port module Tasker exposing (main)
 
+import Time exposing (Time)
+import Date
+import Date.Format
 import Html exposing (Html, div, span, text, nav, button, a, ul, li, h2, h4, small)
 import Html.Attributes exposing (class, href, type_, placeholder, value)
 import Html.Events exposing (onClick)
@@ -15,7 +18,7 @@ main =
     Html.programWithFlags
         { init = init
         , update = update
-        , subscriptions = (\_ -> Sub.none)
+        , subscriptions = subscriptions
         , view = view
         }
 
@@ -57,6 +60,7 @@ type Msg
     | ClearMessage
     | UpdateCurrentTask String
     | AddCurrentTask
+    | UpdateCurrentDate Time
 
 
 type AppMessage
@@ -101,12 +105,24 @@ initialModel rawConfig =
 
 
 
+-- SUBSCRIPTIONS
+
+
+subscriptions : Model -> Sub Msg
+subscriptions _ =
+    Time.every Time.minute UpdateCurrentDate
+
+
+
 -- UPDATE
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        UpdateCurrentDate time ->
+            ( updateTodayFromTime time model, Cmd.none )
+
         ClearMessage ->
             { model | message = MessageNone } ! []
 
@@ -192,6 +208,23 @@ httpErrorToMessage error =
 
         _ ->
             (toString error)
+
+
+updateTodayFromTime : Time -> Model -> Model
+updateTodayFromTime time model =
+    let
+        today =
+            time
+                |> Date.fromTime
+                |> Date.Format.format "%Y-%m-%d"
+
+        config =
+            model.config
+
+        newConfig =
+            { config | today = today }
+    in
+        { model | config = newConfig }
 
 
 

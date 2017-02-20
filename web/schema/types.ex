@@ -32,7 +32,7 @@ defmodule Serge.Schema.Types do
 
   scalar :date do
     description "ISO8601 date"
-    parse &Ecto.Date.cast1/1
+    parse &Ecto.Date.cast!/1
     serialize &Ecto.Date.to_iso8601/1
   end
 end
