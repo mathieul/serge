@@ -29,6 +29,7 @@ type alias ConfigFromJs =
     , name : String
     , email : String
     , access_token : String
+    , today : String
     }
 
 
@@ -46,6 +47,7 @@ type alias AppConfig =
     , name : String
     , email : String
     , accessToken : String
+    , today : String
     }
 
 
@@ -84,6 +86,7 @@ initialAppConfig rawConfig =
     , name = rawConfig.name
     , email = rawConfig.email
     , accessToken = rawConfig.access_token
+    , today = rawConfig.today
     }
 
 
@@ -138,7 +141,11 @@ update msg model =
             { model | tasks = tasks } ! []
 
         FetchTasks (Err error) ->
-            { model | message = MessageError "An error occurred while fetching tasks." } ! []
+            ( { model
+                | message = MessageError "An error occurred while fetching tasks."
+              }
+            , Cmd.none
+            )
 
         CreateTask (Ok response) ->
             let
@@ -155,11 +162,11 @@ update msg model =
                 { model | tasks = tasks } ! []
 
         CreateTask (Err error) ->
-            let
-                errorMessage =
-                    "Creating the task failed: " ++ (httpErrorToMessage error)
-            in
-                { model | message = MessageError errorMessage } ! []
+            ( { model
+                | message = MessageError <| "Creating the task failed: " ++ (httpErrorToMessage error)
+              }
+            , Cmd.none
+            )
 
 
 httpErrorToMessage : Http.Error -> String
@@ -201,7 +208,7 @@ view model =
                 []
             , a
                 [ class "navbar-brand", href "#" ]
-                [ text "Navbar" ]
+                [ text "Tasker" ]
             , div
                 [ class "collapse navbar-collapse" ]
                 [ ul
@@ -213,6 +220,9 @@ view model =
                             [ text "Home" ]
                         ]
                     ]
+                , span
+                    [ class "navbar-text pull-right mr-3" ]
+                    [ text model.config.today ]
                 , span
                     [ class "pull-right" ]
                     [ a
@@ -274,7 +284,7 @@ cardBody model =
             model.currentTaskLabel
             AddCurrentTask
             UpdateCurrentTask
-        , StoryTask.storyTasksView model.tasks
+        , StoryTask.storyTasksView model.config.today model.tasks
         ]
 
 

@@ -83,19 +83,19 @@ storyTaskForm currentLabel addTaskMsg updateTaskMsg =
         ]
 
 
-storyTasksView : List StoryTask -> Html msg
-storyTasksView tasks =
+storyTasksView : String -> List StoryTask -> Html msg
+storyTasksView today tasks =
     if List.isEmpty tasks then
         div [] []
     else
         div [ class "card" ]
             [ ul [ class "list-group list-group-flush" ]
-                (List.map oneTaskView tasks)
+                (List.map (oneTaskView today) tasks)
             ]
 
 
-oneTaskView : StoryTask -> Html msg
-oneTaskView task =
+oneTaskView : String -> StoryTask -> Html msg
+oneTaskView today task =
     li [ class "list-group-item d-flex flex-column align-items-start" ]
         [ div [ class " w-100 d-flex justify-content-between" ]
             [ span []
