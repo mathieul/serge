@@ -89,54 +89,35 @@ oneTaskView : StoryTask -> Html msg
 oneTaskView task =
     li [ class "list-group-item d-flex flex-column align-items-start" ]
         [ div [ class " w-100 d-flex justify-content-between" ]
-            [ span [] [ text task.label ]
-            , form [ class "form-inline" ]
-                [ scheduleOption "today" "Today" task
-                , scheduleOption "tomorrow" "Tomorrow" task
-                , scheduleOption "later" "Later" task
-                , completedOption task
+            [ span []
+                [ i [ class "fa fa-circle text-info mr-2" ] []
+                , text task.label
                 ]
-            ]
-        ]
-
-
-scheduleOption : String -> String -> StoryTask -> Html msg
-scheduleOption theValue theLabel task =
-    let
-        badge =
-            case theValue of
-                "today" ->
-                    "badge-success"
-
-                "tomorrow" ->
-                    "badge-info"
-
-                _ ->
-                    "badge-default"
-    in
-        div [ class "form-check form-check-inline" ]
-            [ label [ class "form-check-label" ]
-                [ input
-                    [ class "form-check-input"
-                    , type_ "radio"
-                    , name <| "scheduled-for-" ++ task.id
-                    , value theValue
-                    , checked False
+            , div []
+                [ div [ class "btn-group" ]
+                    [ button
+                        [ class "btn btn-sm btn-outline-success"
+                        , type_ "button"
+                        ]
+                        [ text "Today" ]
+                    , button
+                        [ class "btn btn-sm btn-outline-info"
+                        , type_ "button"
+                        ]
+                        [ text "Tomorrow" ]
+                    , button
+                        [ class "btn btn-sm btn-outline-secondary"
+                        , type_ "button"
+                        ]
+                        [ text "Later" ]
                     ]
-                    []
-                , span [ class <| "badge " ++ badge ]
-                    [ text theLabel ]
+                , button
+                    [ class "btn btn-sm btn-outline-danger ml-5"
+                    , type_ "button"
+                    ]
+                    [ i [ class "fa fa-check" ] [] ]
                 ]
             ]
-
-
-completedOption : StoryTask -> Html msg
-completedOption task =
-    button
-        [ class "btn btn-outline-danger btn-sm ml-5"
-        , type_ "button"
-        ]
-        [ i [ class "fa fa-check" ] []
         ]
 
 
