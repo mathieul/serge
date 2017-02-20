@@ -52,6 +52,13 @@ exports.config = {
           'node_modules/font-awesome/scss/'
         ]
       }
+    },
+    copycat: {
+      fonts: [
+        "node_modules/font-awesome/fonts"
+      ],
+      verbose: true,
+      onlyChanged: true
     }
   },
 

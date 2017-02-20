@@ -9,8 +9,8 @@ module StoryTask
         , makeTaskRequest
         )
 
-import Html exposing (Html, form, div, input, button, text, ul, li)
-import Html.Attributes exposing (class, type_, placeholder, value, autofocus, disabled)
+import Html exposing (Html, form, div, span, label, input, button, text, ul, li, i)
+import Html.Attributes exposing (class, type_, placeholder, value, autofocus, disabled, name, checked)
 import Html.Events exposing (onInput, onSubmit)
 import Json.Encode as JE
 import Json.Decode as JD
@@ -87,8 +87,57 @@ storyTasksView tasks =
 
 oneTaskView : StoryTask -> Html msg
 oneTaskView task =
-    li [ class "list-group-item" ]
-        [ text task.label ]
+    li [ class "list-group-item d-flex flex-column align-items-start" ]
+        [ div [ class " w-100 d-flex justify-content-between" ]
+            [ span [] [ text task.label ]
+            , form [ class "form-inline" ]
+                [ scheduleOption "today" "Today" task
+                , scheduleOption "tomorrow" "Tomorrow" task
+                , scheduleOption "later" "Later" task
+                , completedOption task
+                ]
+            ]
+        ]
+
+
+scheduleOption : String -> String -> StoryTask -> Html msg
+scheduleOption theValue theLabel task =
+    let
+        badge =
+            case theValue of
+                "today" ->
+                    "badge-success"
+
+                "tomorrow" ->
+                    "badge-info"
+
+                _ ->
+                    "badge-default"
+    in
+        div [ class "form-check form-check-inline" ]
+            [ label [ class "form-check-label" ]
+                [ input
+                    [ class "form-check-input"
+                    , type_ "radio"
+                    , name <| "scheduled-for-" ++ task.id
+                    , value theValue
+                    , checked False
+                    ]
+                    []
+                , span [ class <| "badge " ++ badge ]
+                    [ text theLabel ]
+                ]
+            ]
+
+
+completedOption : StoryTask -> Html msg
+completedOption task =
+    button
+        [ class "btn btn-outline-danger btn-sm ml-5"
+        , type_ "button"
+        ]
+        [ i [ class "fa fa-check" ] []
+        ]
 
 
 
