@@ -8,6 +8,7 @@ import Html exposing (Html, div, span, text, nav, button, a, ul, li, h2, h4, sma
 import Html.Attributes exposing (class, href, type_, placeholder, value)
 import Html.Events exposing (onClick)
 import Http
+import String.Extra
 import StoryTask exposing (StoryTask, CreateTaskResponse)
 
 
@@ -301,15 +302,37 @@ view model =
 homeView : Model -> Html Msg
 homeView model =
     div [ class "mt-3" ]
-        [ h2 []
-            [ text "Tasker" ]
-        , div [ class "card mt-3" ]
-            [ cardHeader
-            , cardBody model
-            , div [ class "card-footer text-muted" ]
-                [ small [] [ text "todo" ] ]
+        [ h2 [] [ text "Tasker" ]
+        , taskForm model
+        ]
+
+
+taskForm : Model -> Html Msg
+taskForm model =
+    div [ class "card mt-3" ]
+        [ div [ class "card-block" ]
+            [ StoryTask.storyTaskForm
+                model.currentTaskLabel
+                AddCurrentTask
+                UpdateCurrentTask
+            , taskList model.currentDates model.tasks
             ]
         ]
+
+
+taskList : StoryTask.CurrentDates -> List StoryTask -> Html Msg
+taskList dates tasks =
+    let
+        footer =
+            String.Extra.pluralize "task" "tasks" (List.length tasks)
+    in
+        div [ class "card mt-3" ]
+            [ cardHeader
+            , div [ class "card-block" ]
+                [ StoryTask.storyTasksView dates RequestTaskUpdate tasks ]
+            , div [ class "card-footer text-muted" ]
+                [ text footer ]
+            ]
 
 
 cardHeader : Html Msg
@@ -329,21 +352,14 @@ cardHeader =
             , li [ class "nav-item" ]
                 [ a
                     [ class "nav-link", href "#" ]
-                    [ text "Yesterday" ]
+                    [ text "Tomorrow" ]
+                ]
+            , li [ class "nav-item" ]
+                [ a
+                    [ class "nav-link", href "#" ]
+                    [ text "Later" ]
                 ]
             ]
-        ]
-
-
-cardBody : Model -> Html Msg
-cardBody model =
-    div [ class "card-block" ]
-        [ h4 [ class "card-title" ] [ text "Tasks" ]
-        , StoryTask.storyTaskForm
-            model.currentTaskLabel
-            AddCurrentTask
-            UpdateCurrentTask
-        , StoryTask.storyTasksView model.currentDates RequestTaskUpdate model.tasks
         ]
 
 
