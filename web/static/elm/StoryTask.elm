@@ -26,7 +26,7 @@ type alias StoryTask =
     , label : String
     , rank : Int
     , completedOn : Maybe String
-    , scheduledOn : Maybe String
+    , scheduledOn : String
     }
 
 
@@ -42,13 +42,13 @@ type alias CreateTaskResponse =
     }
 
 
-makeNewTask : Int -> String -> Int -> StoryTask
-makeNewTask sequence label count =
+makeNewTask : Int -> String -> Int -> String -> StoryTask
+makeNewTask sequence label count scheduledOn =
     { id = "TMP:" ++ (toString sequence)
     , label = label
     , rank = count + 1
     , completedOn = Nothing
-    , scheduledOn = Nothing
+    , scheduledOn = scheduledOn
     }
 
 
@@ -140,8 +140,8 @@ taskDecoder =
         |> JP.required "id" JD.string
         |> JP.required "label" JD.string
         |> JP.required "rank" JD.int
-        |> JP.required "scheduledOn" (nullOr JD.string)
         |> JP.required "completedOn" (nullOr JD.string)
+        |> JP.required "scheduledOn" JD.string
 
 
 nullOr : JD.Decoder a -> JD.Decoder (Maybe a)
@@ -182,8 +182,8 @@ fetchTasksQuery =
         id
         label
         rank
-        scheduledOn
         completedOn
+        scheduledOn
       }
     }
   """
@@ -202,15 +202,15 @@ fetchTasksRequest =
 makeTaskMutation : String
 makeTaskMutation =
     """
-    mutation($tid: String!, $label: String!, $position: Int!) {
-      createTask(tid: $tid, label:$label, position:$position) {
+    mutation($tid: String!, $label: String!, $position: Int!, $scheduledOn: String!) {
+      createTask(tid: $tid, label:$label, position:$position, scheduledOn: $scheduledOn) {
         tid
         task {
           id
           label
           rank
-          scheduledOn
           completedOn
+          scheduledOn
         }
       }
     }
@@ -225,6 +225,7 @@ makeTaskRequest task =
                 [ ( "tid", JE.string task.id )
                 , ( "label", JE.string task.label )
                 , ( "position", JE.int task.rank )
+                , ( "scheduledOn", JE.string task.scheduledOn )
                 ]
 
         body =

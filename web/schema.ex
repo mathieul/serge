@@ -32,6 +32,7 @@ defmodule Serge.Schema do
       arg :tid, non_null(:string)
       arg :label, non_null(:string)
       arg :position, non_null(:integer)
+      arg :scheduled_on, non_null(:string)
 
       resolve &Resolvers.Task.create/3
     end

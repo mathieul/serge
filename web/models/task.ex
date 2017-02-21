@@ -19,7 +19,7 @@ defmodule Serge.Task do
     |> cast(params, [:label, :completed_on, :scheduled_on, :position, :user_id])
     |> set_order(:position, :rank, :user_id)
     |> assoc_constraint(:user)
-    |> validate_required([:label, :user_id])
+    |> validate_required([:label, :scheduled_on, :user_id])
   end
 
   def all_ordered_for_user_id(user_id) do
