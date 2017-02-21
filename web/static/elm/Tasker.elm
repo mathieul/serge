@@ -63,6 +63,7 @@ type Msg
     | AddCurrentTask
     | UpdateCurrentDates Time
     | SetTimeZone String
+    | RequestTaskUpdate StoryTask
 
 
 type AppMessage
@@ -213,6 +214,13 @@ update msg model =
             , Cmd.none
             )
 
+        RequestTaskUpdate task ->
+            let
+                _ =
+                    Debug.log "RequestTaskUpdate" task
+            in
+                model ! []
+
 
 httpErrorToMessage : Http.Error -> String
 httpErrorToMessage error =
@@ -334,7 +342,7 @@ cardBody model =
             model.currentTaskLabel
             AddCurrentTask
             UpdateCurrentTask
-        , StoryTask.storyTasksView model.currentDates model.tasks
+        , StoryTask.storyTasksView model.currentDates RequestTaskUpdate model.tasks
         ]
 
 

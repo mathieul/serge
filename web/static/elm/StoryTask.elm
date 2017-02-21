@@ -18,7 +18,7 @@ import Time.ZonedDateTime as ZonedDateTime
 import Time.Date as Date exposing (Date)
 import Html exposing (Html, form, div, span, label, input, button, text, ul, li, i)
 import Html.Attributes exposing (class, type_, placeholder, value, autofocus, disabled, name, checked)
-import Html.Events exposing (onInput, onSubmit)
+import Html.Events exposing (onInput, onSubmit, onClick)
 import Json.Encode as JE
 import Json.Decode as JD
 import Json.Decode.Pipeline as JP
@@ -113,19 +113,19 @@ storyTaskForm currentLabel addTaskMsg updateTaskMsg =
         ]
 
 
-storyTasksView : CurrentDates -> List StoryTask -> Html msg
-storyTasksView dates tasks =
+storyTasksView : CurrentDates -> (StoryTask -> msg) -> List StoryTask -> Html msg
+storyTasksView dates msg tasks =
     if List.isEmpty tasks then
         div [] []
     else
         div [ class "card" ]
             [ ul [ class "list-group list-group-flush" ]
-                (List.map (oneTaskView dates) tasks)
+                (List.map (oneTaskView dates msg) tasks)
             ]
 
 
-oneTaskView : CurrentDates -> StoryTask -> Html msg
-oneTaskView dates task =
+oneTaskView : CurrentDates -> (StoryTask -> msg) -> StoryTask -> Html msg
+oneTaskView dates msg task =
     let
         scheduled =
             if task.scheduledOn <= dates.today then
@@ -140,9 +140,15 @@ oneTaskView dates task =
                 [ span [] [ text task.label ]
                 , div []
                     [ div [ class "btn-group" ]
-                        [ scheduleButton ScheduledToday scheduled
-                        , scheduleButton ScheduledTomorrow scheduled
-                        , scheduleButton ScheduledLater scheduled
+                        [ scheduleButton ScheduledToday
+                            scheduled
+                            (changeSchedule msg dates.today task)
+                        , scheduleButton ScheduledTomorrow
+                            scheduled
+                            (changeSchedule msg dates.tomorrow task)
+                        , scheduleButton ScheduledLater
+                            scheduled
+                            (changeSchedule msg dates.later task)
                         ]
                     , button
                         [ class "btn btn-sm btn-outline-danger ml-4"
@@ -154,8 +160,13 @@ oneTaskView dates task =
             ]
 
 
-scheduleButton : Scheduled -> Scheduled -> Html msg
-scheduleButton option current =
+changeSchedule : (StoryTask -> msg) -> String -> StoryTask -> msg
+changeSchedule msg scheduledOn task =
+    msg { task | scheduledOn = scheduledOn }
+
+
+scheduleButton : Scheduled -> Scheduled -> msg -> Html msg
+scheduleButton option current msg =
     let
         ( level, label ) =
             case option of
@@ -168,15 +179,17 @@ scheduleButton option current =
                 ScheduledLater ->
                     ( "btn-outline-secondary", "Later" )
 
-        active =
+        ( active, isDisabled ) =
             if option == current then
-                " active"
+                ( " active", True )
             else
-                ""
+                ( "", False )
     in
         button
             [ class <| "btn btn-sm " ++ level ++ active
             , type_ "button"
+            , disabled isDisabled
+            , onClick msg
             ]
             [ text label ]
 
