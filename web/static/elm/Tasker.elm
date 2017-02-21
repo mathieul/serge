@@ -1,8 +1,6 @@
 port module Tasker exposing (main)
 
 import Time exposing (Time)
-import Time.DateTime as DateTime exposing (DateTime)
-import Time.Date as Date exposing (Date)
 import Task
 import Html exposing (Html, div, span, text, nav, button, a, ul, li, h2, h4, small)
 import Html.Attributes exposing (class, href, type_, placeholder, value)
@@ -39,7 +37,7 @@ type alias ConfigFromJs =
 type alias Model =
     { config : AppConfig
     , message : AppMessage
-    , currentDates : CurrentDates
+    , currentDates : StoryTask.CurrentDates
     , currentTaskLabel : String
     , currentTaskSeq : Int
     , tasks : List StoryTask
@@ -51,13 +49,6 @@ type alias AppConfig =
     , name : String
     , email : String
     , accessToken : String
-    }
-
-
-type alias CurrentDates =
-    { today : String
-    , tomorrow : String
-    , future : String
     }
 
 
@@ -107,7 +98,7 @@ initialModel : ConfigFromJs -> Model
 initialModel rawConfig =
     { config = initialAppConfig rawConfig
     , message = MessageNone
-    , currentDates = CurrentDates "" "" ""
+    , currentDates = StoryTask.CurrentDates "" "" ""
     , currentTaskLabel = ""
     , currentTaskSeq = 1
     , tasks = []
@@ -223,17 +214,7 @@ httpErrorToMessage error =
 
 updateCurrentDatesFromTime : Time -> Model -> Model
 updateCurrentDatesFromTime time model =
-    let
-        today =
-            DateTime.fromTimestamp time |> DateTime.date
-    in
-        { model
-            | currentDates =
-                { today = Date.toISO8601 today
-                , tomorrow = Date.toISO8601 <| Date.addDays 1 today
-                , future = Date.toISO8601 <| Date.addDays 30 today
-                }
-        }
+    { model | currentDates = StoryTask.timeToCurrentDates time }
 
 
 
@@ -326,7 +307,7 @@ cardBody model =
             model.currentTaskLabel
             AddCurrentTask
             UpdateCurrentTask
-        , StoryTask.storyTasksView model.currentDates.today model.tasks
+        , StoryTask.storyTasksView model.currentDates model.tasks
         ]
 
 

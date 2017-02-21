@@ -2,13 +2,18 @@ module StoryTask
     exposing
         ( StoryTask
         , CreateTaskResponse
+        , CurrentDates
         , makeNewTask
+        , timeToCurrentDates
         , storyTaskForm
         , storyTasksView
         , fetchTasksRequest
         , makeTaskRequest
         )
 
+import Time exposing (Time)
+import Time.DateTime as DateTime exposing (DateTime)
+import Time.Date as Date exposing (Date)
 import Html exposing (Html, form, div, span, label, input, button, text, ul, li, i)
 import Html.Attributes exposing (class, type_, placeholder, value, autofocus, disabled, name, checked)
 import Html.Events exposing (onInput, onSubmit)
@@ -27,6 +32,13 @@ type alias StoryTask =
     , rank : Int
     , completedOn : Maybe String
     , scheduledOn : String
+    }
+
+
+type alias CurrentDates =
+    { today : String
+    , tomorrow : String
+    , future : String
     }
 
 
@@ -50,6 +62,18 @@ makeNewTask sequence label count scheduledOn =
     , completedOn = Nothing
     , scheduledOn = scheduledOn
     }
+
+
+timeToCurrentDates : Time -> CurrentDates
+timeToCurrentDates time =
+    let
+        today =
+            DateTime.fromTimestamp time |> DateTime.date
+    in
+        { today = Date.toISO8601 today
+        , tomorrow = Date.toISO8601 <| Date.addDays 1 today
+        , future = Date.toISO8601 <| Date.addDays 30 today
+        }
 
 
 
@@ -83,51 +107,72 @@ storyTaskForm currentLabel addTaskMsg updateTaskMsg =
         ]
 
 
-storyTasksView : String -> List StoryTask -> Html msg
-storyTasksView today tasks =
+storyTasksView : CurrentDates -> List StoryTask -> Html msg
+storyTasksView dates tasks =
     if List.isEmpty tasks then
         div [] []
     else
         div [ class "card" ]
             [ ul [ class "list-group list-group-flush" ]
-                (List.map (oneTaskView today) tasks)
+                (List.map (oneTaskView dates) tasks)
             ]
 
 
-oneTaskView : String -> StoryTask -> Html msg
-oneTaskView today task =
-    li [ class "list-group-item d-flex flex-column align-items-start" ]
-        [ div [ class " w-100 d-flex justify-content-between" ]
-            [ span []
-                [ i [ class "fa fa-circle text-info mr-2" ] []
-                , text task.label
-                ]
-            , div []
-                [ div [ class "btn-group" ]
-                    [ button
-                        [ class "btn btn-sm btn-outline-success"
-                        , type_ "button"
+oneTaskView : CurrentDates -> StoryTask -> Html msg
+oneTaskView dates task =
+    let
+        scheduled =
+            if task.scheduledOn <= dates.today then
+                ScheduledToday
+            else if task.scheduledOn == dates.tomorrow then
+                ScheduledTomorrow
+            else
+                ScheduledLater
+    in
+        li [ class "list-group-item d-flex flex-column align-items-start" ]
+            [ div [ class " w-100 d-flex justify-content-between" ]
+                [ span [] [ text task.label ]
+                , div []
+                    [ div [ class "btn-group" ]
+                        [ scheduleButton ScheduledToday scheduled
+                        , scheduleButton ScheduledTomorrow scheduled
+                        , scheduleButton ScheduledLater scheduled
                         ]
-                        [ text "Today" ]
                     , button
-                        [ class "btn btn-sm btn-outline-info"
+                        [ class "btn btn-sm btn-outline-danger ml-4"
                         , type_ "button"
                         ]
-                        [ text "Tomorrow" ]
-                    , button
-                        [ class "btn btn-sm btn-outline-secondary"
-                        , type_ "button"
-                        ]
-                        [ text "Later" ]
+                        [ i [ class "fa fa-check" ] [] ]
                     ]
-                , button
-                    [ class "btn btn-sm btn-outline-danger ml-5"
-                    , type_ "button"
-                    ]
-                    [ i [ class "fa fa-check" ] [] ]
                 ]
             ]
-        ]
+
+
+scheduleButton : Scheduled -> Scheduled -> Html msg
+scheduleButton option current =
+    let
+        ( level, label ) =
+            case option of
+                ScheduledToday ->
+                    ( "btn-outline-success", "Today" )
+
+                ScheduledTomorrow ->
+                    ( "btn-outline-info", "Tomorrow" )
+
+                ScheduledLater ->
+                    ( "btn-outline-secondary", "Later" )
+
+        active =
+            if option == current then
+                " active"
+            else
+                ""
+    in
+        button
+            [ class <| "btn btn-sm " ++ level ++ active
+            , type_ "button"
+            ]
+            [ text label ]
 
 
 
