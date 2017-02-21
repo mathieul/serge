@@ -40,7 +40,7 @@ type alias StoryTask =
 type alias CurrentDates =
     { today : String
     , tomorrow : String
-    , future : String
+    , later : String
     }
 
 
@@ -78,7 +78,7 @@ timeToCurrentDates timeZone time =
     in
         { today = Date.toISO8601 today
         , tomorrow = Date.toISO8601 <| Date.addDays 1 today
-        , future = Date.toISO8601 <| Date.addDays 30 today
+        , later = Date.toISO8601 <| Date.addDays 30 today
         }
 
 

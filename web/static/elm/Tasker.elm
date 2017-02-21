@@ -169,7 +169,7 @@ update msg model =
                                 model.currentTaskSeq
                                 model.currentTaskLabel
                                 (List.length model.tasks)
-                                model.currentDates.future
+                                model.currentDates.later
 
                         request =
                             StoryTask.makeTaskRequest newTask
