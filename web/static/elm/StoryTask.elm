@@ -13,6 +13,8 @@ module StoryTask
 
 import Time exposing (Time)
 import Time.DateTime as DateTime exposing (DateTime)
+import Time.TimeZone exposing (TimeZone)
+import Time.ZonedDateTime as ZonedDateTime
 import Time.Date as Date exposing (Date)
 import Html exposing (Html, form, div, span, label, input, button, text, ul, li, i)
 import Html.Attributes exposing (class, type_, placeholder, value, autofocus, disabled, name, checked)
@@ -64,11 +66,15 @@ makeNewTask sequence label count scheduledOn =
     }
 
 
-timeToCurrentDates : Time -> CurrentDates
-timeToCurrentDates time =
+timeToCurrentDates : TimeZone -> Time -> CurrentDates
+timeToCurrentDates timeZone time =
     let
+        now =
+            DateTime.fromTimestamp time
+                |> ZonedDateTime.fromDateTime timeZone
+
         today =
-            DateTime.fromTimestamp time |> DateTime.date
+            Date.date (ZonedDateTime.year now) (ZonedDateTime.month now) (ZonedDateTime.day now)
     in
         { today = Date.toISO8601 today
         , tomorrow = Date.toISO8601 <| Date.addDays 1 today

@@ -5,14 +5,13 @@ export default class TaskerInterface {
   }
 
   start() {
-    setTimeout(() => setupPorts(this.app), 0)
+    setupPorts(this.app)
   }
 }
 
 function setupPorts(app) {
-  // subscribe to Elm commands
-  // app.ports.check.subscribe((param1, param2) => console.log(param1, param2))
-
-  // send to Elm, received as subscription
-  // app.ports.doSomething.send("string", 42)
+  app.ports.getTimeZone.subscribe(function () {
+    const { timeZone } = Intl.DateTimeFormat().resolvedOptions()
+    app.ports.setTimeZone.send(timeZone)
+  })
 }

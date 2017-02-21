@@ -1,6 +1,8 @@
 port module Tasker exposing (main)
 
 import Time exposing (Time)
+import Time.TimeZone exposing (TimeZone)
+import Time.TimeZones as TimeZones
 import Task
 import Html exposing (Html, div, span, text, nav, button, a, ul, li, h2, h4, small)
 import Html.Attributes exposing (class, href, type_, placeholder, value)
@@ -38,6 +40,7 @@ type alias Model =
     { config : AppConfig
     , message : AppMessage
     , currentDates : StoryTask.CurrentDates
+    , timeZone : TimeZone
     , currentTaskLabel : String
     , currentTaskSeq : Int
     , tasks : List StoryTask
@@ -59,6 +62,7 @@ type Msg
     | UpdateCurrentTask String
     | AddCurrentTask
     | UpdateCurrentDates Time
+    | SetTimeZone String
 
 
 type AppMessage
@@ -81,6 +85,7 @@ init rawConfig =
         , Cmd.batch
             [ Task.perform UpdateCurrentDates Time.now
             , Http.send FetchTasks request
+            , getTimeZone ()
             ]
         )
 
@@ -99,10 +104,21 @@ initialModel rawConfig =
     { config = initialAppConfig rawConfig
     , message = MessageNone
     , currentDates = StoryTask.CurrentDates "" "" ""
+    , timeZone = TimeZones.utc ()
     , currentTaskLabel = ""
     , currentTaskSeq = 1
     , tasks = []
     }
+
+
+
+-- PORTS
+
+
+port getTimeZone : () -> Cmd msg
+
+
+port setTimeZone : (String -> msg) -> Sub msg
 
 
 
@@ -111,7 +127,10 @@ initialModel rawConfig =
 
 subscriptions : Model -> Sub Msg
 subscriptions _ =
-    Time.every Time.minute UpdateCurrentDates
+    Sub.batch
+        [ setTimeZone SetTimeZone
+        , Time.every Time.minute UpdateCurrentDates
+        ]
 
 
 
@@ -126,6 +145,14 @@ update msg model =
 
         ClearMessage ->
             { model | message = MessageNone } ! []
+
+        SetTimeZone name ->
+            let
+                timeZone =
+                    TimeZones.fromName name
+                        |> Maybe.withDefault (TimeZones.utc ())
+            in
+                { model | timeZone = timeZone } ! []
 
         UpdateCurrentTask label ->
             { model | currentTaskLabel = label } ! []
@@ -214,7 +241,7 @@ httpErrorToMessage error =
 
 updateCurrentDatesFromTime : Time -> Model -> Model
 updateCurrentDatesFromTime time model =
-    { model | currentDates = StoryTask.timeToCurrentDates time }
+    { model | currentDates = StoryTask.timeToCurrentDates model.timeZone time }
 
 
 
