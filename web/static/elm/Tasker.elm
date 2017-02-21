@@ -58,6 +58,7 @@ type alias AppConfig =
 type Msg
     = FetchTasks (Result Http.Error (List StoryTask))
     | CreateTask (Result Http.Error CreateTaskResponse)
+    | UpdateTask (Result Http.Error StoryTask)
     | ClearMessage
     | UpdateCurrentTask String
     | AddCurrentTask
@@ -78,17 +79,13 @@ type AppMessage
 
 init : ConfigFromJs -> ( Model, Cmd Msg )
 init rawConfig =
-    let
-        request =
-            StoryTask.fetchTasksRequest
-    in
-        ( initialModel rawConfig
-        , Cmd.batch
-            [ Task.perform UpdateCurrentDates Time.now
-            , Http.send FetchTasks request
-            , getTimeZone ()
-            ]
-        )
+    ( initialModel rawConfig
+    , Cmd.batch
+        [ Task.perform UpdateCurrentDates Time.now
+        , Http.send FetchTasks StoryTask.fetchTasksRequest
+        , getTimeZone ()
+        ]
+    )
 
 
 initialAppConfig : ConfigFromJs -> AppConfig
@@ -171,16 +168,13 @@ update msg model =
                                 model.currentTaskLabel
                                 (List.length model.tasks)
                                 model.currentDates.later
-
-                        request =
-                            StoryTask.makeTaskRequest newTask
                     in
                         ( { model
                             | tasks = List.append model.tasks [ newTask ]
                             , currentTaskLabel = ""
                             , currentTaskSeq = model.currentTaskSeq + 1
                           }
-                        , Http.send CreateTask request
+                        , Http.send CreateTask <| StoryTask.makeTaskRequest newTask
                         )
 
         FetchTasks (Ok tasks) ->
@@ -194,18 +188,7 @@ update msg model =
             )
 
         CreateTask (Ok response) ->
-            let
-                tasks =
-                    List.map
-                        (\item ->
-                            if item.id == response.tid then
-                                response.task
-                            else
-                                item
-                        )
-                        model.tasks
-            in
-                { model | tasks = tasks } ! []
+            { model | tasks = replaceTask response.tid response.task model.tasks } ! []
 
         CreateTask (Err error) ->
             ( { model
@@ -215,11 +198,29 @@ update msg model =
             )
 
         RequestTaskUpdate task ->
-            let
-                _ =
-                    Debug.log "RequestTaskUpdate" task
-            in
-                model ! []
+            model ! [ Http.send UpdateTask <| StoryTask.updateTaskRequest task ]
+
+        UpdateTask (Ok task) ->
+            { model | tasks = replaceTask task.id task model.tasks } ! []
+
+        UpdateTask (Err error) ->
+            ( { model
+                | message = MessageError <| "Updating the task failed: " ++ (httpErrorToMessage error)
+              }
+            , Cmd.none
+            )
+
+
+replaceTask : String -> StoryTask -> List StoryTask -> List StoryTask
+replaceTask id task tasks =
+    List.map
+        (\item ->
+            if item.id == id then
+                task
+            else
+                item
+        )
+        tasks
 
 
 httpErrorToMessage : Http.Error -> String

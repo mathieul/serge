@@ -9,6 +9,7 @@ module StoryTask
         , storyTasksView
         , fetchTasksRequest
         , makeTaskRequest
+        , updateTaskRequest
         )
 
 import Time exposing (Time)
@@ -229,6 +230,11 @@ createTaskResponseDecoder =
         |> JD.at [ "data", "createTask" ]
 
 
+taskResponseDecoder : JD.Decoder StoryTask
+taskResponseDecoder =
+    JD.at [ "data", "updateTask" ] taskDecoder
+
+
 
 -- API
 
@@ -300,3 +306,37 @@ makeTaskRequest task =
                 |> Http.jsonBody
     in
         Http.post graphqlUrl body createTaskResponseDecoder
+
+
+updateTaskMutation : String
+updateTaskMutation =
+    """
+  mutation($id: ID!, $scheduledOn: String!) {
+    updateTask(id: $id, scheduledOn: $scheduledOn) {
+      id
+      label
+      rank
+      completedOn
+      scheduledOn
+    }
+  }
+  """
+
+
+updateTaskRequest : StoryTask -> Http.Request StoryTask
+updateTaskRequest task =
+    let
+        variables =
+            JE.object
+                [ ( "id", JE.string task.id )
+                , ( "scheduledOn", JE.string task.scheduledOn )
+                ]
+
+        body =
+            JE.object
+                [ ( "query", JE.string updateTaskMutation )
+                , ( "variables", variables )
+                ]
+                |> Http.jsonBody
+    in
+        Http.post graphqlUrl body taskResponseDecoder

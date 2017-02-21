@@ -36,5 +36,12 @@ defmodule Serge.Schema do
 
       resolve &Resolvers.Task.create/3
     end
+
+    field :update_task, :task do
+      arg :id, non_null(:id)
+      arg :scheduled_on, :string
+
+      resolve &Resolvers.Task.update/3
+    end
   end
 end

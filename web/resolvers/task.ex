@@ -32,4 +32,17 @@ defmodule Serge.Resolvers.Task do
         { :error, changeset.errors }
     end
   end
+
+  def update(_parent, attributes, _info) do
+    task = Repo.get!(Task, attributes[:id])
+    changeset = Task.changeset(task, attributes)
+
+    case Repo.update(changeset) do
+      { :error, changeset } ->
+        { :error, changeset.errors }
+
+      success ->
+        success
+    end
+  end
 end
