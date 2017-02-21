@@ -12,12 +12,7 @@ defmodule Serge.HomeController do
       "id"           => current_user.id,
       "name"         => current_user.name,
       "email"        => current_user.email,
-      "access_token" => access_token,
-      "today"        => today()
+      "access_token" => access_token
     }
-  end
-
-  defp today do
-    Timex.local |> Timex.format!("%Y-%m-%d", :strftime)
   end
 end

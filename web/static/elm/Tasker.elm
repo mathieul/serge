@@ -1,8 +1,9 @@
 port module Tasker exposing (main)
 
 import Time exposing (Time)
-import Date
-import Date.Format
+import Time.DateTime as DateTime exposing (DateTime)
+import Time.Date as Date exposing (Date)
+import Task
 import Html exposing (Html, div, span, text, nav, button, a, ul, li, h2, h4, small)
 import Html.Attributes exposing (class, href, type_, placeholder, value)
 import Html.Events exposing (onClick)
@@ -32,13 +33,13 @@ type alias ConfigFromJs =
     , name : String
     , email : String
     , access_token : String
-    , today : String
     }
 
 
 type alias Model =
     { config : AppConfig
     , message : AppMessage
+    , currentDates : CurrentDates
     , currentTaskLabel : String
     , currentTaskSeq : Int
     , tasks : List StoryTask
@@ -50,7 +51,13 @@ type alias AppConfig =
     , name : String
     , email : String
     , accessToken : String
-    , today : String
+    }
+
+
+type alias CurrentDates =
+    { today : String
+    , tomorrow : String
+    , future : String
     }
 
 
@@ -60,7 +67,7 @@ type Msg
     | ClearMessage
     | UpdateCurrentTask String
     | AddCurrentTask
-    | UpdateCurrentDate Time
+    | UpdateCurrentDates Time
 
 
 type AppMessage
@@ -80,7 +87,10 @@ init rawConfig =
             StoryTask.fetchTasksRequest
     in
         ( initialModel rawConfig
-        , Http.send FetchTasks request
+        , Cmd.batch
+            [ Task.perform UpdateCurrentDates Time.now
+            , Http.send FetchTasks request
+            ]
         )
 
 
@@ -90,7 +100,6 @@ initialAppConfig rawConfig =
     , name = rawConfig.name
     , email = rawConfig.email
     , accessToken = rawConfig.access_token
-    , today = rawConfig.today
     }
 
 
@@ -98,6 +107,7 @@ initialModel : ConfigFromJs -> Model
 initialModel rawConfig =
     { config = initialAppConfig rawConfig
     , message = MessageNone
+    , currentDates = CurrentDates "" "" ""
     , currentTaskLabel = ""
     , currentTaskSeq = 1
     , tasks = []
@@ -110,7 +120,7 @@ initialModel rawConfig =
 
 subscriptions : Model -> Sub Msg
 subscriptions _ =
-    Time.every Time.minute UpdateCurrentDate
+    Time.every Time.minute UpdateCurrentDates
 
 
 
@@ -120,8 +130,8 @@ subscriptions _ =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        UpdateCurrentDate time ->
-            ( updateTodayFromTime time model, Cmd.none )
+        UpdateCurrentDates time ->
+            ( updateCurrentDatesFromTime time model, Cmd.none )
 
         ClearMessage ->
             { model | message = MessageNone } ! []
@@ -141,7 +151,7 @@ update msg model =
                                 model.currentTaskSeq
                                 model.currentTaskLabel
                                 (List.length model.tasks)
-                                model.config.today
+                                model.currentDates.future
 
                         request =
                             StoryTask.makeTaskRequest newTask
@@ -211,21 +221,19 @@ httpErrorToMessage error =
             (toString error)
 
 
-updateTodayFromTime : Time -> Model -> Model
-updateTodayFromTime time model =
+updateCurrentDatesFromTime : Time -> Model -> Model
+updateCurrentDatesFromTime time model =
     let
         today =
-            time
-                |> Date.fromTime
-                |> Date.Format.format "%Y-%m-%d"
-
-        config =
-            model.config
-
-        newConfig =
-            { config | today = today }
+            DateTime.fromTimestamp time |> DateTime.date
     in
-        { model | config = newConfig }
+        { model
+            | currentDates =
+                { today = Date.toISO8601 today
+                , tomorrow = Date.toISO8601 <| Date.addDays 1 today
+                , future = Date.toISO8601 <| Date.addDays 30 today
+                }
+        }
 
 
 
@@ -256,7 +264,7 @@ view model =
                     ]
                 , span
                     [ class "navbar-text pull-right mr-3" ]
-                    [ text model.config.today ]
+                    [ text model.currentDates.today ]
                 , span
                     [ class "pull-right" ]
                     [ a
@@ -318,7 +326,7 @@ cardBody model =
             model.currentTaskLabel
             AddCurrentTask
             UpdateCurrentTask
-        , StoryTask.storyTasksView model.config.today model.tasks
+        , StoryTask.storyTasksView model.currentDates.today model.tasks
         ]
 
 
