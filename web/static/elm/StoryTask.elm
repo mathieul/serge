@@ -3,8 +3,10 @@ module StoryTask
         ( StoryTask
         , CreateTaskResponse
         , CurrentDates
+        , Scheduled(..)
         , makeNewTask
         , timeToCurrentDates
+        , taskSchedule
         , storyTaskForm
         , storyTasksView
         , fetchTasksRequest
@@ -129,12 +131,7 @@ oneTaskView : CurrentDates -> (StoryTask -> msg) -> StoryTask -> Html msg
 oneTaskView dates msg task =
     let
         scheduled =
-            if task.scheduledOn <= dates.today then
-                ScheduledToday
-            else if task.scheduledOn == dates.tomorrow then
-                ScheduledTomorrow
-            else
-                ScheduledLater
+            taskSchedule dates task
     in
         li [ class "list-group-item d-flex flex-column align-items-start" ]
             [ div [ class " w-100 d-flex justify-content-between" ]
@@ -159,6 +156,16 @@ oneTaskView dates msg task =
                     ]
                 ]
             ]
+
+
+taskSchedule : CurrentDates -> StoryTask -> Scheduled
+taskSchedule dates task =
+    if task.scheduledOn <= dates.today then
+        ScheduledToday
+    else if task.scheduledOn == dates.tomorrow then
+        ScheduledTomorrow
+    else
+        ScheduledLater
 
 
 changeSchedule : (StoryTask -> msg) -> String -> StoryTask -> msg

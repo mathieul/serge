@@ -45,6 +45,7 @@ type alias Model =
     , currentTaskLabel : String
     , currentTaskSeq : Int
     , tasks : List StoryTask
+    , taskSelection : TaskScheduleSelection
     }
 
 
@@ -66,12 +67,20 @@ type Msg
     | UpdateCurrentDates Time
     | SetTimeZone String
     | RequestTaskUpdate StoryTask
+    | ChangeTaskScheduleSelection TaskScheduleSelection
 
 
 type AppMessage
     = MessageNone
     | MessageNotice String
     | MessageError String
+
+
+type TaskScheduleSelection
+    = TaskScheduleAll
+    | TaskScheduleToday
+    | TaskScheduleTomorrow
+    | TaskScheduleLater
 
 
 
@@ -107,6 +116,7 @@ initialModel rawConfig =
     , currentTaskLabel = ""
     , currentTaskSeq = 1
     , tasks = []
+    , taskSelection = TaskScheduleAll
     }
 
 
@@ -210,6 +220,9 @@ update msg model =
               }
             , Cmd.none
             )
+
+        ChangeTaskScheduleSelection selection ->
+            { model | taskSelection = selection } ! []
 
 
 replaceTask : String -> StoryTask -> List StoryTask -> List StoryTask
@@ -315,52 +328,86 @@ taskForm model =
                 model.currentTaskLabel
                 AddCurrentTask
                 UpdateCurrentTask
-            , taskList model.currentDates model.tasks
+            , taskList model.currentDates model.taskSelection model.tasks
             ]
         ]
 
 
-taskList : StoryTask.CurrentDates -> List StoryTask -> Html Msg
-taskList dates tasks =
+taskList : StoryTask.CurrentDates -> TaskScheduleSelection -> List StoryTask -> Html Msg
+taskList dates selection tasks =
     let
+        selectedTasks =
+            case selection of
+                TaskScheduleAll ->
+                    tasks
+
+                TaskScheduleToday ->
+                    List.filter (\task -> (StoryTask.taskSchedule dates task) == StoryTask.ScheduledToday) tasks
+
+                TaskScheduleTomorrow ->
+                    List.filter (\task -> (StoryTask.taskSchedule dates task) == StoryTask.ScheduledTomorrow) tasks
+
+                TaskScheduleLater ->
+                    List.filter (\task -> (StoryTask.taskSchedule dates task) == StoryTask.ScheduledLater) tasks
+
         footer =
-            String.Extra.pluralize "task" "tasks" (List.length tasks)
+            String.Extra.pluralize "task" "tasks" (List.length selectedTasks)
     in
         div [ class "card mt-3" ]
-            [ cardHeader
+            [ taskSelectionTabs selection
             , div [ class "card-block" ]
-                [ StoryTask.storyTasksView dates RequestTaskUpdate tasks ]
+                [ StoryTask.storyTasksView dates RequestTaskUpdate selectedTasks ]
             , div [ class "card-footer text-muted" ]
                 [ text footer ]
             ]
 
 
-cardHeader : Html Msg
-cardHeader =
+taskSelectionTabs : TaskScheduleSelection -> Html Msg
+taskSelectionTabs selection =
     div [ class "card-header" ]
         [ ul [ class "nav nav-tabs card-header-tabs" ]
             [ li [ class "nav-item" ]
                 [ a
-                    [ class "nav-link active", href "#" ]
+                    [ class <| "nav-link" ++ (valueIfMatch selection TaskScheduleAll " active")
+                    , href "#"
+                    , onClick (ChangeTaskScheduleSelection TaskScheduleAll)
+                    ]
                     [ text "All" ]
                 ]
             , li [ class "nav-item" ]
                 [ a
-                    [ class "nav-link", href "#" ]
+                    [ class <| "nav-link" ++ (valueIfMatch selection TaskScheduleToday " active")
+                    , href "#"
+                    , onClick (ChangeTaskScheduleSelection TaskScheduleToday)
+                    ]
                     [ text "Today" ]
                 ]
             , li [ class "nav-item" ]
                 [ a
-                    [ class "nav-link", href "#" ]
+                    [ class <| "nav-link" ++ (valueIfMatch selection TaskScheduleTomorrow " active")
+                    , href "#"
+                    , onClick (ChangeTaskScheduleSelection TaskScheduleTomorrow)
+                    ]
                     [ text "Tomorrow" ]
                 ]
             , li [ class "nav-item" ]
                 [ a
-                    [ class "nav-link", href "#" ]
+                    [ class <| "nav-link" ++ (valueIfMatch selection TaskScheduleLater " active")
+                    , href "#"
+                    , onClick (ChangeTaskScheduleSelection TaskScheduleLater)
+                    ]
                     [ text "Later" ]
                 ]
             ]
         ]
+
+
+valueIfMatch : a -> a -> String -> String
+valueIfMatch a b value =
+    if a == b then
+        value
+    else
+        ""
 
 
 messageView : AppMessage -> Html Msg
