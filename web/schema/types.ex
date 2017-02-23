@@ -15,7 +15,7 @@ defmodule Serge.Schema.Types do
     field :label, :string
     field :rank, :integer
     field :user, :user
-    field :completed_on, :date
+    field :completed, :bool
     field :scheduled_on, :date
   end
 

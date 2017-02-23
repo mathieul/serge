@@ -1,7 +1,6 @@
 module StoryTask
     exposing
         ( StoryTask
-        , CreateTaskResponse
         , CurrentDates
         , Scheduled(..)
         , makeNewTask
@@ -9,9 +8,6 @@ module StoryTask
         , taskSchedule
         , storyTaskForm
         , storyTasksView
-        , fetchTasksRequest
-        , makeTaskRequest
-        , updateTaskRequest
         )
 
 import Time exposing (Time)
@@ -22,10 +18,6 @@ import Time.Date as Date exposing (Date)
 import Html exposing (Html, form, div, span, label, input, button, text, ul, li, i)
 import Html.Attributes exposing (class, type_, placeholder, value, autofocus, disabled, name, checked)
 import Html.Events exposing (onInput, onSubmit, onClick)
-import Json.Encode as JE
-import Json.Decode as JD
-import Json.Decode.Pipeline as JP
-import Http
 
 
 -- MODEL
@@ -35,7 +27,7 @@ type alias StoryTask =
     { id : String
     , label : String
     , rank : Int
-    , completedOn : Maybe String
+    , completed : Bool
     , scheduledOn : String
     }
 
@@ -53,18 +45,12 @@ type Scheduled
     | ScheduledLater
 
 
-type alias CreateTaskResponse =
-    { tid : String
-    , task : StoryTask
-    }
-
-
 makeNewTask : Int -> String -> Int -> String -> StoryTask
 makeNewTask sequence label count scheduledOn =
     { id = "TMP:" ++ (toString sequence)
     , label = label
     , rank = count + 1
-    , completedOn = Nothing
+    , completed = False
     , scheduledOn = scheduledOn
     }
 
@@ -200,150 +186,3 @@ scheduleButton option current msg =
             , onClick msg
             ]
             [ text label ]
-
-
-
--- DECODERS / ENCODERS
-
-
-taskDecoder : JD.Decoder StoryTask
-taskDecoder =
-    JP.decode StoryTask
-        |> JP.required "id" JD.string
-        |> JP.required "label" JD.string
-        |> JP.required "rank" JD.int
-        |> JP.required "completedOn" (nullOr JD.string)
-        |> JP.required "scheduledOn" JD.string
-
-
-nullOr : JD.Decoder a -> JD.Decoder (Maybe a)
-nullOr decoder =
-    JD.oneOf
-        [ JD.null Nothing
-        , JD.map Just decoder
-        ]
-
-
-tasksResponseDecoder : JD.Decoder (List StoryTask)
-tasksResponseDecoder =
-    JD.at [ "data", "tasks" ] (JD.list taskDecoder)
-
-
-createTaskResponseDecoder : JD.Decoder CreateTaskResponse
-createTaskResponseDecoder =
-    JP.decode CreateTaskResponse
-        |> JP.required "tid" JD.string
-        |> JP.required "task" taskDecoder
-        |> JD.at [ "data", "createTask" ]
-
-
-taskResponseDecoder : JD.Decoder StoryTask
-taskResponseDecoder =
-    JD.at [ "data", "updateTask" ] taskDecoder
-
-
-
--- API
-
-
-graphqlUrl : String
-graphqlUrl =
-    "/graphql"
-
-
-fetchTasksQuery : String
-fetchTasksQuery =
-    """
-    query {
-      tasks {
-        id
-        label
-        rank
-        completedOn
-        scheduledOn
-      }
-    }
-  """
-
-
-fetchTasksRequest : Http.Request (List StoryTask)
-fetchTasksRequest =
-    let
-        body =
-            JE.object [ ( "query", JE.string fetchTasksQuery ) ]
-                |> Http.jsonBody
-    in
-        Http.post graphqlUrl body tasksResponseDecoder
-
-
-makeTaskMutation : String
-makeTaskMutation =
-    """
-    mutation($tid: String!, $label: String!, $position: Int!, $scheduledOn: String!) {
-      createTask(tid: $tid, label:$label, position:$position, scheduledOn: $scheduledOn) {
-        tid
-        task {
-          id
-          label
-          rank
-          completedOn
-          scheduledOn
-        }
-      }
-    }
-  """
-
-
-makeTaskRequest : StoryTask -> Http.Request CreateTaskResponse
-makeTaskRequest task =
-    let
-        variables =
-            JE.object
-                [ ( "tid", JE.string task.id )
-                , ( "label", JE.string task.label )
-                , ( "position", JE.int task.rank )
-                , ( "scheduledOn", JE.string task.scheduledOn )
-                ]
-
-        body =
-            JE.object
-                [ ( "query", JE.string makeTaskMutation )
-                , ( "variables", variables )
-                ]
-                |> Http.jsonBody
-    in
-        Http.post graphqlUrl body createTaskResponseDecoder
-
-
-updateTaskMutation : String
-updateTaskMutation =
-    """
-  mutation($id: ID!, $scheduledOn: String!) {
-    updateTask(id: $id, scheduledOn: $scheduledOn) {
-      id
-      label
-      rank
-      completedOn
-      scheduledOn
-    }
-  }
-  """
-
-
-updateTaskRequest : StoryTask -> Http.Request StoryTask
-updateTaskRequest task =
-    let
-        variables =
-            JE.object
-                [ ( "id", JE.string task.id )
-                , ( "scheduledOn", JE.string task.scheduledOn )
-                ]
-
-        body =
-            JE.object
-                [ ( "query", JE.string updateTaskMutation )
-                , ( "variables", variables )
-                ]
-                |> Http.jsonBody
-    in
-        Http.post graphqlUrl body taskResponseDecoder

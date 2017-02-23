@@ -9,7 +9,8 @@ import Html.Attributes exposing (class, href, type_, placeholder, value)
 import Html.Events exposing (onClick)
 import Http
 import String.Extra
-import StoryTask exposing (StoryTask, CreateTaskResponse)
+import StoryTask exposing (StoryTask)
+import Api exposing (CreateTaskResponse)
 
 
 -- MAIN
@@ -92,7 +93,7 @@ init rawConfig =
     ( initialModel rawConfig
     , Cmd.batch
         [ Task.perform UpdateCurrentDates Time.now
-        , Http.send FetchTasks StoryTask.fetchTasksRequest
+        , Http.send FetchTasks Api.fetchTasksRequest
         , getTimeZone ()
         ]
     )
@@ -185,7 +186,7 @@ update msg model =
                             , currentTaskLabel = ""
                             , currentTaskSeq = model.currentTaskSeq + 1
                           }
-                        , Http.send CreateTask <| StoryTask.makeTaskRequest newTask
+                        , Http.send CreateTask <| Api.makeTaskRequest newTask
                         )
 
         FetchTasks (Ok tasks) ->
@@ -209,7 +210,7 @@ update msg model =
             )
 
         RequestTaskUpdate task ->
-            model ! [ Http.send UpdateTask <| StoryTask.updateTaskRequest task ]
+            model ! [ Http.send UpdateTask <| Api.updateTaskRequest task ]
 
         UpdateTask (Ok task) ->
             { model | tasks = replaceTask task.id task model.tasks } ! []
