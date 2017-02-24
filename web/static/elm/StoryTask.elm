@@ -112,7 +112,8 @@ storyTasksView dates msg showCompleted tasks =
                 List.filter (\task -> not task.completed) tasks
     in
         if List.isEmpty tasksToShow then
-            div [] []
+            div [ class "alert alert-info mt-3" ]
+                [ text "No tasks found." ]
         else
             div [ class "card" ]
                 [ ul [ class "list-group list-group-flush" ]
