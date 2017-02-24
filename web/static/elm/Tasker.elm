@@ -119,7 +119,7 @@ initialModel rawConfig =
     , currentTaskLabel = ""
     , currentTaskSeq = 1
     , tasks = []
-    , taskSelection = TaskScheduleAll
+    , taskSelection = TaskScheduleToday
     , showCompleted = False
     }
 
@@ -430,10 +430,10 @@ taskSelectionTabs selection =
         tabs =
             List.map
                 tab
-                [ ( TaskScheduleAll, "All" )
-                , ( TaskScheduleToday, "Today" )
+                [ ( TaskScheduleToday, "Today" )
                 , ( TaskScheduleTomorrow, "Tomorrow" )
                 , ( TaskScheduleLater, "Later" )
+                , ( TaskScheduleAll, "All" )
                 ]
     in
         div [ class "card-header" ]
