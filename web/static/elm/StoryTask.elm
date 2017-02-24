@@ -4,6 +4,7 @@ module StoryTask
         , CurrentDates
         , Scheduled(..)
         , makeNewTask
+        , makeEmptyCurrentDates
         , timeToCurrentDates
         , taskSchedule
         , storyTaskForm
@@ -33,14 +34,16 @@ type alias StoryTask =
 
 
 type alias CurrentDates =
-    { today : String
+    { yesterday : String
+    , today : String
     , tomorrow : String
     , later : String
     }
 
 
 type Scheduled
-    = ScheduledToday
+    = ScheduledYesterday
+    | ScheduledToday
     | ScheduledTomorrow
     | ScheduledLater
 
@@ -55,6 +58,11 @@ makeNewTask sequence label count scheduledOn =
     }
 
 
+makeEmptyCurrentDates : CurrentDates
+makeEmptyCurrentDates =
+    CurrentDates "" "" "" ""
+
+
 timeToCurrentDates : TimeZone -> Time -> CurrentDates
 timeToCurrentDates timeZone time =
     let
@@ -65,7 +73,8 @@ timeToCurrentDates timeZone time =
         today =
             Date.date (ZonedDateTime.year now) (ZonedDateTime.month now) (ZonedDateTime.day now)
     in
-        { today = Date.toISO8601 today
+        { yesterday = Date.toISO8601 <| Date.addDays -1 today
+        , today = Date.toISO8601 today
         , tomorrow = Date.toISO8601 <| Date.addDays 1 today
         , later = Date.toISO8601 <| Date.addDays 30 today
         }
@@ -102,8 +111,8 @@ storyTaskForm currentLabel addTaskMsg updateTaskMsg =
         ]
 
 
-storyTasksView : CurrentDates -> (StoryTask -> msg) -> Bool -> List StoryTask -> Html msg
-storyTasksView dates msg showCompleted tasks =
+storyTasksView : CurrentDates -> (StoryTask -> msg) -> Bool -> Bool -> List StoryTask -> Html msg
+storyTasksView dates msg showCompleted allowYesterday tasks =
     let
         tasksToShow =
             if showCompleted then
@@ -117,12 +126,12 @@ storyTasksView dates msg showCompleted tasks =
         else
             div [ class "card" ]
                 [ ul [ class "list-group list-group-flush" ]
-                    (List.map (oneTaskView dates msg) tasksToShow)
+                    (List.map (oneTaskView dates msg allowYesterday) tasksToShow)
                 ]
 
 
-oneTaskView : CurrentDates -> (StoryTask -> msg) -> StoryTask -> Html msg
-oneTaskView dates msg task =
+oneTaskView : CurrentDates -> (StoryTask -> msg) -> Bool -> StoryTask -> Html msg
+oneTaskView dates msg allowYesterday task =
     let
         scheduled =
             taskSchedule dates task
@@ -133,21 +142,40 @@ oneTaskView dates msg task =
             else
                 span [] [ text task.label ]
 
+        commonScheduleButtons =
+            [ scheduleButton ScheduledToday
+                scheduled
+                (changeSchedule msg dates.today task)
+            , scheduleButton ScheduledTomorrow
+                scheduled
+                (changeSchedule msg dates.tomorrow task)
+            , scheduleButton ScheduledLater
+                scheduled
+                (changeSchedule msg dates.later task)
+            ]
+
+        scheduleButtons =
+            if allowYesterday then
+                (scheduleButton
+                    ScheduledYesterday
+                    scheduled
+                    (changeSchedule msg dates.yesterday task)
+                )
+                    :: commonScheduleButtons
+            else if scheduled == ScheduledYesterday then
+                (div
+                    [ class "badge badge-pill badge-danger mr-3" ]
+                    [ text "late" ]
+                )
+                    :: commonScheduleButtons
+            else
+                commonScheduleButtons
+
         scheduleControls =
             if task.completed then
                 div [] []
             else
-                div [ class "btn-group" ]
-                    [ scheduleButton ScheduledToday
-                        scheduled
-                        (changeSchedule msg dates.today task)
-                    , scheduleButton ScheduledTomorrow
-                        scheduled
-                        (changeSchedule msg dates.tomorrow task)
-                    , scheduleButton ScheduledLater
-                        scheduled
-                        (changeSchedule msg dates.later task)
-                    ]
+                div [ class "btn-group" ] scheduleButtons
     in
         li [ class "list-group-item d-flex flex-column align-items-start" ]
             [ div [ class " w-100 d-flex justify-content-between" ]
@@ -175,7 +203,9 @@ oneTaskView dates msg task =
 
 taskSchedule : CurrentDates -> StoryTask -> Scheduled
 taskSchedule dates task =
-    if task.scheduledOn <= dates.today then
+    if task.scheduledOn < dates.today then
+        ScheduledYesterday
+    else if task.scheduledOn == dates.today then
         ScheduledToday
     else if task.scheduledOn == dates.tomorrow then
         ScheduledTomorrow
@@ -198,6 +228,9 @@ scheduleButton option current msg =
     let
         ( level, label ) =
             case option of
+                ScheduledYesterday ->
+                    ( "btn-outline-danger", "Yesterday" )
+
                 ScheduledToday ->
                     ( "btn-outline-success", "Today" )
 

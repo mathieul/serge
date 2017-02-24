@@ -114,7 +114,7 @@ initialModel : ConfigFromJs -> Model
 initialModel rawConfig =
     { config = initialAppConfig rawConfig
     , message = MessageNone
-    , currentDates = StoryTask.CurrentDates "" "" ""
+    , currentDates = StoryTask.makeEmptyCurrentDates
     , timeZone = TimeZones.utc ()
     , currentTaskLabel = ""
     , currentTaskSeq = 1
@@ -177,12 +177,23 @@ update msg model =
 
                 _ ->
                     let
+                        scheduledOn =
+                            case model.taskSelection of
+                                TaskScheduleToday ->
+                                    model.currentDates.today
+
+                                TaskScheduleTomorrow ->
+                                    model.currentDates.tomorrow
+
+                                _ ->
+                                    model.currentDates.later
+
                         newTask =
                             StoryTask.makeNewTask
                                 model.currentTaskSeq
                                 model.currentTaskLabel
                                 (List.length model.tasks)
-                                model.currentDates.later
+                                scheduledOn
                     in
                         ( { model
                             | tasks = List.append model.tasks [ newTask ]
@@ -358,7 +369,15 @@ taskList model =
                     tasks
 
                 TaskScheduleToday ->
-                    List.filter (\task -> (StoryTask.taskSchedule dates task) == StoryTask.ScheduledToday) tasks
+                    List.filter
+                        (\task ->
+                            let
+                                scheduled =
+                                    StoryTask.taskSchedule dates task
+                            in
+                                scheduled == StoryTask.ScheduledToday || scheduled == StoryTask.ScheduledYesterday
+                        )
+                        tasks
 
                 TaskScheduleTomorrow ->
                     List.filter (\task -> (StoryTask.taskSchedule dates task) == StoryTask.ScheduledTomorrow) tasks
@@ -369,7 +388,13 @@ taskList model =
         div [ class "card mt-3" ]
             [ taskSelectionTabs selection
             , div [ class "card-block" ]
-                [ StoryTask.storyTasksView dates RequestTaskUpdate model.showCompleted selectedTasks ]
+                [ StoryTask.storyTasksView
+                    dates
+                    RequestTaskUpdate
+                    model.showCompleted
+                    (selection == TaskScheduleAll)
+                    selectedTasks
+                ]
             , taskListFooter selectedTasks model
             ]
 
