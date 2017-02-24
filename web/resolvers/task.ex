@@ -14,6 +14,7 @@ defmodule Serge.Resolvers.Task do
     tasks = Task.all_ordered_for_user_id(ctx.current_user.id)
       |> Repo.all
       |> Repo.preload(:user)
+      |> Enum.map(&Task.set_virtual_fields/1)
     { :ok, tasks }
   end
 
@@ -26,7 +27,7 @@ defmodule Serge.Resolvers.Task do
     changeset = Task.changeset(%Task{}, params)
     case Repo.insert(changeset) do
       { :ok, task } ->
-        { :ok, %{ tid: tid, task: task } }
+        { :ok, %{ tid: tid, task: Task.set_virtual_fields(task) } }
 
       { :error, changeset } ->
         { :error, changeset.errors }
@@ -38,11 +39,11 @@ defmodule Serge.Resolvers.Task do
     changeset = Task.changeset(task, attributes)
 
     case Repo.update(changeset) do
+      { :ok, task } ->
+        {:ok, Task.set_virtual_fields(task) }
+
       { :error, changeset } ->
         { :error, changeset.errors }
-
-      success ->
-        success
     end
   end
 end

@@ -16,7 +16,7 @@ import Time.TimeZone exposing (TimeZone)
 import Time.ZonedDateTime as ZonedDateTime
 import Time.Date as Date exposing (Date)
 import Html exposing (Html, form, div, span, label, input, button, text, ul, li, i)
-import Html.Attributes exposing (class, type_, placeholder, value, autofocus, disabled, name, checked)
+import Html.Attributes exposing (class, classList, type_, placeholder, value, autofocus, disabled, name, checked)
 import Html.Events exposing (onInput, onSubmit, onClick)
 
 
@@ -118,25 +118,42 @@ oneTaskView dates msg task =
     let
         scheduled =
             taskSchedule dates task
+
+        label =
+            if task.completed then
+                Html.s [ class "text-muted" ] [ text task.label ]
+            else
+                span [] [ text task.label ]
+
+        scheduleControls =
+            if task.completed then
+                div [] []
+            else
+                div [ class "btn-group" ]
+                    [ scheduleButton ScheduledToday
+                        scheduled
+                        (changeSchedule msg dates.today task)
+                    , scheduleButton ScheduledTomorrow
+                        scheduled
+                        (changeSchedule msg dates.tomorrow task)
+                    , scheduleButton ScheduledLater
+                        scheduled
+                        (changeSchedule msg dates.later task)
+                    ]
     in
         li [ class "list-group-item d-flex flex-column align-items-start" ]
             [ div [ class " w-100 d-flex justify-content-between" ]
-                [ span [] [ text task.label ]
+                [ label
                 , div []
-                    [ div [ class "btn-group" ]
-                        [ scheduleButton ScheduledToday
-                            scheduled
-                            (changeSchedule msg dates.today task)
-                        , scheduleButton ScheduledTomorrow
-                            scheduled
-                            (changeSchedule msg dates.tomorrow task)
-                        , scheduleButton ScheduledLater
-                            scheduled
-                            (changeSchedule msg dates.later task)
-                        ]
+                    [ scheduleControls
                     , button
-                        [ class "btn btn-sm btn-outline-danger ml-4"
+                        [ class "btn btn-sm ml-4"
+                        , classList
+                            [ ( "btn-outline-danger", not task.completed )
+                            , ( "btn-outline-primary", task.completed )
+                            ]
                         , type_ "button"
+                        , onClick (toggleCompleted msg task)
                         ]
                         [ i [ class "fa fa-check" ] [] ]
                     ]
@@ -157,6 +174,11 @@ taskSchedule dates task =
 changeSchedule : (StoryTask -> msg) -> String -> StoryTask -> msg
 changeSchedule msg scheduledOn task =
     msg { task | scheduledOn = scheduledOn }
+
+
+toggleCompleted : (StoryTask -> msg) -> StoryTask -> msg
+toggleCompleted msg task =
+    msg { task | completed = not task.completed }
 
 
 scheduleButton : Scheduled -> Scheduled -> msg -> Html msg

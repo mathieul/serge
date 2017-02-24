@@ -8,7 +8,6 @@ module Api
 
 import Json.Encode as JE
 import Json.Decode as JD
-import Json.Decode.Pipeline as JP
 import Http
 import StoryTask exposing (StoryTask)
 
@@ -28,12 +27,12 @@ type alias CreateTaskResponse =
 
 taskDecoder : JD.Decoder StoryTask
 taskDecoder =
-    JP.decode StoryTask
-        |> JP.required "id" JD.string
-        |> JP.required "label" JD.string
-        |> JP.required "rank" JD.int
-        |> JP.required "completed" JD.bool
-        |> JP.required "scheduledOn" JD.string
+    JD.map5 StoryTask
+        (JD.field "id" JD.string)
+        (JD.field "label" JD.string)
+        (JD.field "rank" JD.int)
+        (JD.field "completed" JD.bool)
+        (JD.field "scheduledOn" JD.string)
 
 
 tasksResponseDecoder : JD.Decoder (List StoryTask)
@@ -43,9 +42,9 @@ tasksResponseDecoder =
 
 createTaskResponseDecoder : JD.Decoder CreateTaskResponse
 createTaskResponseDecoder =
-    JP.decode CreateTaskResponse
-        |> JP.required "tid" JD.string
-        |> JP.required "task" taskDecoder
+    JD.map2 CreateTaskResponse
+        (JD.field "tid" JD.string)
+        (JD.field "task" taskDecoder)
         |> JD.at [ "data", "createTask" ]
 
 
@@ -130,8 +129,8 @@ makeTaskRequest task =
 updateTaskMutation : String
 updateTaskMutation =
     """
-  mutation($id: ID!, $scheduledOn: String!) {
-    updateTask(id: $id, scheduledOn: $scheduledOn) {
+  mutation($id: ID!, $scheduledOn: String!, $completed: Boolean!) {
+    updateTask(id: $id, scheduledOn: $scheduledOn, completed: $completed) {
       id
       label
       rank
@@ -149,6 +148,7 @@ updateTaskRequest task =
             JE.object
                 [ ( "id", JE.string task.id )
                 , ( "scheduledOn", JE.string task.scheduledOn )
+                , ( "completed", JE.bool task.completed )
                 ]
 
         body =
