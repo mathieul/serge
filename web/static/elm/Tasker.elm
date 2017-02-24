@@ -394,42 +394,31 @@ taskListFooter tasks =
 
 taskSelectionTabs : TaskScheduleSelection -> Html Msg
 taskSelectionTabs selection =
-    div [ class "card-header" ]
-        [ ul [ class "nav nav-tabs card-header-tabs" ]
-            [ li [ class "nav-item" ]
+    let
+        tab ( schedule, label ) =
+            li [ class "nav-item" ]
                 [ a
-                    [ class <| "nav-link" ++ (valueIfMatch selection TaskScheduleAll " active")
+                    [ class <| "nav-link" ++ (valueIfMatch selection schedule " active")
                     , href "#"
-                    , onClick (ChangeTaskScheduleSelection TaskScheduleAll)
+                    , onClick (ChangeTaskScheduleSelection schedule)
                     ]
-                    [ text "All" ]
+                    [ text label ]
                 ]
-            , li [ class "nav-item" ]
-                [ a
-                    [ class <| "nav-link" ++ (valueIfMatch selection TaskScheduleToday " active")
-                    , href "#"
-                    , onClick (ChangeTaskScheduleSelection TaskScheduleToday)
-                    ]
-                    [ text "Today" ]
+
+        tabs =
+            List.map
+                tab
+                [ ( TaskScheduleAll, "All" )
+                , ( TaskScheduleToday, "Today" )
+                , ( TaskScheduleTomorrow, "Tomorrow" )
+                , ( TaskScheduleLater, "Later" )
                 ]
-            , li [ class "nav-item" ]
-                [ a
-                    [ class <| "nav-link" ++ (valueIfMatch selection TaskScheduleTomorrow " active")
-                    , href "#"
-                    , onClick (ChangeTaskScheduleSelection TaskScheduleTomorrow)
-                    ]
-                    [ text "Tomorrow" ]
-                ]
-            , li [ class "nav-item" ]
-                [ a
-                    [ class <| "nav-link" ++ (valueIfMatch selection TaskScheduleLater " active")
-                    , href "#"
-                    , onClick (ChangeTaskScheduleSelection TaskScheduleLater)
-                    ]
-                    [ text "Later" ]
-                ]
+    in
+        div [ class "card-header" ]
+            [ ul
+                [ class "nav nav-tabs card-header-tabs" ]
+                tabs
             ]
-        ]
 
 
 valueIfMatch : a -> a -> String -> String
