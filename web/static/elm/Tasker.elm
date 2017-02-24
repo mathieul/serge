@@ -4,8 +4,8 @@ import Time exposing (Time)
 import Time.TimeZone exposing (TimeZone)
 import Time.TimeZones as TimeZones
 import Task
-import Html exposing (Html, div, span, text, nav, button, a, ul, li, h2, h4, small)
-import Html.Attributes exposing (class, href, type_, placeholder, value)
+import Html exposing (Html, div, span, text, nav, button, a, ul, li, h2, h4, small, input)
+import Html.Attributes exposing (class, href, type_, placeholder, value, checked)
 import Html.Events exposing (onClick)
 import Http
 import String.Extra
@@ -335,14 +335,23 @@ taskForm model =
                 model.currentTaskLabel
                 AddCurrentTask
                 UpdateCurrentTask
-            , taskList model.currentDates model.taskSelection model.tasks
+            , taskList model
             ]
         ]
 
 
-taskList : StoryTask.CurrentDates -> TaskScheduleSelection -> List StoryTask -> Html Msg
-taskList dates selection tasks =
+taskList : Model -> Html Msg
+taskList model =
     let
+        dates =
+            model.currentDates
+
+        tasks =
+            model.tasks
+
+        selection =
+            model.taskSelection
+
         selectedTasks =
             case selection of
                 TaskScheduleAll ->
@@ -360,13 +369,13 @@ taskList dates selection tasks =
         div [ class "card mt-3" ]
             [ taskSelectionTabs selection
             , div [ class "card-block" ]
-                [ StoryTask.storyTasksView dates RequestTaskUpdate selectedTasks ]
-            , taskListFooter selectedTasks
+                [ StoryTask.storyTasksView dates RequestTaskUpdate model.showCompleted selectedTasks ]
+            , taskListFooter selectedTasks model
             ]
 
 
-taskListFooter : List StoryTask -> Html Msg
-taskListFooter tasks =
+taskListFooter : List StoryTask -> Model -> Html Msg
+taskListFooter tasks model =
     let
         countCompleted =
             List.foldl
@@ -382,14 +391,27 @@ taskListFooter tasks =
         count =
             (List.length tasks) - countCompleted
 
-        footer =
+        label =
             (String.Extra.pluralize "task" "tasks" count)
                 ++ " / "
                 ++ (toString countCompleted)
                 ++ " completed"
     in
         div [ class "card-footer text-muted" ]
-            [ text footer ]
+            [ div [ class "row" ]
+                [ div [ class "col pl-3" ]
+                    [ text label ]
+                , div [ class "col pr-3 text-right" ]
+                    [ text "show completed "
+                    , input
+                        [ type_ "checkbox"
+                        , checked model.showCompleted
+                        , onClick ToggleShowCompleted
+                        ]
+                        []
+                    ]
+                ]
+            ]
 
 
 taskSelectionTabs : TaskScheduleSelection -> Html Msg

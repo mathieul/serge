@@ -102,15 +102,22 @@ storyTaskForm currentLabel addTaskMsg updateTaskMsg =
         ]
 
 
-storyTasksView : CurrentDates -> (StoryTask -> msg) -> List StoryTask -> Html msg
-storyTasksView dates msg tasks =
-    if List.isEmpty tasks then
-        div [] []
-    else
-        div [ class "card" ]
-            [ ul [ class "list-group list-group-flush" ]
-                (List.map (oneTaskView dates msg) tasks)
-            ]
+storyTasksView : CurrentDates -> (StoryTask -> msg) -> Bool -> List StoryTask -> Html msg
+storyTasksView dates msg showCompleted tasks =
+    let
+        tasksToShow =
+            if showCompleted then
+                tasks
+            else
+                List.filter (\task -> not task.completed) tasks
+    in
+        if List.isEmpty tasksToShow then
+            div [] []
+        else
+            div [ class "card" ]
+                [ ul [ class "list-group list-group-flush" ]
+                    (List.map (oneTaskView dates msg) tasksToShow)
+                ]
 
 
 oneTaskView : CurrentDates -> (StoryTask -> msg) -> StoryTask -> Html msg
