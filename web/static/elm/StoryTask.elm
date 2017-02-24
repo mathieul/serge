@@ -147,15 +147,19 @@ oneTaskView dates msg task =
                 , div []
                     [ scheduleControls
                     , button
-                        [ class "btn btn-sm ml-4"
-                        , classList
-                            [ ( "btn-outline-danger", not task.completed )
-                            , ( "btn-outline-primary", task.completed )
-                            ]
+                        [ class "btn btn-sm btn-outline-primary ml-4"
                         , type_ "button"
                         , onClick (toggleCompleted msg task)
                         ]
-                        [ i [ class "fa fa-check" ] [] ]
+                        [ i
+                            [ class "fa "
+                            , classList
+                                [ ( "fa-check", task.completed )
+                                , ( "empty", not task.completed )
+                                ]
+                            ]
+                            []
+                        ]
                     ]
                 ]
             ]

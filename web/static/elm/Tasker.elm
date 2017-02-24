@@ -47,6 +47,7 @@ type alias Model =
     , currentTaskSeq : Int
     , tasks : List StoryTask
     , taskSelection : TaskScheduleSelection
+    , showCompleted : Bool
     }
 
 
@@ -69,6 +70,7 @@ type Msg
     | SetTimeZone String
     | RequestTaskUpdate StoryTask
     | ChangeTaskScheduleSelection TaskScheduleSelection
+    | ToggleShowCompleted
 
 
 type AppMessage
@@ -118,6 +120,7 @@ initialModel rawConfig =
     , currentTaskSeq = 1
     , tasks = []
     , taskSelection = TaskScheduleAll
+    , showCompleted = False
     }
 
 
@@ -224,6 +227,9 @@ update msg model =
 
         ChangeTaskScheduleSelection selection ->
             { model | taskSelection = selection } ! []
+
+        ToggleShowCompleted ->
+            { model | showCompleted = not model.showCompleted } ! []
 
 
 replaceTask : String -> StoryTask -> List StoryTask -> List StoryTask
@@ -350,17 +356,40 @@ taskList dates selection tasks =
 
                 TaskScheduleLater ->
                     List.filter (\task -> (StoryTask.taskSchedule dates task) == StoryTask.ScheduledLater) tasks
-
-        footer =
-            String.Extra.pluralize "task" "tasks" (List.length selectedTasks)
     in
         div [ class "card mt-3" ]
             [ taskSelectionTabs selection
             , div [ class "card-block" ]
                 [ StoryTask.storyTasksView dates RequestTaskUpdate selectedTasks ]
-            , div [ class "card-footer text-muted" ]
-                [ text footer ]
+            , taskListFooter selectedTasks
             ]
+
+
+taskListFooter : List StoryTask -> Html Msg
+taskListFooter tasks =
+    let
+        countCompleted =
+            List.foldl
+                (\task count ->
+                    if task.completed then
+                        count + 1
+                    else
+                        count
+                )
+                0
+                tasks
+
+        count =
+            (List.length tasks) - countCompleted
+
+        footer =
+            (String.Extra.pluralize "task" "tasks" count)
+                ++ " / "
+                ++ (toString countCompleted)
+                ++ " completed"
+    in
+        div [ class "card-footer text-muted" ]
+            [ text footer ]
 
 
 taskSelectionTabs : TaskScheduleSelection -> Html Msg
