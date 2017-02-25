@@ -21,22 +21,27 @@ Ready to run in production? Please [check our deployment guides](http://www.phoe
 
 ## Github OAuth app for development ##
 
-export GITHUB_REDIRECT_URI=http://localhost:4000/auth/github/callback
-export GITHUB_CLIENT_ID=18e2f95af473d367c294
-export GITHUB_CLIENT_SECRET=e3b62ba98785a95a88d6238a865ce15a72e78756
+    export GITHUB_REDIRECT_URI=http://localhost:4000/auth/github/callback
+    export GITHUB_CLIENT_ID=18e2f95af473d367c294
+    export GITHUB_CLIENT_SECRET=e3b62ba98785a95a88d6238a865ce15a72e78756
 
-## Release
+## Release ##
 
 Bump application version in `mix.exs` (i.e.: 0.3.3) and run as user `elixir`:
 
     $ cd dev/serge
     $ git pull
     $ brunch build && mix do phoenix.digest, compile, release
-    $ cp -r rel/serge/releases/0.3.3/ /apps/serge/releases/
+    $ cp -r rel/serge/releases/0.0.3/ /apps/serge/releases/
     $ cd /apps/serge
-    $ ./bin/serge upgrade 0.3.3
+    $ ./bin/serge upgrade 0.0.3
 
 As user `root`:
 
     # cd /apps
     # ./bin/serge restart
+
+## Production ##
+
+Running at https://serge.cloudigisafe.com - requires a github account as the
+application is using OAuth2 with currently only a Github provider.
