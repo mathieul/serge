@@ -2,15 +2,17 @@ defmodule Serge.Mixfile do
   use Mix.Project
 
   def project do
-    [app: :serge,
-     version: "0.0.1",
-     elixir: "~> 1.2",
-     elixirc_paths: elixirc_paths(Mix.env),
-     compilers: [:phoenix, :gettext] ++ Mix.compilers,
-     build_embedded: Mix.env == :prod,
-     start_permanent: Mix.env == :prod,
-     aliases: aliases(),
-     deps: deps()]
+    [
+      app: :serge,
+      version: "0.0.1",
+      elixir: "~> 1.4",
+      elixirc_paths: elixirc_paths(Mix.env),
+      compilers: [:phoenix, :gettext] ++ Mix.compilers,
+      build_embedded: Mix.env == :prod,
+      start_permanent: Mix.env == :prod,
+      aliases: aliases(),
+      deps: deps()
+    ]
   end
 
   # Configuration for the OTP application.
@@ -20,8 +22,8 @@ defmodule Serge.Mixfile do
     [
       mod: {Serge, []},
       applications: [
-        :absinthe,
         :absinthe_plug,
+        :absinthe,
         :cowboy,
         :gettext,
         :logger,
@@ -45,11 +47,12 @@ defmodule Serge.Mixfile do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
-      {:absinthe, "~> 1.2.1"},
       {:absinthe_plug, "~> 1.2.2"},
+      {:absinthe, "~> 1.2.1"},
       {:comeonin, "~> 3.0"},
       {:cowboy, "~> 1.1.2"},
       {:ecto_ordered, "~> 0.2.0-beta1"},
+      {:exrm, "~> 1.0.8"},
       {:gettext, "~> 0.13.1"},
       {:oauth2, "~> 0.9"},
       {:phoenix_ecto, "~> 3.0"},
