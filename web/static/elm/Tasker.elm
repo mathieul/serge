@@ -342,7 +342,7 @@ taskForm : Model -> Html Msg
 taskForm model =
     div [ class "card mt-3" ]
         [ div [ class "card-block" ]
-            [ StoryTask.storyTaskForm
+            [ StoryTask.formView
                 model.currentTaskLabel
                 AddCurrentTask
                 UpdateCurrentTask
@@ -388,7 +388,7 @@ taskList model =
         div [ class "card mt-3" ]
             [ taskSelectionTabs selection
             , div [ class "card-block" ]
-                [ StoryTask.storyTasksView
+                [ StoryTask.listView
                     dates
                     RequestTaskUpdate
                     model.showCompleted
