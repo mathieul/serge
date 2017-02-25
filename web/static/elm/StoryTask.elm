@@ -147,9 +147,6 @@ singleTaskView dates msg allowYesterday task =
             else
                 span [] [ text task.label ]
 
-        controls =
-            taskControls dates msg allowYesterday scheduled task
-
         scheduleControls =
             if task.completed then
                 div [] []

@@ -5,18 +5,18 @@ import Time.TimeZone exposing (TimeZone)
 import Time.TimeZones as TimeZones
 import Task
 import Html exposing (Html, div, span, text, nav, button, a, ul, li, h2, h4, small, input)
-import Html.Attributes exposing (class, href, type_, placeholder, value, checked)
+import Html.Attributes exposing (class, classList, href, type_, placeholder, value, checked)
 import Html.Events exposing (onClick)
 import Http
 import String.Extra
-import StoryTask exposing (StoryTask)
+import StoryTask exposing (StoryTask, Scheduled(..))
 import Api exposing (CreateTaskResponse)
 
 
 -- MAIN
 
 
-main : Program ConfigFromJs Model Msg
+main : Program AppConfig Model Msg
 main =
     Html.programWithFlags
         { init = init
@@ -30,7 +30,7 @@ main =
 -- MODEL
 
 
-type alias ConfigFromJs =
+type alias AppConfig =
     { id : Int
     , name : String
     , email : String
@@ -48,14 +48,6 @@ type alias Model =
     , tasks : List StoryTask
     , taskSelection : TaskScheduleSelection
     , showCompleted : Bool
-    }
-
-
-type alias AppConfig =
-    { id : Int
-    , name : String
-    , email : String
-    , accessToken : String
     }
 
 
@@ -90,9 +82,9 @@ type TaskScheduleSelection
 -- INIT
 
 
-init : ConfigFromJs -> ( Model, Cmd Msg )
-init rawConfig =
-    ( initialModel rawConfig
+init : AppConfig -> ( Model, Cmd Msg )
+init config =
+    ( initialModel config
     , Cmd.batch
         [ Task.perform UpdateCurrentDates Time.now
         , Http.send FetchTasks Api.fetchTasksRequest
@@ -101,18 +93,9 @@ init rawConfig =
     )
 
 
-initialAppConfig : ConfigFromJs -> AppConfig
-initialAppConfig rawConfig =
-    { id = rawConfig.id
-    , name = rawConfig.name
-    , email = rawConfig.email
-    , accessToken = rawConfig.access_token
-    }
-
-
-initialModel : ConfigFromJs -> Model
-initialModel rawConfig =
-    { config = initialAppConfig rawConfig
+initialModel : AppConfig -> Model
+initialModel config =
+    { config = config
     , message = MessageNone
     , currentDates = StoryTask.makeEmptyCurrentDates
     , timeZone = TimeZones.utc ()
@@ -354,45 +337,34 @@ taskForm model =
 taskList : Model -> Html Msg
 taskList model =
     let
-        dates =
-            model.currentDates
+        { currentDates, tasks, taskSelection } =
+            model
 
-        tasks =
-            model.tasks
-
-        selection =
-            model.taskSelection
+        tasksWithSchedule schedules task =
+            List.member (StoryTask.taskSchedule currentDates task) schedules
 
         selectedTasks =
-            case selection of
+            case taskSelection of
                 TaskScheduleAll ->
                     tasks
 
                 TaskScheduleToday ->
-                    List.filter
-                        (\task ->
-                            let
-                                scheduled =
-                                    StoryTask.taskSchedule dates task
-                            in
-                                scheduled == StoryTask.ScheduledToday || scheduled == StoryTask.ScheduledYesterday
-                        )
-                        tasks
+                    List.filter (tasksWithSchedule [ ScheduledYesterday, ScheduledToday ]) tasks
 
                 TaskScheduleTomorrow ->
-                    List.filter (\task -> (StoryTask.taskSchedule dates task) == StoryTask.ScheduledTomorrow) tasks
+                    List.filter (tasksWithSchedule [ ScheduledTomorrow ]) tasks
 
                 TaskScheduleLater ->
-                    List.filter (\task -> (StoryTask.taskSchedule dates task) == StoryTask.ScheduledLater) tasks
+                    List.filter (tasksWithSchedule [ ScheduledLater ]) tasks
     in
         div [ class "card mt-3" ]
-            [ taskSelectionTabs selection
+            [ taskSelectionTabs taskSelection
             , div [ class "card-block" ]
                 [ StoryTask.listView
-                    dates
+                    currentDates
                     RequestTaskUpdate
                     model.showCompleted
-                    (selection == TaskScheduleAll)
+                    (taskSelection == TaskScheduleAll)
                     selectedTasks
                 ]
             , taskListFooter selectedTasks model
@@ -445,7 +417,8 @@ taskSelectionTabs selection =
         tab ( schedule, label ) =
             li [ class "nav-item" ]
                 [ a
-                    [ class <| "nav-link" ++ (valueIfMatch selection schedule " active")
+                    [ class "nav-link"
+                    , classList [ ( "active", selection == schedule ) ]
                     , href "#"
                     , onClick (ChangeTaskScheduleSelection schedule)
                     ]
@@ -466,14 +439,6 @@ taskSelectionTabs selection =
                 [ class "nav nav-tabs card-header-tabs" ]
                 tabs
             ]
-
-
-valueIfMatch : a -> a -> String -> String
-valueIfMatch a b value =
-    if a == b then
-        value
-    else
-        ""
 
 
 messageView : AppMessage -> Html Msg
