@@ -24,7 +24,9 @@ defmodule Serge.Mixfile do
       applications: [
         :absinthe_plug,
         :absinthe,
+        :comeonin,
         :cowboy,
+        :ecto_ordered,
         :gettext,
         :logger,
         :oauth2,
