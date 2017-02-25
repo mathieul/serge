@@ -19,31 +19,24 @@ Ready to run in production? Please [check our deployment guides](http://www.phoe
   * Mailing list: http://groups.google.com/group/phoenix-talk
   * Source: https://github.com/phoenixframework/phoenix
 
-## OAuth
+## Github OAuth app for development ##
 
 export GITHUB_REDIRECT_URI=http://localhost:4000/auth/github/callback
 export GITHUB_CLIENT_ID=18e2f95af473d367c294
 export GITHUB_CLIENT_SECRET=e3b62ba98785a95a88d6238a865ce15a72e78756
 
+## Release
 
-## Queries &amp; Mutations
+Bump application version in `mix.exs` (i.e.: 0.3.3) and run as user `elixir`:
 
-    mutation ($label: String!, $rank: Int!, $userId: ID!) {
-      createTask(label: $label, rank: $rank, userId: $userId) {
-        id
-        label
-        rank
-        user {
-          id
-          name
-        }
-      }
-    }
+    $ cd dev/serge
+    $ git pull
+    $ brunch build && mix do phoenix.digest, compile, release
+    $ cp -r rel/serge/releases/0.3.3/ /apps/serge/releases/
+    $ cd /apps/serge
+    $ ./bin/serge upgrade 0.3.3
 
-with:
+As user `root`:
 
-    {
-      "label": "allo la terre???",
-      "rank": 1,
-      "userId": 2
-    }
+    # cd /apps
+    # ./bin/serge restart
