@@ -4,7 +4,7 @@ import Time exposing (Time)
 import Time.TimeZone exposing (TimeZone)
 import Time.TimeZones as TimeZones
 import Task
-import Html exposing (Html, div, span, text, nav, button, a, ul, li, h2, h4, small, input)
+import Html exposing (Html, div, span, text, nav, button, a, ul, li, h1, h2, h4, small, input)
 import Html.Attributes exposing (class, classList, href, type_, placeholder, value, checked)
 import Html.Events exposing (onClick)
 import Http
@@ -276,24 +276,17 @@ view : Model -> Html Msg
 view model =
     div []
         [ nav
-            [ class "navbar navbar-toggleable-md navbar-inverse bg-inverse fixed-top" ]
-            [ button
-                [ class "navbar-toggler navbar-toggler-right", type_ "button" ]
-                []
-            , a
-                [ class "navbar-brand", href "#" ]
-                [ text "Tasker" ]
+            [ class "navbar navbar-toggleable-md navbar-inverse bg-primary " ]
+            [ button [ class "navbar-toggler navbar-toggler-right", type_ "button" ]
+                [ span [ class "navbar-toggler-icon" ] [] ]
+            , h1
+                [ class "navbar-brand" ]
+                [ text model.config.name
+                , small [ class "pl-3" ] [ text <| "(" ++ model.config.email ++ ")" ]
+                ]
             , div
                 [ class "collapse navbar-collapse" ]
-                [ ul
-                    [ class "navbar-nav mr-auto" ]
-                    [ li
-                        [ class "nav-item active" ]
-                        [ a
-                            [ class "nav-link", href "#" ]
-                            [ text "Home" ]
-                        ]
-                    ]
+                [ ul [ class "navbar-nav mr-auto" ] []
                 , span
                     [ class "navbar-text pull-right mr-3" ]
                     [ text model.currentDates.today ]
