@@ -43,7 +43,7 @@ type alias StoryTask =
     , completed : Bool
     , scheduledOn : String
     , editing : Bool
-    , newLabel : String
+    , editingLabel : String
     }
 
 
@@ -70,7 +70,7 @@ makeNewTask sequence label count scheduledOn =
     , completed = False
     , scheduledOn = scheduledOn
     , editing = False
-    , newLabel = ""
+    , editingLabel = ""
     }
 
 
@@ -127,8 +127,15 @@ formView currentLabel addTaskMsg updateTaskMsg =
         ]
 
 
-listView : CurrentDates -> (StoryTask -> msg) -> (String -> msg) -> Bool -> Bool -> List StoryTask -> Html msg
-listView dates updateMsg toggleEditMsg showCompleted allowYesterday tasks =
+listView :
+    CurrentDates
+    -> (StoryTask -> msg)
+    -> (String -> Bool -> String -> msg)
+    -> Bool
+    -> Bool
+    -> List StoryTask
+    -> Html msg
+listView dates updateMsg updateEditingMsg showCompleted allowYesterday tasks =
     let
         tasksToShow =
             if showCompleted then
@@ -142,26 +149,38 @@ listView dates updateMsg toggleEditMsg showCompleted allowYesterday tasks =
         else
             div [ class "card" ]
                 [ ul [ class "list-group list-group-flush" ]
-                    (List.map (singleTaskView dates updateMsg toggleEditMsg allowYesterday) tasksToShow)
+                    (List.map (singleTaskView dates updateMsg updateEditingMsg allowYesterday) tasksToShow)
                 ]
 
 
-singleTaskView : CurrentDates -> (StoryTask -> msg) -> (String -> msg) -> Bool -> StoryTask -> Html msg
-singleTaskView dates updateMsg toggleEditMsg allowYesterday task =
+singleTaskView :
+    CurrentDates
+    -> (StoryTask -> msg)
+    -> (String -> Bool -> String -> msg)
+    -> Bool
+    -> StoryTask
+    -> Html msg
+singleTaskView dates updateMsg updateEditingMsg allowYesterday task =
     let
         scheduled =
             taskSchedule dates task
+
+        toggleEditingMsg =
+            updateEditingMsg task.id (not task.editing) task.editingLabel
+
+        updateEditingLabelMsg editingLabel =
+            updateEditingMsg task.id task.editing editingLabel
 
         label =
             if task.completed then
                 Html.s [ class "text-muted" ] [ text task.label ]
             else if scheduled == ScheduledYesterday then
-                span [ onDoubleClick (toggleEditMsg task.id) ]
+                span [ onDoubleClick toggleEditingMsg ]
                     [ text task.label
                     , i [ class "fa fa-clock-o text-danger ml-2" ] []
                     ]
             else
-                span [ onDoubleClick (toggleEditMsg task.id) ]
+                span [ onDoubleClick toggleEditingMsg ]
                     [ text task.label ]
 
         scheduleControls =
@@ -196,12 +215,16 @@ singleTaskView dates updateMsg toggleEditMsg allowYesterday task =
                 ]
 
         edit =
-            form [ class "px-2 py-1-5" ]
+            form
+                [ class "px-2 py-1-5"
+                , onSubmit (changeLabel updateMsg task)
+                ]
                 [ input
                     [ type_ "text"
                     , class "form-control pull-left"
                     , style [ ( "width", "80%" ) ]
-                    , value task.label
+                    , value task.editingLabel
+                    , onInput updateEditingLabelMsg
                     ]
                     []
                 , div
@@ -209,16 +232,15 @@ singleTaskView dates updateMsg toggleEditMsg allowYesterday task =
                     , style [ ( "width", "20%" ) ]
                     ]
                     [ button
-                        [ type_ "button"
+                        [ type_ "submit"
                         , class "btn btn-primary btn-sm"
-                        , onClick (changeLabel updateMsg task)
                         ]
                         [ text "Update" ]
                     , text " "
                     , button
                         [ type_ "button"
                         , class "btn btn-secondary btn-sm"
-                        , onClick (toggleEditMsg task.id)
+                        , onClick toggleEditingMsg
                         ]
                         [ text "Cancel" ]
                     ]
@@ -275,7 +297,7 @@ changeSchedule msg scheduledOn task =
 
 changeLabel : (StoryTask -> msg) -> StoryTask -> msg
 changeLabel msg task =
-    msg { task | label = task.newLabel }
+    msg { task | label = task.editingLabel }
 
 
 toggleCompleted : (StoryTask -> msg) -> StoryTask -> msg

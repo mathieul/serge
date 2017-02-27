@@ -63,7 +63,7 @@ type Msg
     | RequestTaskUpdate StoryTask
     | ChangeTaskScheduleSelection TaskScheduleSelection
     | ToggleShowCompleted
-    | ToggleEditTaskLabel String
+    | UpdateEditingTask String Bool String
 
 
 type AppMessage
@@ -226,13 +226,16 @@ update msg model =
         ToggleShowCompleted ->
             { model | showCompleted = not model.showCompleted } ! []
 
-        ToggleEditTaskLabel id ->
+        UpdateEditingTask id editing editingLabel ->
             let
                 tasks =
                     List.map
                         (\task ->
                             if task.id == id then
-                                { task | editing = not task.editing }
+                                { task
+                                    | editing = editing
+                                    , editingLabel = editingLabel
+                                }
                             else
                                 task
                         )
@@ -371,7 +374,7 @@ taskList model =
                 [ StoryTask.listView
                     currentDates
                     RequestTaskUpdate
-                    ToggleEditTaskLabel
+                    UpdateEditingTask
                     model.showCompleted
                     (taskSelection == TaskScheduleAll)
                     selectedTasks
