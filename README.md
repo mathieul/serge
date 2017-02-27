@@ -27,14 +27,14 @@ Ready to run in production? Please [check our deployment guides](http://www.phoe
 
 ## Release ##
 
-Bump application version in `mix.exs` (i.e.: 0.3.3) and run as user `elixir`:
+Bump application version in `mix.exs` (i.e.: 0.0.4) and run as user `elixir`:
 
     $ cd dev/serge
     $ git pull
     $ brunch build && mix do phoenix.digest, compile, release
-    $ cp -r rel/serge/releases/0.0.3/ /apps/serge/releases/
+    $ cp -r rel/serge/releases/0.0.4/ /apps/serge/releases/
     $ cd /apps/serge
-    $ ./bin/serge upgrade 0.0.3
+    $ ./bin/serge upgrade 0.0.4
 
 As user `root`:
 
