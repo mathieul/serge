@@ -221,6 +221,7 @@ singleTaskView dates updateMsg updateEditingMsg allowYesterday task =
                 ]
                 [ input
                     [ type_ "text"
+                    , Html.Attributes.id <| "edit-task-" ++ task.id
                     , class "form-control pull-left"
                     , style [ ( "width", "80%" ) ]
                     , value task.editingLabel

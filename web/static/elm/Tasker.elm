@@ -8,6 +8,7 @@ import Html exposing (Html, div, span, text, nav, button, a, ul, li, h1, h2, h4,
 import Html.Attributes exposing (class, classList, href, type_, placeholder, value, checked)
 import Html.Events exposing (onClick)
 import Http
+import Dom
 import String.Extra
 import StoryTask exposing (StoryTask, Scheduled(..))
 import Api exposing (CreateTaskResponse)
@@ -52,7 +53,8 @@ type alias Model =
 
 
 type Msg
-    = FetchTasks (Result Http.Error (List StoryTask))
+    = NoOp
+    | FetchTasks (Result Http.Error (List StoryTask))
     | CreateTask (Result Http.Error CreateTaskResponse)
     | UpdateTask (Result Http.Error StoryTask)
     | ClearMessage
@@ -137,6 +139,9 @@ subscriptions _ =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        NoOp ->
+            model ! []
+
         UpdateCurrentDates time ->
             ( updateCurrentDatesFromTime time model, Cmd.none )
 
@@ -240,8 +245,13 @@ update msg model =
                                 task
                         )
                         model.tasks
+
+                textFieldId =
+                    "edit-task-" ++ id
             in
-                { model | tasks = tasks } ! []
+                ( { model | tasks = tasks }
+                , Dom.focus textFieldId |> Task.attempt (\_ -> NoOp)
+                )
 
 
 replaceTask : String -> StoryTask -> List StoryTask -> List StoryTask
