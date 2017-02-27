@@ -27,12 +27,14 @@ type alias CreateTaskResponse =
 
 taskDecoder : JD.Decoder StoryTask
 taskDecoder =
-    JD.map5 StoryTask
+    JD.map7 StoryTask
         (JD.field "id" JD.string)
         (JD.field "label" JD.string)
         (JD.field "rank" JD.int)
         (JD.field "completed" JD.bool)
         (JD.field "scheduledOn" JD.string)
+        (JD.succeed False)
+        (JD.field "label" JD.string)
 
 
 tasksResponseDecoder : JD.Decoder (List StoryTask)
@@ -129,8 +131,8 @@ makeTaskRequest task =
 updateTaskMutation : String
 updateTaskMutation =
     """
-  mutation($id: ID!, $scheduledOn: String!, $completed: Boolean!) {
-    updateTask(id: $id, scheduledOn: $scheduledOn, completed: $completed) {
+  mutation($id: ID!, $scheduledOn: String!, $completed: Boolean!, $label: String!) {
+    updateTask(id: $id, scheduledOn: $scheduledOn, completed: $completed, label: $label) {
       id
       label
       rank
@@ -149,6 +151,7 @@ updateTaskRequest task =
                 [ ( "id", JE.string task.id )
                 , ( "scheduledOn", JE.string task.scheduledOn )
                 , ( "completed", JE.bool task.completed )
+                , ( "label", JE.string task.label )
                 ]
 
         body =

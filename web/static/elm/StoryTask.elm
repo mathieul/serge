@@ -17,8 +17,20 @@ import Time.TimeZone exposing (TimeZone)
 import Time.ZonedDateTime as ZonedDateTime
 import Time.Date as Date exposing (Date)
 import Html exposing (Html, div, span, form, label, input, button, text, ul, li, i)
-import Html.Attributes exposing (class, classList, type_, placeholder, value, autofocus, disabled, name, checked)
-import Html.Events exposing (onInput, onSubmit, onClick)
+import Html.Attributes
+    exposing
+        ( class
+        , classList
+        , style
+        , type_
+        , placeholder
+        , value
+        , autofocus
+        , disabled
+        , name
+        , checked
+        )
+import Html.Events exposing (onInput, onSubmit, onClick, onDoubleClick)
 
 
 -- MODEL
@@ -30,6 +42,8 @@ type alias StoryTask =
     , rank : Int
     , completed : Bool
     , scheduledOn : String
+    , editing : Bool
+    , newLabel : String
     }
 
 
@@ -55,6 +69,8 @@ makeNewTask sequence label count scheduledOn =
     , rank = count + 1
     , completed = False
     , scheduledOn = scheduledOn
+    , editing = False
+    , newLabel = ""
     }
 
 
@@ -111,8 +127,8 @@ formView currentLabel addTaskMsg updateTaskMsg =
         ]
 
 
-listView : CurrentDates -> (StoryTask -> msg) -> Bool -> Bool -> List StoryTask -> Html msg
-listView dates msg showCompleted allowYesterday tasks =
+listView : CurrentDates -> (StoryTask -> msg) -> (String -> msg) -> Bool -> Bool -> List StoryTask -> Html msg
+listView dates updateMsg toggleEditMsg showCompleted allowYesterday tasks =
     let
         tasksToShow =
             if showCompleted then
@@ -126,12 +142,12 @@ listView dates msg showCompleted allowYesterday tasks =
         else
             div [ class "card" ]
                 [ ul [ class "list-group list-group-flush" ]
-                    (List.map (singleTaskView dates msg allowYesterday) tasksToShow)
+                    (List.map (singleTaskView dates updateMsg toggleEditMsg allowYesterday) tasksToShow)
                 ]
 
 
-singleTaskView : CurrentDates -> (StoryTask -> msg) -> Bool -> StoryTask -> Html msg
-singleTaskView dates msg allowYesterday task =
+singleTaskView : CurrentDates -> (StoryTask -> msg) -> (String -> msg) -> Bool -> StoryTask -> Html msg
+singleTaskView dates updateMsg toggleEditMsg allowYesterday task =
     let
         scheduled =
             taskSchedule dates task
@@ -140,64 +156,100 @@ singleTaskView dates msg allowYesterday task =
             if task.completed then
                 Html.s [ class "text-muted" ] [ text task.label ]
             else if scheduled == ScheduledYesterday then
-                span []
+                span [ onDoubleClick (toggleEditMsg task.id) ]
                     [ text task.label
                     , i [ class "fa fa-clock-o text-danger ml-2" ] []
                     ]
             else
-                span [] [ text task.label ]
+                span [ onDoubleClick (toggleEditMsg task.id) ]
+                    [ text task.label ]
 
         scheduleControls =
             if task.completed then
                 div [] []
             else
                 div [ class "btn-group" ]
-                    (taskControls dates msg allowYesterday scheduled task)
-    in
-        li [ class "list-group-item d-flex flex-column align-items-start" ]
-            [ div [ class " w-100 d-flex justify-content-between" ]
-                [ label
-                , div []
-                    [ scheduleControls
-                    , button
-                        [ class "btn btn-sm btn-outline-primary ml-4"
-                        , type_ "button"
-                        , onClick (toggleCompleted msg task)
-                        ]
-                        [ i
-                            [ class "fa "
-                            , classList
-                                [ ( "fa-check", task.completed )
-                                , ( "empty", not task.completed )
-                                ]
+                    (taskControls dates updateMsg allowYesterday scheduled task)
+
+        view =
+            li [ class "list-group-item d-flex flex-column align-items-start" ]
+                [ div [ class " w-100 d-flex justify-content-between" ]
+                    [ label
+                    , div []
+                        [ scheduleControls
+                        , button
+                            [ class "btn btn-sm btn-outline-primary ml-4"
+                            , type_ "button"
+                            , onClick (toggleCompleted updateMsg task)
                             ]
-                            []
+                            [ i
+                                [ class "fa "
+                                , classList
+                                    [ ( "fa-check", task.completed )
+                                    , ( "empty", not task.completed )
+                                    ]
+                                ]
+                                []
+                            ]
                         ]
                     ]
                 ]
-            ]
+
+        edit =
+            form [ class "px-2 py-1-5" ]
+                [ input
+                    [ type_ "text"
+                    , class "form-control pull-left"
+                    , style [ ( "width", "80%" ) ]
+                    , value task.label
+                    ]
+                    []
+                , div
+                    [ class "pull-left pt-1 pl-2 text-center"
+                    , style [ ( "width", "20%" ) ]
+                    ]
+                    [ button
+                        [ type_ "button"
+                        , class "btn btn-primary btn-sm"
+                        , onClick (changeLabel updateMsg task)
+                        ]
+                        [ text "Update" ]
+                    , text " "
+                    , button
+                        [ type_ "button"
+                        , class "btn btn-secondary btn-sm"
+                        , onClick (toggleEditMsg task.id)
+                        ]
+                        [ text "Cancel" ]
+                    ]
+                ]
+    in
+        if task.editing then
+            edit
+        else
+            view
 
 
 taskControls : CurrentDates -> (StoryTask -> msg) -> Bool -> Scheduled -> StoryTask -> List (Html msg)
-taskControls dates msg allowYesterday scheduled task =
+taskControls dates updateMsg allowYesterday scheduled task =
     let
         commonButtons =
             [ scheduleButton ScheduledToday
                 scheduled
-                (changeSchedule msg dates.today task)
+                (changeSchedule updateMsg dates.today task)
             , scheduleButton ScheduledTomorrow
                 scheduled
-                (changeSchedule msg dates.tomorrow task)
+                (changeSchedule updateMsg dates.tomorrow task)
             , scheduleButton ScheduledLater
                 scheduled
-                (changeSchedule msg dates.later task)
+                (changeSchedule updateMsg dates.later task)
             ]
     in
         if allowYesterday then
             (scheduleButton
                 ScheduledYesterday
                 scheduled
-                (changeSchedule msg dates.yesterday task)
+                (changeSchedule updateMsg dates.yesterday task)
             )
                 :: commonButtons
         else
@@ -219,6 +271,11 @@ taskSchedule dates task =
 changeSchedule : (StoryTask -> msg) -> String -> StoryTask -> msg
 changeSchedule msg scheduledOn task =
     msg { task | scheduledOn = scheduledOn }
+
+
+changeLabel : (StoryTask -> msg) -> StoryTask -> msg
+changeLabel msg task =
+    msg { task | label = task.newLabel }
 
 
 toggleCompleted : (StoryTask -> msg) -> StoryTask -> msg
