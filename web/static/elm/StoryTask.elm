@@ -7,7 +7,8 @@ module StoryTask
         , makeEmptyCurrentDates
         , timeToCurrentDates
         , taskSchedule
-        , listView
+        , taskControls
+        , toggleCompleted
         )
 
 import Time exposing (Time)
@@ -15,19 +16,8 @@ import Time.DateTime as DateTime exposing (DateTime)
 import Time.TimeZone exposing (TimeZone)
 import Time.ZonedDateTime as ZonedDateTime
 import Time.Date as Date exposing (Date)
-import Html exposing (Html, div, span, form, label, input, button, text, ul, li, i)
-import Html.Attributes
-    exposing
-        ( class
-        , classList
-        , style
-        , type_
-        , placeholder
-        , value
-        , disabled
-        , name
-        , checked
-        )
+import Html exposing (Html, div, button, text)
+import Html.Attributes exposing (class, type_, disabled)
 import Html.Events exposing (onInput, onSubmit, onClick, onDoubleClick)
 
 
@@ -98,132 +88,6 @@ timeToCurrentDates timeZone time =
 -- VIEW
 
 
-listView :
-    CurrentDates
-    -> (StoryTask -> msg)
-    -> (String -> Bool -> String -> msg)
-    -> Bool
-    -> Bool
-    -> List StoryTask
-    -> Html msg
-listView dates updateMsg updateEditingMsg showCompleted allowYesterday tasks =
-    let
-        tasksToShow =
-            if showCompleted then
-                tasks
-            else
-                List.filter (\task -> not task.completed) tasks
-    in
-        if List.isEmpty tasksToShow then
-            div [ class "alert alert-info mt-3" ]
-                [ text "No tasks found." ]
-        else
-            div [ class "card" ]
-                [ ul [ class "list-group list-group-flush" ]
-                    (List.map (singleTaskView dates updateMsg updateEditingMsg allowYesterday) tasksToShow)
-                ]
-
-
-singleTaskView :
-    CurrentDates
-    -> (StoryTask -> msg)
-    -> (String -> Bool -> String -> msg)
-    -> Bool
-    -> StoryTask
-    -> Html msg
-singleTaskView dates updateMsg updateEditingMsg allowYesterday task =
-    let
-        scheduled =
-            taskSchedule dates task
-
-        toggleEditingMsg =
-            updateEditingMsg task.id (not task.editing) task.editingLabel
-
-        updateEditingLabelMsg editingLabel =
-            updateEditingMsg task.id task.editing editingLabel
-
-        label =
-            if task.completed then
-                Html.s [ class "text-muted" ] [ text task.label ]
-            else if scheduled == ScheduledYesterday then
-                span [ onDoubleClick toggleEditingMsg ]
-                    [ text task.label
-                    , i [ class "fa fa-clock-o text-danger ml-2" ] []
-                    ]
-            else
-                span [ onDoubleClick toggleEditingMsg ]
-                    [ text task.label ]
-
-        scheduleControls =
-            if task.completed then
-                div [] []
-            else
-                div [ class "btn-group" ]
-                    (taskControls dates updateMsg allowYesterday scheduled task)
-
-        view =
-            li [ class "list-group-item d-flex flex-column align-items-start" ]
-                [ div [ class " w-100 d-flex justify-content-between" ]
-                    [ label
-                    , div []
-                        [ scheduleControls
-                        , button
-                            [ class "btn btn-sm btn-outline-primary ml-4"
-                            , type_ "button"
-                            , onClick (toggleCompleted updateMsg task)
-                            ]
-                            [ i
-                                [ class "fa "
-                                , classList
-                                    [ ( "fa-check", task.completed )
-                                    , ( "empty", not task.completed )
-                                    ]
-                                ]
-                                []
-                            ]
-                        ]
-                    ]
-                ]
-
-        edit =
-            form
-                [ class "px-2 py-1-5"
-                , onSubmit (changeLabel updateMsg task)
-                ]
-                [ input
-                    [ type_ "text"
-                    , Html.Attributes.id <| "edit-task-" ++ task.id
-                    , class "form-control pull-left"
-                    , style [ ( "width", "80%" ) ]
-                    , value task.editingLabel
-                    , onInput updateEditingLabelMsg
-                    ]
-                    []
-                , div
-                    [ class "pull-left pt-1 pl-2 text-center"
-                    , style [ ( "width", "20%" ) ]
-                    ]
-                    [ button
-                        [ type_ "submit"
-                        , class "btn btn-primary btn-sm"
-                        ]
-                        [ text "Update" ]
-                    , text " "
-                    , button
-                        [ type_ "button"
-                        , class "btn btn-secondary btn-sm"
-                        , onClick toggleEditingMsg
-                        ]
-                        [ text "Cancel" ]
-                    ]
-                ]
-    in
-        if task.editing then
-            edit
-        else
-            view
-
-
 taskControls : CurrentDates -> (StoryTask -> msg) -> Bool -> Scheduled -> StoryTask -> List (Html msg)
 taskControls dates updateMsg allowYesterday scheduled task =
     let
@@ -265,11 +129,6 @@ taskSchedule dates task =
 changeSchedule : (StoryTask -> msg) -> String -> StoryTask -> msg
 changeSchedule msg scheduledOn task =
     msg { task | scheduledOn = scheduledOn }
-
-
-changeLabel : (StoryTask -> msg) -> StoryTask -> msg
-changeLabel msg task =
-    msg { task | label = task.editingLabel }
 
 
 toggleCompleted : (StoryTask -> msg) -> StoryTask -> msg
