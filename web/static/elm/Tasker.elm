@@ -5,8 +5,8 @@ import Time.TimeZone exposing (TimeZone)
 import Time.TimeZones as TimeZones
 import Task
 import Html exposing (Html, div, span, text, nav, button, a, ul, li, h1, h2, h4, small, input)
-import Html.Attributes exposing (class, classList, href, type_, placeholder, value, checked)
-import Html.Events exposing (onClick)
+import Html.Attributes exposing (class, classList, href, type_, placeholder, value, checked, autofocus, disabled)
+import Html.Events exposing (onClick, onSubmit, onInput)
 import Http
 import Dom
 import String.Extra
@@ -346,10 +346,29 @@ taskForm : Model -> Html Msg
 taskForm model =
     div [ class "card mt-3" ]
         [ div [ class "card-block" ]
-            [ StoryTask.formView
-                model.currentTaskLabel
-                AddCurrentTask
-                UpdateCurrentTask
+            [ Html.form [ onSubmit AddCurrentTask ]
+                [ div [ class "form-group row" ]
+                    [ div [ class "col-sm-10" ]
+                        [ input
+                            [ type_ "text"
+                            , class "form-control form-control-lg"
+                            , placeholder "Enter new task..."
+                            , autofocus True
+                            , value model.currentTaskLabel
+                            , onInput UpdateCurrentTask
+                            ]
+                            []
+                        ]
+                    , div [ class "col-sm-2" ]
+                        [ button
+                            [ type_ "submit"
+                            , class "btn btn-primary btn-block btn-lg"
+                            , disabled (model.currentTaskLabel == "")
+                            ]
+                            [ text "Create" ]
+                        ]
+                    ]
+                ]
             , taskList model
             ]
         ]

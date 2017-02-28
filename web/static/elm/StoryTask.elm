@@ -7,7 +7,6 @@ module StoryTask
         , makeEmptyCurrentDates
         , timeToCurrentDates
         , taskSchedule
-        , formView
         , listView
         )
 
@@ -25,7 +24,6 @@ import Html.Attributes
         , type_
         , placeholder
         , value
-        , autofocus
         , disabled
         , name
         , checked
@@ -98,33 +96,6 @@ timeToCurrentDates timeZone time =
 
 
 -- VIEW
-
-
-formView : String -> msg -> (String -> msg) -> Html msg
-formView currentLabel addTaskMsg updateTaskMsg =
-    form [ onSubmit addTaskMsg ]
-        [ div [ class "form-group row" ]
-            [ div [ class "col-sm-10" ]
-                [ input
-                    [ type_ "text"
-                    , class "form-control form-control-lg"
-                    , placeholder "Enter new task..."
-                    , autofocus True
-                    , value currentLabel
-                    , onInput updateTaskMsg
-                    ]
-                    []
-                ]
-            , div [ class "col-sm-2" ]
-                [ button
-                    [ type_ "submit"
-                    , class "btn btn-primary btn-block btn-lg"
-                    , disabled (currentLabel == "")
-                    ]
-                    [ text "Create" ]
-                ]
-            ]
-        ]
 
 
 listView :
