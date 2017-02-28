@@ -172,7 +172,7 @@ update msg model =
             model ! []
 
         UpdateCurrentDates time ->
-            ( updateCurrentDatesFromTime time model, Cmd.none )
+            ( { model | dates = StoryTask.timeToCurrentDates model.timeZone time }, Cmd.none )
 
         ClearMessage ->
             { model | message = MessageNone } ! []
@@ -320,11 +320,6 @@ httpErrorToMessage error =
             (toString error)
 
 
-updateCurrentDatesFromTime : Time -> Model -> Model
-updateCurrentDatesFromTime time model =
-    { model | dates = StoryTask.timeToCurrentDates model.timeZone time }
-
-
 
 -- VIEW
 
@@ -358,16 +353,11 @@ view model =
         , div
             [ class "container below-navbar" ]
             [ messageView model.message
-            , homeView model
+            , div [ class "mt-3" ]
+                [ h2 [] [ text "Tasker" ]
+                , taskForm model
+                ]
             ]
-        ]
-
-
-homeView : Model -> Html Msg
-homeView model =
-    div [ class "mt-3" ]
-        [ h2 [] [ text "Tasker" ]
-        , taskForm model
         ]
 
 
