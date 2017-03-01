@@ -18,6 +18,7 @@ import Html
         , h1
         , h2
         , h4
+        , h6
         , small
         , input
         )
@@ -73,6 +74,7 @@ type alias Model =
     , message : AppMessage
     , dates : StoryTask.CurrentDates
     , timeZone : TimeZone
+    , showSummary : Bool
     , currentTaskLabel : String
     , currentTaskSeq : Int
     , tasks : List StoryTask
@@ -83,6 +85,8 @@ type alias Model =
 
 type Msg
     = NoOp
+    | ShowSummary
+    | HideSummary
     | FetchTasks (Result Http.Error (List StoryTask))
     | CreateTask (Result Http.Error CreateTaskResponse)
     | UpdateTask (Result Http.Error StoryTask)
@@ -131,6 +135,7 @@ initialModel config =
     , message = MessageNone
     , dates = StoryTask.makeEmptyCurrentDates
     , timeZone = TimeZones.utc ()
+    , showSummary = False
     , currentTaskLabel = ""
     , currentTaskSeq = 1
     , tasks = []
@@ -170,6 +175,12 @@ update msg model =
     case msg of
         NoOp ->
             model ! []
+
+        ShowSummary ->
+            { model | showSummary = True } ! []
+
+        HideSummary ->
+            { model | showSummary = False } ! []
 
         UpdateCurrentDates time ->
             ( { model | dates = StoryTask.timeToCurrentDates model.timeZone time }, Cmd.none )
@@ -354,11 +365,90 @@ view model =
             [ class "container below-navbar" ]
             [ messageView model.message
             , div [ class "mt-3" ]
-                [ h2 [] [ text "Tasker" ]
+                [ div [ class "row" ]
+                    [ div [ class "col" ]
+                        [ h2 [] [ text "Tasker" ] ]
+                    , div [ class "col" ]
+                        [ button
+                            [ class "btn btn-outline-info pull-right"
+                            , type_ "button"
+                            , onClick ShowSummary
+                            ]
+                            [ Html.i [ class "fa fa-calendar" ] []
+                            , text " Summary"
+                            ]
+                        ]
+                    ]
                 , taskForm model
                 ]
             ]
+        , summaryModal model.showSummary
         ]
+
+
+summaryModal : Bool -> Html Msg
+summaryModal show =
+    let
+        display =
+            if show then
+                "block"
+            else
+                "none"
+    in
+        div []
+            [ div
+                [ class "modal fade"
+                , classList [ ( "show", show ) ]
+                , style [ ( "display", display ) ]
+                ]
+                [ div [ class "modal-dialog" ]
+                    [ div [ class "modal-content" ]
+                        [ div [ class "modal-header" ]
+                            [ h4 [ class "modal-title w-100 text-center" ]
+                                [ text "Scrum Summary" ]
+                            , button
+                                [ type_ "button"
+                                , class "close"
+                                , onClick HideSummary
+                                ]
+                                [ span [] [ text "×" ] ]
+                            ]
+                        , div [ class "modal-body " ]
+                            [ div [ class "mt-3 mb-4" ]
+                                [ h6 [ class "text-center mb-3" ] [ text "Yesterday" ]
+                                , ul []
+                                    [ li [] [ text "Lorem ipsum dolor sit amet, consectetur adipisicing elit" ]
+                                    , li [] [ text "sed do eiusmod tempor incididunt" ]
+                                    ]
+                                ]
+                            , div [ class "mt-3 mb-4" ]
+                                [ h6 [ class "text-center mb-3" ] [ text "Today" ]
+                                , ul []
+                                    [ li [] [ text "ut labore et dolore" ]
+                                    , li [] [ text "magna aliqua" ]
+                                    , li [] [ text "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi" ]
+                                    ]
+                                ]
+                            ]
+                        , div [ class "modal-footer" ]
+                            [ button
+                                [ type_ "button"
+                                , class "btn btn-primary"
+                                , onClick HideSummary
+                                ]
+                                [ text "Done" ]
+                            ]
+                        ]
+                    ]
+                ]
+            , div
+                [ class "modal-backdrop fade"
+                , classList [ ( "show", show ) ]
+                , style [ ( "display", display ) ]
+                , onClick HideSummary
+                ]
+                []
+            ]
 
 
 taskForm : Model -> Html Msg
