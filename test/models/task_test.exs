@@ -3,7 +3,7 @@ defmodule Serge.TaskTest do
 
   alias Serge.Task
 
-  @valid_attrs %{completed_on: %{day: 17, hour: 14, min: 0, month: 4, sec: 0, year: 2010}, label: "some content", rank: 42}
+  @valid_attrs %{completed: false, label: "some content", rank: 42, scheduled_on: "2017-03-09", user_id: 12}
   @invalid_attrs %{}
 
   test "changeset with valid attributes" do
