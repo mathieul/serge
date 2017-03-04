@@ -54,6 +54,7 @@ defmodule Serge.Mixfile do
       {:comeonin, "~> 3.0"},
       {:cowboy, "~> 1.1.2"},
       {:ecto_ordered, "~> 0.2.0-beta1"},
+      {:ex_machina, "~> 2.0", only: :test},
       {:exrm, "~> 1.0.8"},
       {:gettext, "~> 0.13.1"},
       {:oauth2, "~> 0.9"},
