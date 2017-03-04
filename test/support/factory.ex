@@ -11,7 +11,7 @@ defmodule Serge.Factory do
     %Serge.Task{
       user:         build(:user),
       label:        sequence("Do that thing #"),
-      scheduled_on: "2017-03-09",
+      scheduled_on: Serge.DateHelpers.tomorrow,
       rank:         sequence(:rank, fn n -> n end),
     }
   end

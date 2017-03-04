@@ -29,7 +29,7 @@ defmodule Serge.Task do
     case get_field(changeset, :completed) do
       true ->
         if completed_on == nil do
-           put_change(changeset, :completed_on, now())
+           put_change(changeset, :completed_on, Serge.DateHelpers.today())
          else
            changeset
         end
@@ -44,12 +44,6 @@ defmodule Serge.Task do
       _ ->
         changeset
     end
-  end
-
-  defp now do
-    Timex.local
-      |> Timex.format!("%Y-%m-%d", :strftime)
-      |> Ecto.Date.cast!
   end
 
   def all_ordered_for_user_id(user_id) do
