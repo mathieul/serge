@@ -1,7 +1,7 @@
 defmodule Serge.Resolvers.Task do
-
   alias Serge.Task
   alias Serge.Repo
+  alias Serge.DateHelpers
 
   def find(_parent, %{ id: id }, _info) do
     case Repo.get(Task, id) do
@@ -12,7 +12,7 @@ defmodule Serge.Resolvers.Task do
 
   def all(_parent, args, %{context: ctx}) do
     from = if args[:completed_yesterday] do
-      Repo.one(Task.guess_yesterdays_work_day)
+      Repo.one(Task.guess_yesterdays_work_day) || DateHelpers.today()
     else
       nil
     end
@@ -24,8 +24,9 @@ defmodule Serge.Resolvers.Task do
     end
     tasks =
       scope
-      |> Task.ordered_for_user_id(ctx.current_user.id)
-      |> Repo.all
+      |> Task.for_user_id(ctx.current_user.id)
+      |> Task.ordered_by_schedule_and_rank()
+      |> Repo.all()
       |> Repo.preload(:user)
       |> Enum.map(&Task.infer_completed/1)
     { :ok, tasks }

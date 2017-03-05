@@ -56,17 +56,21 @@ defmodule Serge.Task do
   # Queries
   ###
 
-  def ordered_for_user_id(scope \\ __MODULE__, user_id) do
-    from(t in scope, where: t.user_id == ^user_id, order_by: t.rank)
+  def for_user_id(scope \\ __MODULE__, user_id) do
+    from(t in scope, where: t.user_id == ^user_id)
+  end
+
+  def ordered_by_schedule_and_rank(scope \\ __MODULE__) do
+    from(t in scope, order_by: [t.scheduled_on, t.rank])
+  end
+
+  def excluding_completed(scope \\ __MODULE__) do
+    from(t in scope, where: is_nil(t.completed_on))
   end
 
   def guess_yesterdays_work_day(scope \\ __MODULE__) do
     today = DateHelpers.today()
     from(t in scope, where: t.completed_on < ^today, select: max(t.completed_on))
-  end
-
-  def excluding_completed(scope \\ __MODULE__) do
-    from(t in scope, where: is_nil(t.completed_on))
   end
 
   def including_completed_from(scope \\ __MODULE__, date) do

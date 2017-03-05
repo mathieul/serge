@@ -1,4 +1,4 @@
-defmodule Serge.TaskTest do
+defmodule Serge.QueryTaskTest do
   use ExUnit.Case, async: true
   import Serge.Factory
   alias Serge.DateHelpers, as: DH
@@ -28,8 +28,9 @@ defmodule Serge.TaskTest do
 
   describe "completedYesterday: true - requiring tasks completed yesterday" do
     setup ctx do
+      three_ago = DH.days_ago(3)
       tasks = %{
-        done:      insert(:task, user: ctx[:user], label: "Done 3 days ago", completed_on: DH.days_ago(3)),
+        done:      insert(:task, user: ctx[:user], label: "Done 3 days ago", scheduled_on: three_ago, completed_on: three_ago),
         yesterday: insert(:task, user: ctx[:user], label: "Yesterday", scheduled_on: DH.yesterday),
         today:     insert(:task, user: ctx[:user], label: "Today",     scheduled_on: DH.today),
         tomorrow:  insert(:task, user: ctx[:user], label: "Tomorrow",  scheduled_on: DH.tomorrow),
@@ -41,6 +42,29 @@ defmodule Serge.TaskTest do
       doc = "query { tasks(completedYesterday: false) { label } }"
       {:ok, %{data: result}} = run(doc, ctx[:user].id)
       assert task_labels(result) == ["Yesterday", "Today", "Tomorrow"]
+    end
+
+    test "it returns tasks returned 'yesterday' if true", ctx do
+      doc = "query { tasks(completedYesterday: true) { label } }"
+      {:ok, %{data: result}} = run(doc, ctx[:user].id)
+      assert task_labels(result) == ["Done 3 days ago", "Yesterday", "Today", "Tomorrow"]
+    end
+
+    test "it doesn't return tasks completed before 'yesterday'", ctx do
+      insert(:task, user: ctx[:user], label: "Done 1 day ago", scheduled_on: DH.days_ago(2), completed_on: DH.days_ago(1))
+
+      doc = "query { tasks(completedYesterday: true) { label } }"
+      {:ok, %{data: result}} = run(doc, ctx[:user].id)
+      assert task_labels(result) == ["Done 1 day ago", "Yesterday", "Today", "Tomorrow"]
+    end
+
+    test "it also returns tasks completed today when none completed before", ctx do
+      Serge.Repo.delete(ctx[:tasks].done)
+      insert(:task, user: ctx[:user], label: "Done today", scheduled_on: DH.days_from_now(3), completed_on: DH.today())
+
+      doc = "query { tasks(completedYesterday: true) { label } }"
+      {:ok, %{data: result}} = run(doc, ctx[:user].id)
+      assert task_labels(result) == ["Yesterday", "Today", "Tomorrow", "Done today"]
     end
   end
 
