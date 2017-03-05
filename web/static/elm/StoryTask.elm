@@ -9,6 +9,7 @@ module StoryTask
         , taskSchedule
         , taskControls
         , toggleCompleted
+        , completeToggler
         )
 
 import Time exposing (Time)
@@ -17,7 +18,7 @@ import Time.TimeZone exposing (TimeZone)
 import Time.ZonedDateTime as ZonedDateTime
 import Time.Date as Date exposing (Date)
 import Html exposing (Html, div, button, text)
-import Html.Attributes exposing (class, type_, disabled)
+import Html.Attributes exposing (class, classList, type_, disabled)
 import Html.Events exposing (onInput, onSubmit, onClick, onDoubleClick)
 
 
@@ -88,6 +89,18 @@ timeToCurrentDates timeZone time =
 -- VIEW
 
 
+taskSchedule : CurrentDates -> StoryTask -> Scheduled
+taskSchedule dates task =
+    if task.scheduledOn < dates.today then
+        ScheduledYesterday
+    else if task.scheduledOn == dates.today then
+        ScheduledToday
+    else if task.scheduledOn == dates.tomorrow then
+        ScheduledTomorrow
+    else
+        ScheduledLater
+
+
 taskControls : CurrentDates -> (StoryTask -> msg) -> Bool -> Scheduled -> StoryTask -> List (Html msg)
 taskControls dates updateMsg allowYesterday scheduled task =
     let
@@ -114,16 +127,22 @@ taskControls dates updateMsg allowYesterday scheduled task =
             commonButtons
 
 
-taskSchedule : CurrentDates -> StoryTask -> Scheduled
-taskSchedule dates task =
-    if task.scheduledOn < dates.today then
-        ScheduledYesterday
-    else if task.scheduledOn == dates.today then
-        ScheduledToday
-    else if task.scheduledOn == dates.tomorrow then
-        ScheduledTomorrow
-    else
-        ScheduledLater
+completeToggler : (StoryTask -> msg) -> StoryTask -> Html msg
+completeToggler msg task =
+    button
+        [ class "btn btn-sm btn-outline-primary ml-4"
+        , type_ "button"
+        , onClick (toggleCompleted msg task)
+        ]
+        [ Html.i
+            [ class "fa "
+            , classList
+                [ ( "fa-check", task.completed )
+                , ( "empty", not task.completed )
+                ]
+            ]
+            []
+        ]
 
 
 changeSchedule : (StoryTask -> msg) -> String -> StoryTask -> msg

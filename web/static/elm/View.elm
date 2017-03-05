@@ -68,7 +68,7 @@ view model =
                 ]
             ]
         , div
-            [ class "container below-navbar" ]
+            [ class "container" ]
             [ messageView model.message
             , div [ class "mt-3" ]
                 [ div [ class "row" ]
@@ -76,7 +76,7 @@ view model =
                         [ h2 [] [ text "Tasker" ] ]
                     , div [ class "col" ]
                         [ button
-                            [ class "btn btn-outline-info pull-right"
+                            [ class "btn btn-outline-info pull-right mr-4"
                             , type_ "button"
                             , onClick ShowSummary
                             ]
@@ -270,24 +270,17 @@ taskViewer dates allowYesterday task =
                     (StoryTask.taskControls dates RequestTaskUpdate allowYesterday scheduled task)
     in
         li [ class "list-group-item d-flex flex-column align-items-start" ]
-            [ div [ class " w-100 d-flex justify-content-between" ]
+            [ div [ class " w-100 d-flex justify-content-between align-items-center" ]
                 [ label
-                , div []
+                , div
+                    [ class "d-flex justify-content-end"
+                    , classList
+                        [ ( "task-commands", not allowYesterday )
+                        , ( "task-commands-yesterday", allowYesterday )
+                        ]
+                    ]
                     [ scheduleControls
-                    , button
-                        [ class "btn btn-sm btn-outline-primary ml-4"
-                        , type_ "button"
-                        , onClick (StoryTask.toggleCompleted RequestTaskUpdate task)
-                        ]
-                        [ Html.i
-                            [ class "fa "
-                            , classList
-                                [ ( "fa-check", task.completed )
-                                , ( "empty", not task.completed )
-                                ]
-                            ]
-                            []
-                        ]
+                    , StoryTask.completeToggler RequestTaskUpdate task
                     ]
                 ]
             ]

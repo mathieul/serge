@@ -1,10 +1,6 @@
 @import "bootstrap";
 @import "font-awesome";
 
-.below-navbar {
-  padding-top: 56px;
-}
-
 .fa.empty {
   width: 14px;
 }
@@ -12,4 +8,12 @@
 .py-1-5 {
   padding-top: 0.4em;
   padding-bottom: 0.4em;
+}
+
+.task-commands {
+  min-width: 240px;
+}
+
+.task-commands-yesterday {
+  min-width: 320px;
 }
