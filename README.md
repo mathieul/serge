@@ -31,6 +31,9 @@ Bump application version in `mix.exs` (i.e.: 0.0.5) and run as user `elixir`:
 
     $ cd dev/serge
     $ git pull
+    $ mix deps.get
+    $ yarn
+    $ elm package install -y
     $ brunch build && mix do phoenix.digest, compile, release
     $ cp -r rel/serge/releases/0.0.5/ /apps/serge/releases/
     $ cd /apps/serge
