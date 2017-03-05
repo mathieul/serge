@@ -1,6 +1,7 @@
 defmodule Serge.Task do
   use Serge.Web, :model
   import EctoOrdered
+  alias Serge.DateHelpers
 
   schema "tasks" do
     field :label,         :string
@@ -29,7 +30,7 @@ defmodule Serge.Task do
     case get_field(changeset, :completed) do
       true ->
         if completed_on == nil do
-           put_change(changeset, :completed_on, Serge.DateHelpers.today())
+           put_change(changeset, :completed_on, DateHelpers.today())
          else
            changeset
         end
@@ -46,12 +47,29 @@ defmodule Serge.Task do
     end
   end
 
-  def all_ordered_for_user_id(user_id) do
-    from(t in __MODULE__, where: t.user_id == ^user_id, order_by: t.rank)
-  end
-
-  def set_virtual_fields(task) do
+  def infer_completed(task) do
     task
     |> Map.put(:completed, !!task.completed_on)
+  end
+
+  ###
+  # Queries
+  ###
+
+  def ordered_for_user_id(scope \\ __MODULE__, user_id) do
+    from(t in scope, where: t.user_id == ^user_id, order_by: t.rank)
+  end
+
+  def guess_yesterdays_work_day(scope \\ __MODULE__) do
+    today = DateHelpers.today()
+    from(t in scope, where: t.completed_on < ^today, select: max(t.completed_on))
+  end
+
+  def excluding_completed(scope \\ __MODULE__) do
+    from(t in scope, where: is_nil(t.completed_on))
+  end
+
+  def including_completed_from(scope \\ __MODULE__, date) do
+    from(t in scope, where: t.completed_on >= ^date or is_nil(t.completed_on))
   end
 end

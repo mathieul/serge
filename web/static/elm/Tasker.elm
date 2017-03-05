@@ -237,7 +237,7 @@ update msg model =
 
         FetchTasks (Err error) ->
             ( { model
-                | message = MessageError "An error occurred while fetching tasks."
+                | message = MessageError <| "Fetching tasks failed: " ++ (httpErrorToMessage error)
               }
             , Cmd.none
             )

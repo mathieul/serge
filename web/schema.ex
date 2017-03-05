@@ -23,6 +23,8 @@ defmodule Serge.Schema do
     end
 
     field :tasks, list_of(:task) do
+      arg :completed_yesterday, :boolean
+
       resolve &Resolvers.Task.all/3
     end
   end

@@ -10,11 +10,24 @@ defmodule Serge.Resolvers.Task do
     end
   end
 
-  def all(_parent, _args, %{context: ctx}) do
-    tasks = Task.all_ordered_for_user_id(ctx.current_user.id)
+  def all(_parent, args, %{context: ctx}) do
+    from = if args[:completed_yesterday] do
+      Repo.one(Task.guess_yesterdays_work_day)
+    else
+      nil
+    end
+
+    scope = if from do
+      Task.including_completed_from(from)
+    else
+      Task.excluding_completed
+    end
+    tasks =
+      scope
+      |> Task.ordered_for_user_id(ctx.current_user.id)
       |> Repo.all
       |> Repo.preload(:user)
-      |> Enum.map(&Task.set_virtual_fields/1)
+      |> Enum.map(&Task.infer_completed/1)
     { :ok, tasks }
   end
 
@@ -27,7 +40,7 @@ defmodule Serge.Resolvers.Task do
     changeset = Task.changeset(%Task{}, params)
     case Repo.insert(changeset) do
       { :ok, task } ->
-        { :ok, %{ tid: tid, task: Task.set_virtual_fields(task) } }
+        { :ok, %{ tid: tid, task: Task.infer_completed(task) } }
 
       { :error, changeset } ->
         { :error, changeset.errors }
@@ -40,7 +53,7 @@ defmodule Serge.Resolvers.Task do
 
     case Repo.update(changeset) do
       { :ok, task } ->
-        {:ok, Task.set_virtual_fields(task) }
+        {:ok, Task.infer_completed(task) }
 
       { :error, changeset } ->
         { :error, changeset.errors }
