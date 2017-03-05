@@ -382,73 +382,71 @@ view model =
                 , taskForm model
                 ]
             ]
-        , summaryModal model.showSummary
+        , summaryModal model
         ]
 
 
-summaryModal : Bool -> Html Msg
-summaryModal show =
+summaryModal : Model -> Html Msg
+summaryModal model =
     let
-        display =
-            if show then
-                "block"
-            else
-                "none"
+        completedTasks =
+            List.filter (\task -> task.completed) model.tasks
+
+        scheduledTasks =
+            List.filter (\task -> not task.completed && task.scheduledOn <= model.dates.today) model.tasks
     in
-        div []
-            [ div
-                [ class "modal fade"
-                , classList [ ( "show", show ) ]
-                , style [ ( "display", display ) ]
-                ]
-                [ div [ class "modal-dialog" ]
-                    [ div [ class "modal-content" ]
-                        [ div [ class "modal-header" ]
-                            [ h4 [ class "modal-title w-100 text-center" ]
-                                [ text "Scrum Summary" ]
-                            , button
-                                [ type_ "button"
-                                , class "close"
-                                , onClick HideSummary
+        if model.showSummary then
+            div []
+                [ div
+                    [ class "modal fade show"
+                    , style [ ( "display", "block" ) ]
+                    ]
+                    [ div [ class "modal-dialog" ]
+                        [ div [ class "modal-content" ]
+                            [ div [ class "modal-header" ]
+                                [ h4 [ class "modal-title w-100 text-center" ]
+                                    [ text "Scrum Summary" ]
+                                , button
+                                    [ type_ "button"
+                                    , class "close"
+                                    , onClick HideSummary
+                                    ]
+                                    [ span [] [ text "×" ] ]
                                 ]
-                                [ span [] [ text "×" ] ]
-                            ]
-                        , div [ class "modal-body " ]
-                            [ div [ class "mt-3 mb-4" ]
-                                [ h6 [ class "text-center mb-3" ] [ text "Yesterday" ]
-                                , ul []
-                                    [ li [] [ text "Lorem ipsum dolor sit amet, consectetur adipisicing elit" ]
-                                    , li [] [ text "sed do eiusmod tempor incididunt" ]
+                            , div [ class "modal-body " ]
+                                [ div [ class "mt-3 mb-4" ]
+                                    [ h6 [ class "text-center mb-3" ] [ text "Yesterday" ]
+                                    , ul [] (List.map summaryTaskView completedTasks)
+                                    ]
+                                , div [ class "mt-3 mb-4" ]
+                                    [ h6 [ class "text-center mb-3" ] [ text "Today" ]
+                                    , ul [] (List.map summaryTaskView scheduledTasks)
                                     ]
                                 ]
-                            , div [ class "mt-3 mb-4" ]
-                                [ h6 [ class "text-center mb-3" ] [ text "Today" ]
-                                , ul []
-                                    [ li [] [ text "ut labore et dolore" ]
-                                    , li [] [ text "magna aliqua" ]
-                                    , li [] [ text "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi" ]
+                            , div [ class "modal-footer" ]
+                                [ button
+                                    [ type_ "button"
+                                    , class "btn btn-primary"
+                                    , onClick HideSummary
                                     ]
+                                    [ text "Done" ]
                                 ]
-                            ]
-                        , div [ class "modal-footer" ]
-                            [ button
-                                [ type_ "button"
-                                , class "btn btn-primary"
-                                , onClick HideSummary
-                                ]
-                                [ text "Done" ]
                             ]
                         ]
                     ]
+                , div
+                    [ class "modal-backdrop fade show"
+                    , onClick HideSummary
+                    ]
+                    []
                 ]
-            , div
-                [ class "modal-backdrop fade"
-                , classList [ ( "show", show ) ]
-                , style [ ( "display", display ) ]
-                , onClick HideSummary
-                ]
-                []
-            ]
+        else
+            div [] []
+
+
+summaryTaskView : StoryTask -> Html Msg
+summaryTaskView task =
+    li [] [ text task.label ]
 
 
 taskForm : Model -> Html Msg
