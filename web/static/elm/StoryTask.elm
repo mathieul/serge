@@ -30,6 +30,7 @@ type alias StoryTask =
     , label : String
     , rank : Int
     , completed : Bool
+    , completedOn : Maybe String
     , scheduledOn : String
     , editing : Bool
     , editingLabel : String
@@ -57,6 +58,7 @@ makeNewTask sequence label count scheduledOn =
     , label = label
     , rank = count + 1
     , completed = False
+    , completedOn = Nothing
     , scheduledOn = scheduledOn
     , editing = False
     , editingLabel = ""
@@ -127,12 +129,12 @@ taskControls dates updateMsg allowYesterday scheduled task =
             commonButtons
 
 
-completeToggler : (StoryTask -> msg) -> StoryTask -> Html msg
-completeToggler msg task =
+completeToggler : (StoryTask -> msg) -> String -> StoryTask -> Html msg
+completeToggler msg today task =
     button
         [ class "btn btn-sm btn-outline-primary ml-4"
         , type_ "button"
-        , onClick (toggleCompleted msg task)
+        , onClick (toggleCompleted msg today task)
         ]
         [ Html.i
             [ class "fa "
@@ -150,9 +152,17 @@ changeSchedule msg scheduledOn task =
     msg { task | scheduledOn = scheduledOn }
 
 
-toggleCompleted : (StoryTask -> msg) -> StoryTask -> msg
-toggleCompleted msg task =
-    msg { task | completed = not task.completed }
+toggleCompleted : (StoryTask -> msg) -> String -> StoryTask -> msg
+toggleCompleted msg today task =
+    msg
+        { task
+            | completed = not task.completed
+            , completedOn =
+                if task.completed then
+                    Nothing
+                else
+                    Just today
+        }
 
 
 scheduleButton : Scheduled -> Scheduled -> msg -> Html msg

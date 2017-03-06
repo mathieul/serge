@@ -27,11 +27,12 @@ type alias CreateTaskResponse =
 
 taskDecoder : JD.Decoder StoryTask
 taskDecoder =
-    JD.map7 StoryTask
+    JD.map8 StoryTask
         (JD.field "id" JD.string)
         (JD.field "label" JD.string)
         (JD.field "rank" JD.int)
         (JD.field "completed" JD.bool)
+        (JD.field "completedOn" <| JD.nullable JD.string)
         (JD.field "scheduledOn" JD.string)
         (JD.succeed False)
         (JD.field "label" JD.string)
@@ -73,6 +74,7 @@ fetchTasksQuery =
         label
         rank
         completed
+        completedOn
         scheduledOn
       }
     }
@@ -100,6 +102,7 @@ makeTaskMutation =
           label
           rank
           completed
+          completedOn
           scheduledOn
         }
       }
@@ -137,6 +140,7 @@ updateTaskMutation =
       label
       rank
       completed
+      completedOn
       scheduledOn
     }
   }

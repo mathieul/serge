@@ -100,6 +100,12 @@ summaryModal model =
 
         scheduledTasks =
             List.filter (\task -> not task.completed && task.scheduledOn <= model.dates.today) model.tasks
+
+        earliestYesterday =
+            completedTasks
+                |> List.map (\task -> Maybe.withDefault "" task.completedOn)
+                |> List.minimum
+                |> Maybe.withDefault ""
     in
         if model.showSummary then
             div []
@@ -121,11 +127,16 @@ summaryModal model =
                                 ]
                             , div [ class "modal-body " ]
                                 [ div [ class "mt-3 mb-4" ]
-                                    [ h6 [ class "text-center mb-3" ] [ text "Yesterday" ]
+                                    [ h6 [ class "text-center mb-3" ]
+                                        [ text "Yesterday"
+                                        , small [ class "ml-1 text-muted" ]
+                                            [ text <| "(" ++ earliestYesterday ++ ")" ]
+                                        ]
                                     , ul [] (List.map summaryTaskView completedTasks)
                                     ]
                                 , div [ class "mt-3 mb-4" ]
-                                    [ h6 [ class "text-center mb-3" ] [ text "Today" ]
+                                    [ h6 [ class "text-center mb-3" ]
+                                        [ text "Today" ]
                                     , ul [] (List.map summaryTaskView scheduledTasks)
                                     ]
                                 ]
@@ -280,7 +291,7 @@ taskViewer dates allowYesterday task =
                         ]
                     ]
                     [ scheduleControls
-                    , StoryTask.completeToggler RequestTaskUpdate task
+                    , StoryTask.completeToggler RequestTaskUpdate dates.today task
                     ]
                 ]
             ]
