@@ -301,7 +301,7 @@ taskEditor : StoryTask -> Html Msg
 taskEditor task =
     let
         updateEditingLabelMsg editingLabel =
-            UpdateEditingTask task.id False editingLabel
+            UpdateEditingTask task.id True editingLabel
     in
         Html.form
             [ class "px-2 py-1-5"
@@ -329,7 +329,7 @@ taskEditor task =
                 , button
                     [ type_ "button"
                     , class "btn btn-secondary btn-sm"
-                    , onClick <| UpdateEditingTask task.id False task.editingLabel
+                    , onClick <| UpdateEditingTask task.id False task.label
                     ]
                     [ text "Cancel" ]
                 ]
