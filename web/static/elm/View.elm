@@ -68,7 +68,7 @@ view model =
                 ]
             ]
         , div
-            [ class "container" ]
+            [ class "container-fluid" ]
             [ messageView model.message
             , div [ class "mt-3" ]
                 [ div [ class "row" ]
@@ -201,22 +201,39 @@ taskForm model =
 tasksView : Model -> Html Msg
 tasksView model =
     let
-        tasksWithSchedule schedules task =
-            List.member (StoryTask.taskSchedule model.dates task) schedules
+        notCompletedBeforeToday task =
+            case task.completedOn of
+                Just completedOn ->
+                    completedOn >= model.dates.today
+
+                Nothing ->
+                    True
+
+        tasks =
+            List.filter notCompletedBeforeToday model.tasks
+
+        withSchedule task =
+            ( StoryTask.taskSchedule model.dates task, task )
+
+        selectTasksForSchedules schedules =
+            tasks
+                |> List.map withSchedule
+                |> List.filter (\( schedule, task ) -> List.member schedule schedules)
+                |> List.map Tuple.second
 
         selectedTasks =
             case model.scheduleTab of
                 TabAll ->
-                    model.tasks
+                    tasks
 
                 TabToday ->
-                    List.filter (tasksWithSchedule [ ScheduledYesterday, ScheduledToday ]) model.tasks
+                    selectTasksForSchedules [ ScheduledYesterday, ScheduledToday ]
 
                 TabTomorrow ->
-                    List.filter (tasksWithSchedule [ ScheduledTomorrow ]) model.tasks
+                    selectTasksForSchedules [ ScheduledTomorrow ]
 
                 TabLater ->
-                    List.filter (tasksWithSchedule [ ScheduledLater ]) model.tasks
+                    selectTasksForSchedules [ ScheduledLater ]
     in
         div [ class "card mt-3" ]
             [ taskSelectionTabs model.scheduleTab
