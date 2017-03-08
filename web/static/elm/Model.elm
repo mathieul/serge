@@ -4,6 +4,7 @@ import Http
 import Time exposing (Time)
 import Time.TimeZone exposing (TimeZone)
 import Time.TimeZones as TimeZones
+import Bootstrap.Navbar as Navbar
 import StoryTask exposing (StoryTask, Scheduled(..))
 import Api exposing (CreateTaskResponse)
 
@@ -21,6 +22,7 @@ type alias AppConfig =
 
 type alias Model =
     { config : AppConfig
+    , navState : Navbar.State
     , message : AppMessage
     , dates : StoryTask.CurrentDates
     , timeZone : TimeZone
@@ -35,6 +37,7 @@ type alias Model =
 
 type Msg
     = NoOp
+    | NavMsg Navbar.State
     | ShowSummary
     | HideSummary
     | FetchTasks (Result Http.Error (List StoryTask))
@@ -68,9 +71,10 @@ type ScheduleTab
 -- Functions
 
 
-initialModel : AppConfig -> Model
-initialModel config =
+initialModel : AppConfig -> Navbar.State -> Model
+initialModel config navState =
     { config = config
+    , navState = navState
     , message = MessageNone
     , dates = StoryTask.makeEmptyCurrentDates
     , timeZone = TimeZones.utc ()

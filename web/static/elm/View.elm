@@ -34,6 +34,18 @@ import Html.Attributes
         , for
         )
 import Html.Events exposing (onClick, onSubmit, onInput, onDoubleClick)
+import Bootstrap.Navbar as Navbar
+import Bootstrap.Grid as Grid
+
+
+-- import Bootstrap.Card as Card
+
+import Bootstrap.Button as Button
+
+
+-- import Bootstrap.ListGroup as Listgroup
+-- import Bootstrap.Modal as Modal
+
 import Model exposing (..)
 import StoryTask exposing (StoryTask, Scheduled(..))
 
@@ -44,51 +56,57 @@ import StoryTask exposing (StoryTask, Scheduled(..))
 view : Model -> Html Msg
 view model =
     div []
-        [ nav
-            [ class "navbar navbar-toggleable-md navbar-inverse bg-primary " ]
-            [ button [ class "navbar-toggler navbar-toggler-right", type_ "button" ]
-                [ span [ class "navbar-toggler-icon" ] [] ]
-            , h1
-                [ class "navbar-brand" ]
-                [ text model.config.name
-                , small [ class "pl-3" ] [ text <| "(" ++ model.config.email ++ ")" ]
-                ]
-            , div
-                [ class "collapse navbar-collapse" ]
-                [ ul [ class "navbar-nav mr-auto" ] []
-                , span
-                    [ class "navbar-text pull-right mr-3" ]
-                    [ text model.dates.today ]
-                , span
-                    [ class "pull-right" ]
-                    [ a
-                        [ href "/auth/logout", class "btn btn-danger" ]
+        [ menu model
+        , mainContent model
+        , summaryModal model
+        ]
+
+
+menu : Model -> Html Msg
+menu model =
+    Navbar.config NavMsg
+        |> Navbar.withAnimation
+        |> Navbar.primary
+        |> Navbar.brand [ href "/" ]
+            [ text model.config.name
+            , small [ class "pl-3" ] [ text <| "(" ++ model.config.email ++ ")" ]
+            ]
+        |> Navbar.customItems
+            [ Navbar.textItem
+                [ class "pull-right mr-3" ]
+                [ text model.dates.today ]
+            , Navbar.customItem
+                (span
+                    [ class "pull-right " ]
+                    [ Button.linkButton
+                        [ Button.danger, Button.attrs [ href "/auth/logout" ] ]
                         [ text "Logout" ]
                     ]
-                ]
+                )
             ]
-        , div
-            [ class "container-fluid" ]
-            [ messageView model.message
-            , div [ class "mt-3" ]
-                [ div [ class "row" ]
-                    [ div [ class "col" ]
-                        [ h2 [] [ text "Tasker" ] ]
-                    , div [ class "col" ]
-                        [ button
-                            [ class "btn btn-outline-info pull-right mr-4"
-                            , type_ "button"
-                            , onClick ShowSummary
-                            ]
-                            [ Html.i [ class "fa fa-calendar" ] []
-                            , text " Summary"
-                            ]
+        |> Navbar.view model.navState
+
+
+mainContent : Model -> Html Msg
+mainContent model =
+    Grid.containerFluid []
+        [ messageView model.message
+        , div [ class "mt-3" ]
+            [ Grid.row []
+                [ Grid.col []
+                    [ h2 [] [ text "Tasker" ] ]
+                , Grid.col []
+                    [ Button.button
+                        [ Button.outlineInfo
+                        , Button.attrs [ class "pull-right mr-4", onClick ShowSummary ]
+                        ]
+                        [ Html.i [ class "fa fa-calendar" ] []
+                        , text " Summary"
                         ]
                     ]
-                , taskForm model
                 ]
+            , taskForm model
             ]
-        , summaryModal model
         ]
 
 

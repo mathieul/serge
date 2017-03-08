@@ -6,6 +6,7 @@ import Html
 import Http
 import Task
 import Dom
+import Bootstrap.Navbar as Navbar
 import Model exposing (..)
 import View exposing (..)
 import StoryTask exposing (StoryTask, Scheduled(..))
@@ -31,13 +32,18 @@ main =
 
 init : AppConfig -> ( Model, Cmd Msg )
 init config =
-    ( initialModel config
-    , Cmd.batch
-        [ Task.perform UpdateCurrentDates Time.now
-        , Http.send FetchTasks Api.fetchTasksRequest
-        , getTimeZone ()
-        ]
-    )
+    let
+        ( navState, navCmd ) =
+            Navbar.initialState NavMsg
+    in
+        ( initialModel config navState
+        , Cmd.batch
+            [ navCmd
+            , Task.perform UpdateCurrentDates Time.now
+            , Http.send FetchTasks Api.fetchTasksRequest
+            , getTimeZone ()
+            ]
+        )
 
 
 
@@ -71,6 +77,9 @@ update msg model =
     case msg of
         NoOp ->
             model ! []
+
+        NavMsg state ->
+            { model | navState = state } ! []
 
         ShowSummary ->
             { model | showSummary = True } ! []
