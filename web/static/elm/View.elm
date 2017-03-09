@@ -44,8 +44,8 @@ import Bootstrap.Button as Button
 
 
 -- import Bootstrap.ListGroup as Listgroup
--- import Bootstrap.Modal as Modal
 
+import Bootstrap.Modal as Modal
 import Model exposing (..)
 import StoryTask exposing (StoryTask, Scheduled(..))
 
@@ -124,64 +124,33 @@ summaryModal model =
                 |> List.map (\task -> Maybe.withDefault "" task.completedOn)
                 |> List.minimum
                 |> Maybe.withDefault ""
+
+        summaryTaskView task =
+            li [] [ text task.label ]
     in
-        if model.showSummary then
-            div []
-                [ div
-                    [ class "modal fade show"
-                    , style [ ( "display", "block" ) ]
-                    ]
-                    [ div [ class "modal-dialog" ]
-                        [ div [ class "modal-content" ]
-                            [ div [ class "modal-header" ]
-                                [ h4 [ class "modal-title w-100 text-center" ]
-                                    [ text "Scrum Summary" ]
-                                , button
-                                    [ type_ "button"
-                                    , class "close"
-                                    , onClick HideSummary
-                                    ]
-                                    [ span [] [ text "×" ] ]
-                                ]
-                            , div [ class "modal-body " ]
-                                [ div [ class "mt-3 mb-4" ]
-                                    [ h6 [ class "text-center mb-3" ]
-                                        [ text "Yesterday"
-                                        , small [ class "ml-1 text-muted" ]
-                                            [ text <| "(" ++ earliestYesterday ++ ")" ]
-                                        ]
-                                    , ul [] (List.map summaryTaskView completedTasks)
-                                    ]
-                                , div [ class "mt-3 mb-4" ]
-                                    [ h6 [ class "text-center mb-3" ]
-                                        [ text "Today" ]
-                                    , ul [] (List.map summaryTaskView scheduledTasks)
-                                    ]
-                                ]
-                            , div [ class "modal-footer" ]
-                                [ button
-                                    [ type_ "button"
-                                    , class "btn btn-primary"
-                                    , onClick HideSummary
-                                    ]
-                                    [ text "Done" ]
-                                ]
-                            ]
+        Modal.config ModalMsg
+            |> Modal.h4 [ class "w-100 text-center" ] [ text "Scrum Summary" ]
+            |> Modal.body []
+                [ div [ class "mt-3 mb-4" ]
+                    [ h6 [ class "text-center mb-3" ]
+                        [ text "Yesterday"
+                        , small [ class "ml-1 text-muted" ]
+                            [ text <| "(" ++ earliestYesterday ++ ")" ]
                         ]
+                    , ul [] (List.map summaryTaskView completedTasks)
                     ]
-                , div
-                    [ class "modal-backdrop fade show"
-                    , onClick HideSummary
+                , div [ class "mt-3 mb-4" ]
+                    [ h6 [ class "text-center mb-3" ]
+                        [ text "Today" ]
+                    , ul [] (List.map summaryTaskView scheduledTasks)
                     ]
-                    []
                 ]
-        else
-            div [] []
-
-
-summaryTaskView : StoryTask -> Html Msg
-summaryTaskView task =
-    li [] [ text task.label ]
+            |> Modal.footer []
+                [ Button.button
+                    [ Button.primary, Button.attrs [ onClick HideSummary ] ]
+                    [ text "Done" ]
+                ]
+            |> Modal.view model.modalState
 
 
 taskForm : Model -> Html Msg

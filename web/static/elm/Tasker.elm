@@ -7,6 +7,7 @@ import Http
 import Task
 import Dom
 import Bootstrap.Navbar as Navbar
+import Bootstrap.Modal as Modal
 import Model exposing (..)
 import View exposing (..)
 import StoryTask exposing (StoryTask, Scheduled(..))
@@ -81,11 +82,14 @@ update msg model =
         NavMsg state ->
             { model | navState = state } ! []
 
+        ModalMsg state ->
+            { model | modalState = state } ! []
+
         ShowSummary ->
-            { model | showSummary = True } ! []
+            { model | modalState = Modal.visibleState } ! []
 
         HideSummary ->
-            { model | showSummary = False } ! []
+            { model | modalState = Modal.hiddenState } ! []
 
         UpdateCurrentDates time ->
             ( { model | dates = StoryTask.timeToCurrentDates model.timeZone time }, Cmd.none )

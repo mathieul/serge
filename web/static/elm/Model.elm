@@ -5,6 +5,7 @@ import Time exposing (Time)
 import Time.TimeZone exposing (TimeZone)
 import Time.TimeZones as TimeZones
 import Bootstrap.Navbar as Navbar
+import Bootstrap.Modal as Modal
 import StoryTask exposing (StoryTask, Scheduled(..))
 import Api exposing (CreateTaskResponse)
 
@@ -23,10 +24,10 @@ type alias AppConfig =
 type alias Model =
     { config : AppConfig
     , navState : Navbar.State
+    , modalState : Modal.State
     , message : AppMessage
     , dates : StoryTask.CurrentDates
     , timeZone : TimeZone
-    , showSummary : Bool
     , currentTaskLabel : String
     , currentTaskSeq : Int
     , tasks : List StoryTask
@@ -38,6 +39,7 @@ type alias Model =
 type Msg
     = NoOp
     | NavMsg Navbar.State
+    | ModalMsg Modal.State
     | ShowSummary
     | HideSummary
     | FetchTasks (Result Http.Error (List StoryTask))
@@ -75,10 +77,10 @@ initialModel : AppConfig -> Navbar.State -> Model
 initialModel config navState =
     { config = config
     , navState = navState
+    , modalState = Modal.hiddenState
     , message = MessageNone
     , dates = StoryTask.makeEmptyCurrentDates
     , timeZone = TimeZones.utc ()
-    , showSummary = False
     , currentTaskLabel = ""
     , currentTaskSeq = 1
     , tasks = []
