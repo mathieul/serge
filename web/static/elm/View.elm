@@ -36,10 +36,10 @@ import Html.Attributes
 import Html.Events exposing (onClick, onSubmit, onInput, onDoubleClick)
 import Bootstrap.Navbar as Navbar
 import Bootstrap.Grid as Grid
-
-
--- import Bootstrap.Card as Card
-
+import Bootstrap.Grid.Col as Col
+import Bootstrap.Card as Card
+import Bootstrap.Form as Form
+import Bootstrap.Form.Input as Input
 import Bootstrap.Button as Button
 
 
@@ -155,32 +155,43 @@ summaryModal model =
 
 taskForm : Model -> Html Msg
 taskForm model =
-    div [ class "card mt-3" ]
-        [ div [ class "card-block" ]
-            [ Html.form [ onSubmit AddCurrentTask ]
-                [ div [ class "form-group row" ]
-                    [ div [ class "col-sm-10" ]
-                        [ input
-                            [ type_ "text"
-                            , class "form-control form-control-lg"
-                            , placeholder "Enter new task..."
+    Card.config [ Card.attrs [ class "card mt-3" ] ]
+        |> Card.block []
+            [ Card.custom <| newTaskForm model
+            , Card.custom <| tasksView model
+            ]
+        |> Card.view
+
+
+newTaskForm : Model -> Html Msg
+newTaskForm model =
+    Form.form [ onSubmit AddCurrentTask ]
+        [ Form.group []
+            [ Form.row []
+                [ Form.col [ Col.sm10 ]
+                    [ Input.text
+                        [ Input.large
+                        , Input.onInput UpdateCurrentTask
+                        , Input.value model.currentTaskLabel
+                        , Input.attrs
+                            [ placeholder "Enter new task..."
                             , autofocus True
-                            , value model.currentTaskLabel
-                            , onInput UpdateCurrentTask
                             ]
-                            []
-                        ]
-                    , div [ class "col-sm-2" ]
-                        [ button
-                            [ type_ "submit"
-                            , class "btn btn-primary btn-block btn-lg"
-                            , disabled (model.currentTaskLabel == "")
-                            ]
-                            [ text "Create" ]
                         ]
                     ]
+                , Form.col [ Col.sm2 ]
+                    [ Button.button
+                        [ Button.primary
+                        , Button.block
+                        , Button.large
+                        , Button.attrs
+                            [ type_ "submit"
+                            , disabled (model.currentTaskLabel == "")
+                            ]
+                        ]
+                        [ text "Create" ]
+                    ]
                 ]
-            , tasksView model
             ]
         ]
 
