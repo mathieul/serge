@@ -204,13 +204,16 @@ createNewTask model =
     let
         scheduledOn =
             case model.scheduleTab of
+                TabYesterday ->
+                    model.dates.yesterday
+
                 TabToday ->
                     model.dates.today
 
                 TabTomorrow ->
                     model.dates.tomorrow
 
-                _ ->
+                TabLater ->
                     model.dates.later
 
         newTask =

@@ -215,25 +215,25 @@ tasksView model =
         withSchedule task =
             ( StoryTask.taskSchedule model.dates task, task )
 
-        selectTasksForSchedules schedules =
+        selectTasksForSchedule schedule =
             tasks
                 |> List.map withSchedule
-                |> List.filter (\( schedule, task ) -> List.member schedule schedules)
+                |> List.filter (\( taskSchedule, _ ) -> taskSchedule == schedule)
                 |> List.map Tuple.second
 
         selectedTasks =
             case model.scheduleTab of
                 TabYesterday ->
-                    selectTasksForSchedules [ ScheduledYesterday ]
+                    selectTasksForSchedule ScheduledYesterday
 
                 TabToday ->
-                    selectTasksForSchedules [ ScheduledToday ]
+                    selectTasksForSchedule ScheduledToday
 
                 TabTomorrow ->
-                    selectTasksForSchedules [ ScheduledTomorrow ]
+                    selectTasksForSchedule ScheduledTomorrow
 
                 TabLater ->
-                    selectTasksForSchedules [ ScheduledLater ]
+                    selectTasksForSchedule ScheduledLater
     in
         div [ class "card mt-3" ]
             [ taskSelectionTabs model.scheduleTab
