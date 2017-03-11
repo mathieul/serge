@@ -1,5 +1,6 @@
 port module Tasker exposing (main)
 
+import Dict exposing (Dict)
 import Time exposing (Time)
 import Time.TimeZones as TimeZones
 import Html
@@ -8,6 +9,7 @@ import Task
 import Dom
 import Bootstrap.Navbar as Navbar
 import Bootstrap.Modal as Modal
+import Bootstrap.Dropdown as Dropdown
 import Model exposing (..)
 import View exposing (..)
 import StoryTask exposing (StoryTask, Scheduled(..))
@@ -85,6 +87,9 @@ update msg model =
         ModalMsg state ->
             { model | modalState = state } ! []
 
+        DropdownMsg name state ->
+            { model | dropdownStates = Dict.insert name state model.dropdownStates } ! []
+
         ShowSummary ->
             { model | modalState = Modal.visibleState } ! []
 
@@ -92,7 +97,7 @@ update msg model =
             { model | modalState = Modal.hiddenState } ! []
 
         UpdateCurrentDates time ->
-            ( { model | dates = StoryTask.timeToCurrentDates model.timeZone time }, Cmd.none )
+            { model | dates = StoryTask.timeToCurrentDates model.timeZone time } ! []
 
         ClearMessage ->
             { model | message = MessageNone } ! []
@@ -135,6 +140,7 @@ update msg model =
                     in
                         ( { model
                             | tasks = List.append model.tasks [ newTask ]
+                            , dropdownStates = Dict.insert newTask.id Dropdown.initialState model.dropdownStates
                             , currentTaskLabel = ""
                             , currentTaskSeq = model.currentTaskSeq + 1
                           }
@@ -142,7 +148,11 @@ update msg model =
                         )
 
         FetchTasks (Ok tasks) ->
-            { model | tasks = tasks } ! []
+            { model
+                | tasks = tasks
+                , dropdownStates = dropdownStatesForTasks tasks
+            }
+                ! []
 
         FetchTasks (Err error) ->
             ( { model
@@ -152,7 +162,11 @@ update msg model =
             )
 
         CreateTask (Ok response) ->
-            { model | tasks = replaceTask response.tid response.task model.tasks } ! []
+            { model
+                | tasks = replaceTask response.tid response.task model.tasks
+                , dropdownStates = model.dropdownStates
+            }
+                ! []
 
         CreateTask (Err error) ->
             ( { model
@@ -165,7 +179,11 @@ update msg model =
             model ! [ Http.send UpdateTask <| Api.updateTaskRequest task ]
 
         UpdateTask (Ok task) ->
-            { model | tasks = replaceTask task.id task model.tasks } ! []
+            { model
+                | tasks = replaceTask task.id task model.tasks
+                , dropdownStates = model.dropdownStates
+            }
+                ! []
 
         UpdateTask (Err error) ->
             ( { model
@@ -198,9 +216,17 @@ update msg model =
                 textFieldId =
                     "edit-task-" ++ id
             in
-                ( { model | tasks = tasks }
+                ( { model
+                    | tasks = tasks
+                    , dropdownStates = model.dropdownStates
+                  }
                 , Dom.focus textFieldId |> Task.attempt (\_ -> NoOp)
                 )
+
+
+dropdownStatesForTasks : List StoryTask -> Dict String Dropdown.State
+dropdownStatesForTasks tasks =
+    List.foldl (\task states -> Dict.insert task.id Dropdown.initialState states) Dict.empty tasks
 
 
 replaceTask : String -> StoryTask -> List StoryTask -> List StoryTask

@@ -1,11 +1,13 @@
 module Model exposing (..)
 
+import Dict exposing (Dict)
 import Http
 import Time exposing (Time)
 import Time.TimeZone exposing (TimeZone)
 import Time.TimeZones as TimeZones
 import Bootstrap.Navbar as Navbar
 import Bootstrap.Modal as Modal
+import Bootstrap.Dropdown as Dropdown
 import StoryTask exposing (StoryTask, Scheduled(..))
 import Api exposing (CreateTaskResponse)
 
@@ -25,6 +27,7 @@ type alias Model =
     { config : AppConfig
     , navState : Navbar.State
     , modalState : Modal.State
+    , dropdownStates : Dict String Dropdown.State
     , message : AppMessage
     , dates : StoryTask.CurrentDates
     , timeZone : TimeZone
@@ -40,6 +43,7 @@ type Msg
     = NoOp
     | NavMsg Navbar.State
     | ModalMsg Modal.State
+    | DropdownMsg String Dropdown.State
     | ShowSummary
     | HideSummary
     | FetchTasks (Result Http.Error (List StoryTask))
@@ -78,6 +82,7 @@ initialModel config navState =
     { config = config
     , navState = navState
     , modalState = Modal.hiddenState
+    , dropdownStates = Dict.empty
     , message = MessageNone
     , dates = StoryTask.makeEmptyCurrentDates
     , timeZone = TimeZones.utc ()
