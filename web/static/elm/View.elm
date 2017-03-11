@@ -1,5 +1,6 @@
 module View exposing (..)
 
+import Dict
 import String.Extra
 import Html
     exposing
@@ -41,6 +42,7 @@ import Bootstrap.Card as Card
 import Bootstrap.Form as Form
 import Bootstrap.Form.Input as Input
 import Bootstrap.Button as Button
+import Bootstrap.Dropdown as Dropdown
 
 
 -- import Bootstrap.ListGroup as Listgroup
@@ -255,7 +257,7 @@ taskList model allowYesterday tasks =
             if task.editing then
                 taskEditor task
             else
-                taskViewer model.dates allowYesterday task
+                taskViewer model allowYesterday task
     in
         if List.isEmpty tasksToShow then
             div [ class "alert alert-info mt-3" ]
@@ -267,11 +269,11 @@ taskList model allowYesterday tasks =
                 ]
 
 
-taskViewer : StoryTask.CurrentDates -> Bool -> StoryTask -> Html Msg
-taskViewer dates allowYesterday task =
+taskViewer : Model -> Bool -> StoryTask -> Html Msg
+taskViewer model allowYesterday task =
     let
         scheduled =
-            StoryTask.taskSchedule dates task
+            StoryTask.taskSchedule model.dates task
 
         startEditingMsg =
             UpdateEditingTask task.id True task.editingLabel
@@ -293,7 +295,7 @@ taskViewer dates allowYesterday task =
                 div [] []
             else
                 div [ class "btn-group" ]
-                    (StoryTask.taskControls dates RequestTaskUpdate allowYesterday scheduled task)
+                    [ taskControls model allowYesterday scheduled task ]
     in
         li [ class "list-group-item d-flex flex-column align-items-start" ]
             [ div [ class " w-100 d-flex justify-content-between align-items-center" ]
@@ -305,11 +307,60 @@ taskViewer dates allowYesterday task =
                         , ( "task-commands-yesterday", allowYesterday )
                         ]
                     ]
-                    [ scheduleControls
-                    , StoryTask.completeToggler RequestTaskUpdate dates.today task
-                    ]
+                    [ scheduleControls ]
                 ]
             ]
+
+
+actionButton : String -> String -> Bool -> StoryTask -> Dropdown.DropdownItem Msg
+actionButton date label current task =
+    if current then
+        Dropdown.buttonItem
+            [ class "text-muted" ]
+            [ Html.i [ class "fa fa-check" ] []
+            , text <| " " ++ label
+            ]
+    else
+        Dropdown.buttonItem
+            [ onClick <| StoryTask.changeSchedule RequestTaskUpdate date task ]
+            [ text label ]
+
+
+taskControls : Model -> Bool -> Scheduled -> StoryTask -> Html Msg
+taskControls model allowYesterday scheduled task =
+    let
+        state =
+            Dict.get task.id model.dropdownStates
+                |> Maybe.withDefault Dropdown.initialState
+
+        setSchedule date =
+            StoryTask.changeSchedule RequestTaskUpdate date task
+
+        completionLabel =
+            if task.completed then
+                "Uncomplete"
+            else
+                "Complete"
+
+        actions =
+            [ actionButton model.dates.today "Today" (scheduled == ScheduledToday) task
+            , actionButton model.dates.tomorrow "Tomorrow" (scheduled == ScheduledTomorrow) task
+            , actionButton model.dates.later "Later" (scheduled == ScheduledLater) task
+            , Dropdown.divider
+            , Dropdown.buttonItem
+                [ onClick <| StoryTask.toggleCompleted RequestTaskUpdate model.dates.today task ]
+                [ text completionLabel ]
+            ]
+    in
+        Dropdown.dropdown state
+            { options = [ Dropdown.alignMenuRight ]
+            , toggleMsg = DropdownMsg task.id
+            , toggleButton =
+                Dropdown.toggle
+                    [ Button.outlinePrimary, Button.small ]
+                    [ text "Actions" ]
+            , items = actions
+            }
 
 
 taskEditor : StoryTask -> Html Msg

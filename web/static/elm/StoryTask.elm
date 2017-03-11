@@ -7,9 +7,8 @@ module StoryTask
         , makeEmptyCurrentDates
         , timeToCurrentDates
         , taskSchedule
-        , taskControls
+        , changeSchedule
         , toggleCompleted
-        , completeToggler
         )
 
 import Time exposing (Time)
@@ -17,9 +16,6 @@ import Time.DateTime as DateTime exposing (DateTime)
 import Time.TimeZone exposing (TimeZone)
 import Time.ZonedDateTime as ZonedDateTime
 import Time.Date as Date exposing (Date)
-import Html exposing (Html, div, button, text)
-import Html.Attributes exposing (class, classList, type_, disabled)
-import Html.Events exposing (onInput, onSubmit, onClick, onDoubleClick)
 
 
 -- MODEL
@@ -87,10 +83,6 @@ timeToCurrentDates timeZone time =
         }
 
 
-
--- VIEW
-
-
 taskSchedule : CurrentDates -> StoryTask -> Scheduled
 taskSchedule dates task =
     if task.scheduledOn < dates.today then
@@ -101,50 +93,6 @@ taskSchedule dates task =
         ScheduledTomorrow
     else
         ScheduledLater
-
-
-taskControls : CurrentDates -> (StoryTask -> msg) -> Bool -> Scheduled -> StoryTask -> List (Html msg)
-taskControls dates updateMsg allowYesterday scheduled task =
-    let
-        commonButtons =
-            [ scheduleButton ScheduledToday
-                scheduled
-                (changeSchedule updateMsg dates.today task)
-            , scheduleButton ScheduledTomorrow
-                scheduled
-                (changeSchedule updateMsg dates.tomorrow task)
-            , scheduleButton ScheduledLater
-                scheduled
-                (changeSchedule updateMsg dates.later task)
-            ]
-    in
-        if allowYesterday then
-            (scheduleButton
-                ScheduledYesterday
-                scheduled
-                (changeSchedule updateMsg dates.yesterday task)
-            )
-                :: commonButtons
-        else
-            commonButtons
-
-
-completeToggler : (StoryTask -> msg) -> String -> StoryTask -> Html msg
-completeToggler msg today task =
-    button
-        [ class "btn btn-sm btn-outline-primary ml-4"
-        , type_ "button"
-        , onClick (toggleCompleted msg today task)
-        ]
-        [ Html.i
-            [ class "fa "
-            , classList
-                [ ( "fa-check", task.completed )
-                , ( "empty", not task.completed )
-                ]
-            ]
-            []
-        ]
 
 
 changeSchedule : (StoryTask -> msg) -> String -> StoryTask -> msg
@@ -163,35 +111,3 @@ toggleCompleted msg today task =
                 else
                     Just today
         }
-
-
-scheduleButton : Scheduled -> Scheduled -> msg -> Html msg
-scheduleButton option current msg =
-    let
-        ( level, label ) =
-            case option of
-                ScheduledYesterday ->
-                    ( "btn-outline-danger", "Yesterday" )
-
-                ScheduledToday ->
-                    ( "btn-outline-success", "Today" )
-
-                ScheduledTomorrow ->
-                    ( "btn-outline-info", "Tomorrow" )
-
-                ScheduledLater ->
-                    ( "btn-outline-secondary", "Later" )
-
-        ( active, isDisabled ) =
-            if option == current then
-                ( " active", True )
-            else
-                ( "", False )
-    in
-        button
-            [ class <| "btn btn-sm " ++ level ++ active
-            , type_ "button"
-            , disabled isDisabled
-            , onClick msg
-            ]
-            [ text label ]
