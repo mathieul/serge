@@ -99,8 +99,8 @@ mainContent model =
                     [ h2 [] [ text "Tasker" ] ]
                 , Grid.col []
                     [ Button.button
-                        [ Button.outlineInfo
-                        , Button.attrs [ class "pull-right mr-4", onClick ShowSummary ]
+                        [ Button.warning
+                        , Button.attrs [ class "pull-right", onClick ShowSummary ]
                         ]
                         [ Html.i [ class "fa fa-calendar" ] []
                         , text " Summary"
@@ -239,13 +239,13 @@ tasksView model =
             [ taskSelectionTabs model.scheduleTab
             , div
                 [ class "card-block" ]
-                [ taskList model (model.scheduleTab == TabAll) selectedTasks ]
+                [ taskList model selectedTasks ]
             , taskListFooter selectedTasks model
             ]
 
 
-taskList : Model -> Bool -> List StoryTask -> Html Msg
-taskList model allowYesterday tasks =
+taskList : Model -> List StoryTask -> Html Msg
+taskList model tasks =
     let
         tasksToShow =
             if model.showCompleted then
@@ -257,7 +257,7 @@ taskList model allowYesterday tasks =
             if task.editing then
                 taskEditor task
             else
-                taskViewer model allowYesterday task
+                taskViewer model task
     in
         if List.isEmpty tasksToShow then
             div [ class "alert alert-info mt-3" ]
@@ -269,8 +269,8 @@ taskList model allowYesterday tasks =
                 ]
 
 
-taskViewer : Model -> Bool -> StoryTask -> Html Msg
-taskViewer model allowYesterday task =
+taskViewer : Model -> StoryTask -> Html Msg
+taskViewer model task =
     let
         scheduled =
             StoryTask.taskSchedule model.dates task
@@ -289,45 +289,41 @@ taskViewer model allowYesterday task =
             else
                 span [ onDoubleClick startEditingMsg ]
                     [ text task.label ]
-
-        scheduleControls =
-            if task.completed then
-                div [] []
-            else
-                div [ class "btn-group" ]
-                    [ taskControls model allowYesterday scheduled task ]
     in
         li [ class "list-group-item d-flex flex-column align-items-start" ]
             [ div [ class " w-100 d-flex justify-content-between align-items-center" ]
                 [ label
                 , div
-                    [ class "d-flex justify-content-end"
-                    , classList
-                        [ ( "task-commands", not allowYesterday )
-                        , ( "task-commands-yesterday", allowYesterday )
-                        ]
+                    [ class "d-flex justify-content-end" ]
+                    [ div [ class "btn-group" ]
+                        [ taskControl model scheduled task ]
                     ]
-                    [ scheduleControls ]
                 ]
             ]
 
 
-actionButton : String -> String -> Bool -> StoryTask -> Dropdown.DropdownItem Msg
-actionButton date label current task =
-    if current then
+actionButton : String -> String -> String -> StoryTask -> Dropdown.DropdownItem Msg
+actionButton date label taskLabel task =
+    if label == taskLabel then
         Dropdown.buttonItem
-            [ class "text-muted" ]
-            [ Html.i [ class "fa fa-check" ] []
+            [ class "disabled"
+            , classList [ ( "text-danger", label == "Yesterday" ) ]
+            ]
+            [ Html.i [ class "fa fa-arrow-right" ] []
             , text <| " " ++ label
             ]
     else
         Dropdown.buttonItem
-            [ onClick <| StoryTask.changeSchedule RequestTaskUpdate date task ]
-            [ text label ]
+            [ classList [ ( "text-danger", label == "Yesterday" ) ]
+            , onClick <| StoryTask.changeSchedule RequestTaskUpdate date task
+            ]
+            [ Html.i [ class "fa empty" ] []
+            , text <| " " ++ label
+            ]
 
 
-taskControls : Model -> Bool -> Scheduled -> StoryTask -> Html Msg
-taskControls model allowYesterday scheduled task =
+taskControl : Model -> Scheduled -> StoryTask -> Html Msg
+taskControl model scheduled task =
     let
         state =
             Dict.get task.id model.dropdownStates
@@ -336,20 +332,43 @@ taskControls model allowYesterday scheduled task =
         setSchedule date =
             StoryTask.changeSchedule RequestTaskUpdate date task
 
-        completionLabel =
+        ( completionDisplay, buttonKind ) =
             if task.completed then
-                "Uncomplete"
+                ( [ Html.i [ class "fa fa-square-o" ] []
+                  , text " Uncomplete"
+                  ]
+                , Button.secondary
+                )
             else
-                "Complete"
+                ( [ Html.i [ class "fa fa-check-square-o" ] []
+                  , text " Complete"
+                  ]
+                , Button.outlineInfo
+                )
+
+        actionLabel =
+            case scheduled of
+                ScheduledYesterday ->
+                    "Yesterday"
+
+                ScheduledToday ->
+                    "Today"
+
+                ScheduledTomorrow ->
+                    "Tomorrow"
+
+                ScheduledLater ->
+                    "Later"
 
         actions =
-            [ actionButton model.dates.today "Today" (scheduled == ScheduledToday) task
-            , actionButton model.dates.tomorrow "Tomorrow" (scheduled == ScheduledTomorrow) task
-            , actionButton model.dates.later "Later" (scheduled == ScheduledLater) task
+            [ actionButton model.dates.yesterday "Yesterday" actionLabel task
+            , actionButton model.dates.today "Today" actionLabel task
+            , actionButton model.dates.tomorrow "Tomorrow" actionLabel task
+            , actionButton model.dates.later "Later" actionLabel task
             , Dropdown.divider
             , Dropdown.buttonItem
                 [ onClick <| StoryTask.toggleCompleted RequestTaskUpdate model.dates.today task ]
-                [ text completionLabel ]
+                completionDisplay
             ]
     in
         Dropdown.dropdown state
@@ -357,8 +376,11 @@ taskControls model allowYesterday scheduled task =
             , toggleMsg = DropdownMsg task.id
             , toggleButton =
                 Dropdown.toggle
-                    [ Button.outlinePrimary, Button.small ]
-                    [ text "Actions" ]
+                    [ buttonKind
+                    , Button.small
+                    , Button.attrs [ class "task-control" ]
+                    ]
+                    [ text actionLabel ]
             , items = actions
             }
 
