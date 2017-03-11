@@ -223,11 +223,11 @@ tasksView model =
 
         selectedTasks =
             case model.scheduleTab of
-                TabAll ->
-                    tasks
+                TabYesterday ->
+                    selectTasksForSchedules [ ScheduledYesterday ]
 
                 TabToday ->
-                    selectTasksForSchedules [ ScheduledYesterday, ScheduledToday ]
+                    selectTasksForSchedules [ ScheduledToday ]
 
                 TabTomorrow ->
                     selectTasksForSchedules [ ScheduledTomorrow ]
@@ -483,10 +483,10 @@ taskSelectionTabs selection =
         theTabs =
             List.map
                 aTab
-                [ ( TabToday, "Today" )
+                [ ( TabYesterday, "Yesterday" )
+                , ( TabToday, "Today" )
                 , ( TabTomorrow, "Tomorrow" )
                 , ( TabLater, "Later" )
-                , ( TabAll, "All" )
                 ]
     in
         div [ class "card-header" ]

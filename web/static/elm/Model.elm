@@ -67,7 +67,7 @@ type AppMessage
 
 
 type ScheduleTab
-    = TabAll
+    = TabYesterday
     | TabToday
     | TabTomorrow
     | TabLater
