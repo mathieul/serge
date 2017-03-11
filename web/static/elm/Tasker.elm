@@ -64,11 +64,19 @@ port setTimeZone : (String -> msg) -> Sub msg
 
 
 subscriptions : Model -> Sub Msg
-subscriptions _ =
-    Sub.batch
-        [ setTimeZone SetTimeZone
-        , Time.every Time.minute UpdateCurrentDates
-        ]
+subscriptions model =
+    let
+        dropdownSubscription ( name, state ) =
+            Dropdown.subscriptions state (DropdownMsg name)
+    in
+        model.dropdownStates
+            |> Dict.toList
+            |> List.map dropdownSubscription
+            |> List.append
+                [ setTimeZone SetTimeZone
+                , Time.every Time.minute UpdateCurrentDates
+                ]
+            |> Sub.batch
 
 
 
