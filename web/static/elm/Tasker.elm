@@ -127,33 +127,7 @@ update msg model =
                     model ! []
 
                 _ ->
-                    let
-                        scheduledOn =
-                            case model.scheduleTab of
-                                TabToday ->
-                                    model.dates.today
-
-                                TabTomorrow ->
-                                    model.dates.tomorrow
-
-                                _ ->
-                                    model.dates.later
-
-                        newTask =
-                            StoryTask.makeNewTask
-                                model.currentTaskSeq
-                                model.currentTaskLabel
-                                (List.length model.tasks)
-                                scheduledOn
-                    in
-                        ( { model
-                            | tasks = List.append model.tasks [ newTask ]
-                            , dropdownStates = Dict.insert newTask.id Dropdown.initialState model.dropdownStates
-                            , currentTaskLabel = ""
-                            , currentTaskSeq = model.currentTaskSeq + 1
-                          }
-                        , Http.send CreateTask <| Api.makeTaskRequest newTask
-                        )
+                    createNewTask model
 
         FetchTasks (Ok tasks) ->
             { model
@@ -208,33 +182,59 @@ update msg model =
 
         UpdateEditingTask id editing editingLabel ->
             let
-                tasks =
-                    List.map
-                        (\task ->
-                            if task.id == id then
-                                { task
-                                    | editing = editing
-                                    , editingLabel = editingLabel
-                                }
-                            else
-                                task
-                        )
-                        model.tasks
-
-                textFieldId =
-                    "edit-task-" ++ id
+                updateTaskIfId task =
+                    if task.id == id then
+                        { task
+                            | editing = editing
+                            , editingLabel = editingLabel
+                        }
+                    else
+                        task
             in
                 ( { model
-                    | tasks = tasks
+                    | tasks = List.map updateTaskIfId model.tasks
                     , dropdownStates = model.dropdownStates
                   }
-                , Dom.focus textFieldId |> Task.attempt (\_ -> NoOp)
+                , Dom.focus ("edit-task-" ++ id) |> Task.attempt (\_ -> NoOp)
                 )
+
+
+createNewTask : Model -> ( Model, Cmd Msg )
+createNewTask model =
+    let
+        scheduledOn =
+            case model.scheduleTab of
+                TabToday ->
+                    model.dates.today
+
+                TabTomorrow ->
+                    model.dates.tomorrow
+
+                _ ->
+                    model.dates.later
+
+        newTask =
+            StoryTask.makeNewTask
+                model.currentTaskSeq
+                model.currentTaskLabel
+                (List.length model.tasks)
+                scheduledOn
+    in
+        ( { model
+            | tasks = List.append model.tasks [ newTask ]
+            , dropdownStates = Dict.insert newTask.id Dropdown.initialState model.dropdownStates
+            , currentTaskLabel = ""
+            , currentTaskSeq = model.currentTaskSeq + 1
+          }
+        , Http.send CreateTask <| Api.makeTaskRequest newTask
+        )
 
 
 dropdownStatesForTasks : List StoryTask -> Dict String Dropdown.State
 dropdownStatesForTasks tasks =
-    List.foldl (\task states -> Dict.insert task.id Dropdown.initialState states) Dict.empty tasks
+    tasks
+        |> List.map (\task -> ( task.id, Dropdown.initialState ))
+        |> Dict.fromList
 
 
 replaceTask : String -> StoryTask -> List StoryTask -> List StoryTask
