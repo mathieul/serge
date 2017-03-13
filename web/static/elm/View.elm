@@ -104,7 +104,12 @@ mainContent model =
                         ]
                     ]
                 ]
-            , taskForm model
+            , Card.config [ Card.attrs [ class "mt-3" ] ]
+                |> Card.block []
+                    [ Card.custom <| newTaskForm model
+                    , Card.custom <| tasksCardView model
+                    ]
+                |> Card.view
             ]
         ]
 
@@ -152,16 +157,6 @@ summaryModal model =
             |> Modal.view model.modalState
 
 
-taskForm : Model -> Html Msg
-taskForm model =
-    Card.config [ Card.attrs [ class "mt-3" ] ]
-        |> Card.block []
-            [ Card.custom <| newTaskForm model
-            , Card.custom <| tasksView model
-            ]
-        |> Card.view
-
-
 newTaskForm : Model -> Html Msg
 newTaskForm model =
     Form.form [ onSubmit AddCurrentTask ]
@@ -195,8 +190,8 @@ newTaskForm model =
         ]
 
 
-tasksView : Model -> Html Msg
-tasksView model =
+tasksCardView : Model -> Html Msg
+tasksCardView model =
     let
         notCompletedBeforeToday task =
             case task.completedOn of
@@ -233,21 +228,21 @@ tasksView model =
                     selectTasksForSchedule ScheduledLater
     in
         Card.config [ Card.attrs [ class "mt-3" ] ]
-            |> Card.header [] [ taskSelectionTabs model.scheduleTab ]
+            |> Card.header [] [ taskSelectionTabs model ]
             |> Card.block []
                 [ Card.custom <| taskList model selectedTasks ]
             |> Card.footer [] [ taskCompletionInfo selectedTasks model ]
             |> Card.view
 
 
-taskSelectionTabs : ScheduleTab -> Html Msg
-taskSelectionTabs selection =
+taskSelectionTabs : Model -> Html Msg
+taskSelectionTabs model =
     let
         aTab ( schedule, label ) =
             li [ class "nav-item" ]
                 [ a
                     [ class "nav-link"
-                    , classList [ ( "active", selection == schedule ) ]
+                    , classList [ ( "active", model.scheduleTab == schedule ) ]
                     , href "#"
                     , onClick (ChangeScheduleTab schedule)
                     ]
