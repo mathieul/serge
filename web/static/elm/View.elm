@@ -114,6 +114,15 @@ mainContent model =
         ]
 
 
+earliestYesterday : List StoryTask -> String
+earliestYesterday tasks =
+    tasks
+        |> List.filter .completed
+        |> List.map (\task -> Maybe.withDefault "" task.completedOn)
+        |> List.minimum
+        |> Maybe.withDefault ""
+
+
 summaryModal : Model -> Html Msg
 summaryModal model =
     let
@@ -122,12 +131,6 @@ summaryModal model =
 
         scheduledTasks =
             List.filter (\task -> not task.completed && task.scheduledOn <= model.dates.today) model.tasks
-
-        earliestYesterday =
-            completedTasks
-                |> List.map (\task -> Maybe.withDefault "" task.completedOn)
-                |> List.minimum
-                |> Maybe.withDefault ""
 
         summaryTaskView task =
             li [] [ text task.label ]
@@ -139,7 +142,7 @@ summaryModal model =
                     [ h6 [ class "text-center mb-3" ]
                         [ text "Yesterday"
                         , small [ class "ml-1 text-muted" ]
-                            [ text <| "(" ++ earliestYesterday ++ ")" ]
+                            [ text <| "(" ++ (earliestYesterday completedTasks) ++ ")" ]
                         ]
                     , ul [] (List.map summaryTaskView completedTasks)
                     ]
@@ -201,14 +204,11 @@ tasksCardView model =
                 Nothing ->
                     True
 
-        tasks =
-            List.filter notCompletedBeforeToday model.tasks
-
         withSchedule task =
             ( StoryTask.taskSchedule model.dates task, task )
 
         selectTasksForSchedule schedule =
-            tasks
+            model.tasks
                 |> List.map withSchedule
                 |> List.filter (\( taskSchedule, _ ) -> taskSchedule == schedule)
                 |> List.map Tuple.second
@@ -238,7 +238,10 @@ tasksCardView model =
 taskSelectionTabs : Model -> Html Msg
 taskSelectionTabs model =
     let
-        aTab ( schedule, label ) =
+        yesterday =
+            earliestYesterday model.tasks
+
+        aTab schedule =
             li [ class "nav-item" ]
                 [ a
                     [ class "nav-link"
@@ -246,19 +249,35 @@ taskSelectionTabs model =
                     , href "#"
                     , onClick (ChangeScheduleTab schedule)
                     ]
-                    [ text label ]
+                    [ text <| tabLabel schedule model.dates yesterday ]
                 ]
 
         theTabs =
             List.map
                 aTab
-                [ ( TabYesterday, "Yesterday" )
-                , ( TabToday, "Today" )
-                , ( TabTomorrow, "Tomorrow" )
-                , ( TabLater, "Later" )
-                ]
+                [ TabYesterday, TabToday, TabTomorrow, TabLater ]
     in
         ul [ class "nav nav-tabs card-header-tabs" ] theTabs
+
+
+tabLabel : ScheduleTab -> StoryTask.CurrentDates -> String -> String
+tabLabel scheduled dates yesterday =
+    let
+        day date =
+            String.slice 5 10 date
+    in
+        case scheduled of
+            TabYesterday ->
+                "Yesterday (" ++ (day yesterday) ++ ")"
+
+            TabToday ->
+                "Today (" ++ (day dates.today) ++ ")"
+
+            TabTomorrow ->
+                "Tomorrow (" ++ (day dates.tomorrow) ++ ")"
+
+            TabLater ->
+                "Later"
 
 
 taskList : Model -> List StoryTask -> Html Msg

@@ -69,7 +69,7 @@ fetchTasksQuery : String
 fetchTasksQuery =
     """
     query {
-      tasks(completedYesterday: true) {
+      tasks(includeYesterday: true) {
         id
         label
         rank
