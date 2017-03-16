@@ -45,6 +45,10 @@ import Bootstrap.Button as Button
 import Bootstrap.Dropdown as Dropdown
 import Bootstrap.Alert as Alert
 import Bootstrap.Modal as Modal
+
+
+-- Local imports
+
 import Model exposing (..)
 import StoryTask exposing (StoryTask)
 
@@ -73,7 +77,7 @@ menu model =
         |> Navbar.customItems
             [ Navbar.textItem
                 [ class "pull-right mr-3" ]
-                [ text model.dates.today ]
+                [ text model.context.today ]
             , Navbar.customItem
                 (span
                     [ class "pull-right " ]
@@ -130,7 +134,7 @@ summaryModal model =
             List.filter (\task -> task.completed) model.tasks
 
         scheduledTasks =
-            List.filter (\task -> not task.completed && task.scheduledOn <= model.dates.today) model.tasks
+            List.filter (\task -> not task.completed && task.scheduledOn <= model.context.today) model.tasks
 
         summaryTaskView task =
             li [] [ text task.label ]
@@ -199,13 +203,13 @@ tasksCardView model =
         notCompletedBeforeToday task =
             case task.completedOn of
                 Just completedOn ->
-                    completedOn >= model.dates.today
+                    completedOn >= model.context.today
 
                 Nothing ->
                     True
 
         withSchedule task =
-            ( taskSchedule model.dates task, task )
+            ( taskSchedule model.context task, task )
 
         selectedTasks =
             model.tasks
@@ -235,7 +239,7 @@ taskSelectionTabs model =
                     , href "#"
                     , onClick (ChangeDatePeriod schedule)
                     ]
-                    [ text <| tabLabel schedule model.dates yesterday ]
+                    [ text <| tabLabel schedule model.context yesterday ]
                 ]
 
         theTabs =
@@ -246,21 +250,21 @@ taskSelectionTabs model =
         ul [ class "nav nav-tabs card-header-tabs" ] theTabs
 
 
-tabLabel : DatePeriod -> StoryTask.CurrentDates -> String -> String
-tabLabel scheduled dates yesterday =
+tabLabel : DatePeriod -> AppContext -> String -> String
+tabLabel datePeriod context yesterday =
     let
         day date =
             String.slice 5 10 date
     in
-        case scheduled of
+        case datePeriod of
             Yesterday ->
                 "Yesterday (" ++ (day yesterday) ++ ")"
 
             Today ->
-                "Today (" ++ (day dates.today) ++ ")"
+                "Today (" ++ (day context.today) ++ ")"
 
             Tomorrow ->
-                "Tomorrow (" ++ (day dates.tomorrow) ++ ")"
+                "Tomorrow (" ++ (day context.tomorrow) ++ ")"
 
             Later ->
                 "Later"
@@ -334,8 +338,8 @@ taskCompletionInfo tasks model =
 taskViewer : Model -> StoryTask -> Html Msg
 taskViewer model task =
     let
-        scheduled =
-            taskSchedule model.dates task
+        datePeriod =
+            taskSchedule model.context task
 
         startEditingMsg =
             UpdateEditingTask task.id True task.editingLabel
@@ -343,7 +347,7 @@ taskViewer model task =
         label =
             if task.completed then
                 Html.s [ class "text-muted" ] [ text task.label ]
-            else if scheduled == Yesterday then
+            else if datePeriod == Yesterday then
                 span [ onDoubleClick startEditingMsg ]
                     [ text task.label
                     , Html.i [ class "fa fa-clock-o text-danger ml-2" ] []
@@ -358,7 +362,7 @@ taskViewer model task =
                 , div
                     [ class "d-flex justify-content-end" ]
                     [ div [ class "btn-group" ]
-                        [ taskControl model scheduled task ]
+                        [ taskControl model datePeriod task ]
                     ]
                 ]
             ]
@@ -423,13 +427,13 @@ taskControl model scheduled task =
                     "Later"
 
         actions =
-            [ actionButton model.dates.yesterday "Yesterday" actionLabel task
-            , actionButton model.dates.today "Today" actionLabel task
-            , actionButton model.dates.tomorrow "Tomorrow" actionLabel task
-            , actionButton model.dates.later "Later" actionLabel task
+            [ actionButton model.context.yesterday "Yesterday" actionLabel task
+            , actionButton model.context.today "Today" actionLabel task
+            , actionButton model.context.tomorrow "Tomorrow" actionLabel task
+            , actionButton model.context.later "Later" actionLabel task
             , Dropdown.divider
             , Dropdown.buttonItem
-                [ onClick <| StoryTask.toggleCompleted RequestTaskUpdate model.dates.today task ]
+                [ onClick <| StoryTask.toggleCompleted RequestTaskUpdate model.context.today task ]
                 completionDisplay
             ]
     in

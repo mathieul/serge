@@ -8,7 +8,16 @@ import Time.TimeZones as TimeZones
 import Bootstrap.Navbar as Navbar
 import Bootstrap.Modal as Modal
 import Bootstrap.Dropdown as Dropdown
-import StoryTask exposing (StoryTask, CurrentDates)
+import Time exposing (Time)
+import Time.DateTime as DateTime exposing (DateTime)
+import Time.TimeZone exposing (TimeZone)
+import Time.ZonedDateTime as ZonedDateTime
+import Time.Date as Date exposing (Date)
+
+
+-- Local imports
+
+import StoryTask exposing (StoryTask)
 import Api exposing (CreateTaskResponse)
 
 
@@ -29,7 +38,7 @@ type alias Model =
     , modalState : Modal.State
     , dropdownStates : Dict String Dropdown.State
     , message : AppMessage
-    , dates : StoryTask.CurrentDates
+    , context : AppContext
     , timeZone : TimeZone
     , currentTaskLabel : String
     , currentTaskSeq : Int
@@ -52,7 +61,7 @@ type Msg
     | ClearMessage
     | UpdateCurrentTask String
     | AddCurrentTask
-    | UpdateCurrentDates Time
+    | UpdateAppContext Time
     | SetTimeZone String
     | RequestTaskUpdate StoryTask
     | ChangeDatePeriod DatePeriod
@@ -73,6 +82,14 @@ type DatePeriod
     | Later
 
 
+type alias AppContext =
+    { yesterday : String
+    , today : String
+    , tomorrow : String
+    , later : String
+    }
+
+
 
 -- Functions
 
@@ -84,7 +101,7 @@ initialModel config navState =
     , modalState = Modal.hiddenState
     , dropdownStates = Dict.empty
     , message = MessageNone
-    , dates = StoryTask.makeEmptyCurrentDates
+    , context = makeEmptyAppContext
     , timeZone = TimeZones.utc ()
     , currentTaskLabel = ""
     , currentTaskSeq = 1
@@ -94,13 +111,35 @@ initialModel config navState =
     }
 
 
-taskSchedule : CurrentDates -> StoryTask -> DatePeriod
-taskSchedule dates task =
-    if task.scheduledOn < dates.today then
+taskSchedule : AppContext -> StoryTask -> DatePeriod
+taskSchedule context task =
+    if task.scheduledOn < context.today then
         Yesterday
-    else if task.scheduledOn == dates.today then
+    else if task.scheduledOn == context.today then
         Today
-    else if task.scheduledOn == dates.tomorrow then
+    else if task.scheduledOn == context.tomorrow then
         Tomorrow
     else
         Later
+
+
+makeEmptyAppContext : AppContext
+makeEmptyAppContext =
+    AppContext "" "" "" ""
+
+
+timeToAppContext : TimeZone -> Time -> AppContext
+timeToAppContext timeZone time =
+    let
+        now =
+            DateTime.fromTimestamp time
+                |> ZonedDateTime.fromDateTime timeZone
+
+        today =
+            Date.date (ZonedDateTime.year now) (ZonedDateTime.month now) (ZonedDateTime.day now)
+    in
+        { yesterday = Date.toISO8601 <| Date.addDays -1 today
+        , today = Date.toISO8601 today
+        , tomorrow = Date.toISO8601 <| Date.addDays 1 today
+        , later = Date.toISO8601 <| Date.addDays 30 today
+        }

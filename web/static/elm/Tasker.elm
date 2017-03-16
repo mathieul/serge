@@ -10,6 +10,10 @@ import Dom
 import Bootstrap.Navbar as Navbar
 import Bootstrap.Modal as Modal
 import Bootstrap.Dropdown as Dropdown
+
+
+-- Local imports
+
 import Model exposing (..)
 import View exposing (..)
 import StoryTask exposing (StoryTask)
@@ -42,7 +46,7 @@ init config =
         ( initialModel config navState
         , Cmd.batch
             [ navCmd
-            , Task.perform UpdateCurrentDates Time.now
+            , Task.perform UpdateAppContext Time.now
             , Http.send FetchTasks Api.fetchTasksRequest
             , getTimeZone ()
             ]
@@ -74,7 +78,7 @@ subscriptions model =
             |> List.map dropdownSubscription
             |> List.append
                 [ setTimeZone SetTimeZone
-                , Time.every Time.minute UpdateCurrentDates
+                , Time.every Time.minute UpdateAppContext
                 ]
             |> Sub.batch
 
@@ -104,8 +108,8 @@ update msg model =
         HideSummary ->
             { model | modalState = Modal.hiddenState } ! []
 
-        UpdateCurrentDates time ->
-            { model | dates = StoryTask.timeToCurrentDates model.timeZone time } ! []
+        UpdateAppContext time ->
+            { model | context = timeToAppContext model.timeZone time } ! []
 
         ClearMessage ->
             { model | message = MessageNone } ! []
@@ -205,16 +209,16 @@ createNewTask model =
         scheduledOn =
             case model.datePeriod of
                 Yesterday ->
-                    model.dates.yesterday
+                    model.context.yesterday
 
                 Today ->
-                    model.dates.today
+                    model.context.today
 
                 Tomorrow ->
-                    model.dates.tomorrow
+                    model.context.tomorrow
 
                 Later ->
-                    model.dates.later
+                    model.context.later
 
         newTask =
             StoryTask.makeNewTask
