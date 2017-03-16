@@ -8,7 +8,7 @@ import Time.TimeZones as TimeZones
 import Bootstrap.Navbar as Navbar
 import Bootstrap.Modal as Modal
 import Bootstrap.Dropdown as Dropdown
-import StoryTask exposing (StoryTask, Scheduled(..))
+import StoryTask exposing (StoryTask, CurrentDates)
 import Api exposing (CreateTaskResponse)
 
 
@@ -34,7 +34,7 @@ type alias Model =
     , currentTaskLabel : String
     , currentTaskSeq : Int
     , tasks : List StoryTask
-    , scheduleTab : ScheduleTab
+    , datePeriod : DatePeriod
     , showCompleted : Bool
     }
 
@@ -55,7 +55,7 @@ type Msg
     | UpdateCurrentDates Time
     | SetTimeZone String
     | RequestTaskUpdate StoryTask
-    | ChangeScheduleTab ScheduleTab
+    | ChangeDatePeriod DatePeriod
     | ToggleShowCompleted
     | UpdateEditingTask String Bool String
 
@@ -66,11 +66,11 @@ type AppMessage
     | MessageError String
 
 
-type ScheduleTab
-    = TabYesterday
-    | TabToday
-    | TabTomorrow
-    | TabLater
+type DatePeriod
+    = Yesterday
+    | Today
+    | Tomorrow
+    | Later
 
 
 
@@ -89,6 +89,18 @@ initialModel config navState =
     , currentTaskLabel = ""
     , currentTaskSeq = 1
     , tasks = []
-    , scheduleTab = TabToday
+    , datePeriod = Today
     , showCompleted = False
     }
+
+
+taskSchedule : CurrentDates -> StoryTask -> DatePeriod
+taskSchedule dates task =
+    if task.scheduledOn < dates.today then
+        Yesterday
+    else if task.scheduledOn == dates.today then
+        Today
+    else if task.scheduledOn == dates.tomorrow then
+        Tomorrow
+    else
+        Later

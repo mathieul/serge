@@ -12,7 +12,7 @@ import Bootstrap.Modal as Modal
 import Bootstrap.Dropdown as Dropdown
 import Model exposing (..)
 import View exposing (..)
-import StoryTask exposing (StoryTask, Scheduled(..))
+import StoryTask exposing (StoryTask)
 import Api
 
 
@@ -174,8 +174,8 @@ update msg model =
             , Cmd.none
             )
 
-        ChangeScheduleTab selection ->
-            { model | scheduleTab = selection } ! []
+        ChangeDatePeriod selection ->
+            { model | datePeriod = selection } ! []
 
         ToggleShowCompleted ->
             { model | showCompleted = not model.showCompleted } ! []
@@ -203,17 +203,17 @@ createNewTask : Model -> ( Model, Cmd Msg )
 createNewTask model =
     let
         scheduledOn =
-            case model.scheduleTab of
-                TabYesterday ->
+            case model.datePeriod of
+                Yesterday ->
                     model.dates.yesterday
 
-                TabToday ->
+                Today ->
                     model.dates.today
 
-                TabTomorrow ->
+                Tomorrow ->
                     model.dates.tomorrow
 
-                TabLater ->
+                Later ->
                     model.dates.later
 
         newTask =

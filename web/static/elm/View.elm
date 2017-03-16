@@ -46,7 +46,7 @@ import Bootstrap.Dropdown as Dropdown
 import Bootstrap.Alert as Alert
 import Bootstrap.Modal as Modal
 import Model exposing (..)
-import StoryTask exposing (StoryTask, Scheduled(..))
+import StoryTask exposing (StoryTask)
 
 
 -- VIEW
@@ -205,27 +205,13 @@ tasksCardView model =
                     True
 
         withSchedule task =
-            ( StoryTask.taskSchedule model.dates task, task )
-
-        selectTasksForSchedule schedule =
-            model.tasks
-                |> List.map withSchedule
-                |> List.filter (\( taskSchedule, _ ) -> taskSchedule == schedule)
-                |> List.map Tuple.second
+            ( taskSchedule model.dates task, task )
 
         selectedTasks =
-            case model.scheduleTab of
-                TabYesterday ->
-                    selectTasksForSchedule ScheduledYesterday
-
-                TabToday ->
-                    selectTasksForSchedule ScheduledToday
-
-                TabTomorrow ->
-                    selectTasksForSchedule ScheduledTomorrow
-
-                TabLater ->
-                    selectTasksForSchedule ScheduledLater
+            model.tasks
+                |> List.map withSchedule
+                |> List.filter (\( period, _ ) -> period == model.datePeriod)
+                |> List.map Tuple.second
     in
         Card.config [ Card.attrs [ class "mt-3" ] ]
             |> Card.header [] [ taskSelectionTabs model ]
@@ -245,9 +231,9 @@ taskSelectionTabs model =
             li [ class "nav-item" ]
                 [ a
                     [ class "nav-link"
-                    , classList [ ( "active", model.scheduleTab == schedule ) ]
+                    , classList [ ( "active", model.datePeriod == schedule ) ]
                     , href "#"
-                    , onClick (ChangeScheduleTab schedule)
+                    , onClick (ChangeDatePeriod schedule)
                     ]
                     [ text <| tabLabel schedule model.dates yesterday ]
                 ]
@@ -255,28 +241,28 @@ taskSelectionTabs model =
         theTabs =
             List.map
                 aTab
-                [ TabYesterday, TabToday, TabTomorrow, TabLater ]
+                [ Yesterday, Today, Tomorrow, Later ]
     in
         ul [ class "nav nav-tabs card-header-tabs" ] theTabs
 
 
-tabLabel : ScheduleTab -> StoryTask.CurrentDates -> String -> String
+tabLabel : DatePeriod -> StoryTask.CurrentDates -> String -> String
 tabLabel scheduled dates yesterday =
     let
         day date =
             String.slice 5 10 date
     in
         case scheduled of
-            TabYesterday ->
+            Yesterday ->
                 "Yesterday (" ++ (day yesterday) ++ ")"
 
-            TabToday ->
+            Today ->
                 "Today (" ++ (day dates.today) ++ ")"
 
-            TabTomorrow ->
+            Tomorrow ->
                 "Tomorrow (" ++ (day dates.tomorrow) ++ ")"
 
-            TabLater ->
+            Later ->
                 "Later"
 
 
@@ -349,7 +335,7 @@ taskViewer : Model -> StoryTask -> Html Msg
 taskViewer model task =
     let
         scheduled =
-            StoryTask.taskSchedule model.dates task
+            taskSchedule model.dates task
 
         startEditingMsg =
             UpdateEditingTask task.id True task.editingLabel
@@ -357,7 +343,7 @@ taskViewer model task =
         label =
             if task.completed then
                 Html.s [ class "text-muted" ] [ text task.label ]
-            else if scheduled == ScheduledYesterday then
+            else if scheduled == Yesterday then
                 span [ onDoubleClick startEditingMsg ]
                     [ text task.label
                     , Html.i [ class "fa fa-clock-o text-danger ml-2" ] []
@@ -398,7 +384,7 @@ actionButton date label taskLabel task =
             ]
 
 
-taskControl : Model -> Scheduled -> StoryTask -> Html Msg
+taskControl : Model -> DatePeriod -> StoryTask -> Html Msg
 taskControl model scheduled task =
     let
         state =
@@ -424,16 +410,16 @@ taskControl model scheduled task =
 
         actionLabel =
             case scheduled of
-                ScheduledYesterday ->
+                Yesterday ->
                     "Yesterday"
 
-                ScheduledToday ->
+                Today ->
                     "Today"
 
-                ScheduledTomorrow ->
+                Tomorrow ->
                     "Tomorrow"
 
-                ScheduledLater ->
+                Later ->
                     "Later"
 
         actions =

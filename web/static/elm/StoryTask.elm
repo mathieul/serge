@@ -2,11 +2,9 @@ module StoryTask
     exposing
         ( StoryTask
         , CurrentDates
-        , Scheduled(..)
         , makeNewTask
         , makeEmptyCurrentDates
         , timeToCurrentDates
-        , taskSchedule
         , changeSchedule
         , toggleCompleted
         )
@@ -39,13 +37,6 @@ type alias CurrentDates =
     , tomorrow : String
     , later : String
     }
-
-
-type Scheduled
-    = ScheduledYesterday
-    | ScheduledToday
-    | ScheduledTomorrow
-    | ScheduledLater
 
 
 makeNewTask : Int -> String -> Int -> String -> StoryTask
@@ -81,18 +72,6 @@ timeToCurrentDates timeZone time =
         , tomorrow = Date.toISO8601 <| Date.addDays 1 today
         , later = Date.toISO8601 <| Date.addDays 30 today
         }
-
-
-taskSchedule : CurrentDates -> StoryTask -> Scheduled
-taskSchedule dates task =
-    if task.scheduledOn < dates.today then
-        ScheduledYesterday
-    else if task.scheduledOn == dates.today then
-        ScheduledToday
-    else if task.scheduledOn == dates.tomorrow then
-        ScheduledTomorrow
-    else
-        ScheduledLater
 
 
 changeSchedule : (StoryTask -> msg) -> String -> StoryTask -> msg
