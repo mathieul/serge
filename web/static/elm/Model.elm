@@ -8,6 +8,7 @@ import Time.TimeZones as TimeZones
 import Bootstrap.Navbar as Navbar
 import Bootstrap.Modal as Modal
 import Bootstrap.Dropdown as Dropdown
+import Bootstrap.Button as Button
 import Time exposing (Time)
 import Time.DateTime as DateTime exposing (DateTime)
 import Time.TimeZone exposing (TimeZone)
@@ -18,10 +19,13 @@ import Time.Date as Date exposing (Date)
 -- Local imports
 
 import StoryTask exposing (StoryTask)
-import Api exposing (CreateTaskResponse)
 
 
 -- Types
+
+
+type alias Id =
+    String
 
 
 type alias AppConfig =
@@ -36,6 +40,7 @@ type alias Model =
     { config : AppConfig
     , navState : Navbar.State
     , modalState : Modal.State
+    , confirmModalState : Modal.State
     , dropdownStates : Dict String Dropdown.State
     , message : AppMessage
     , context : AppContext
@@ -45,6 +50,7 @@ type alias Model =
     , tasks : List StoryTask
     , datePeriod : DatePeriod
     , showCompleted : Bool
+    , confirmation : Confirmation
     }
 
 
@@ -52,9 +58,12 @@ type Msg
     = NoOp
     | NavMsg Navbar.State
     | ModalMsg Modal.State
+    | ConfirmModalMsg Modal.State
     | DropdownMsg String Dropdown.State
     | ShowSummary
     | HideSummary
+    | RequestConfirmation Confirmation
+    | DiscardConfirmation
     | FetchTasks (Result Http.Error (List StoryTask))
     | CreateTask (Result Http.Error CreateTaskResponse)
     | UpdateTask (Result Http.Error StoryTask)
@@ -64,13 +73,17 @@ type Msg
     | UpdateAppContext Time
     | SetTimeZone String
     | RequestTaskUpdate StoryTask
+    | ConfirmTaskDeletion Id String
     | ChangeDatePeriod DatePeriod
     | ToggleShowCompleted
-    | UpdateEditingTask String Bool String
+    | UpdateEditingTask Id Bool String
+    | RequestTaskDeletion Id
+    | DeleteTask (Result Http.Error StoryTask)
 
 
 type AppMessage
     = MessageNone
+    | MessageSuccess String
     | MessageNotice String
     | MessageError String
 
@@ -90,6 +103,23 @@ type alias AppContext =
     }
 
 
+type alias Confirmation =
+    { title : String
+    , text : String
+    , labelOk : String
+    , btnOk : Button.Option Msg
+    , msgOk : Msg
+    , labelCancel : String
+    , msgCancel : Msg
+    }
+
+
+type alias CreateTaskResponse =
+    { tid : String
+    , task : StoryTask
+    }
+
+
 
 -- Functions
 
@@ -99,6 +129,7 @@ initialModel config navState =
     { config = config
     , navState = navState
     , modalState = Modal.hiddenState
+    , confirmModalState = Modal.hiddenState
     , dropdownStates = Dict.empty
     , message = MessageNone
     , context = makeEmptyAppContext
@@ -108,6 +139,7 @@ initialModel config navState =
     , tasks = []
     , datePeriod = Today
     , showCompleted = False
+    , confirmation = emptyConfirmation
     }
 
 
@@ -143,3 +175,15 @@ timeToAppContext timeZone time =
         , tomorrow = Date.toISO8601 <| Date.addDays 1 today
         , later = Date.toISO8601 <| Date.addDays 30 today
         }
+
+
+emptyConfirmation : Confirmation
+emptyConfirmation =
+    { title = ""
+    , text = ""
+    , labelOk = "Ok"
+    , msgOk = NoOp
+    , btnOk = Button.primary
+    , labelCancel = "Cancel"
+    , msgCancel = DiscardConfirmation
+    }

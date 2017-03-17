@@ -47,5 +47,11 @@ defmodule Serge.Schema do
 
       resolve &Resolvers.Task.update/3
     end
+
+    field :delete_task, :task do
+      arg :id, non_null(:id)
+
+      resolve &Resolvers.Task.delete/3
+    end
   end
 end

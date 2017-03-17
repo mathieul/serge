@@ -10,6 +10,7 @@ import Dom
 import Bootstrap.Navbar as Navbar
 import Bootstrap.Modal as Modal
 import Bootstrap.Dropdown as Dropdown
+import Bootstrap.Button as Button
 
 
 -- Local imports
@@ -99,6 +100,9 @@ update msg model =
         ModalMsg state ->
             { model | modalState = state } ! []
 
+        ConfirmModalMsg state ->
+            { model | confirmModalState = state } ! []
+
         DropdownMsg name state ->
             { model | dropdownStates = Dict.insert name state model.dropdownStates } ! []
 
@@ -107,6 +111,16 @@ update msg model =
 
         HideSummary ->
             { model | modalState = Modal.hiddenState } ! []
+
+        RequestConfirmation confirmation ->
+            { model
+                | confirmation = confirmation
+                , confirmModalState = Modal.visibleState
+            }
+                ! []
+
+        DiscardConfirmation ->
+            (hideConfirmModal model) ! []
 
         UpdateAppContext time ->
             { model | context = timeToAppContext model.timeZone time } ! []
@@ -178,11 +192,54 @@ update msg model =
             , Cmd.none
             )
 
+        RequestTaskDeletion id ->
+            model ! [ Http.send DeleteTask <| Api.deleteTaskRequest id ]
+
+        DeleteTask (Ok task) ->
+            let
+                ( newModel, cmds ) =
+                    model
+                        |> hideConfirmModal
+                        |> update DiscardConfirmation
+
+                tasksUpdated =
+                    List.filter (\item -> item.id /= task.id) model.tasks
+            in
+                ( { newModel
+                    | tasks = tasksUpdated
+                    , message = MessageSuccess <| "Task \"" ++ task.label ++ "\" was deleted successfully."
+                  }
+                , cmds
+                )
+
+        DeleteTask (Err error) ->
+            let
+                newModel =
+                    hideConfirmModal model
+            in
+                ( { newModel
+                    | message = MessageError <| "Updating the task failed: " ++ (httpErrorToMessage error)
+                  }
+                , Cmd.none
+                )
+
         ChangeDatePeriod selection ->
             { model | datePeriod = selection } ! []
 
         ToggleShowCompleted ->
             { model | showCompleted = not model.showCompleted } ! []
+
+        ConfirmTaskDeletion id label ->
+            let
+                confirmation =
+                    { emptyConfirmation
+                        | title = "Delete Task"
+                        , text = "Do you really want to delete task \"" ++ label ++ "\"?"
+                        , btnOk = Button.danger
+                        , msgOk = RequestTaskDeletion id
+                    }
+            in
+                update (RequestConfirmation confirmation) model
 
         UpdateEditingTask id editing editingLabel ->
             let
@@ -201,6 +258,11 @@ update msg model =
                   }
                 , Dom.focus ("edit-task-" ++ id) |> Task.attempt (\_ -> NoOp)
                 )
+
+
+hideConfirmModal : Model -> Model
+hideConfirmModal model =
+    { model | confirmModalState = Modal.hiddenState }
 
 
 createNewTask : Model -> ( Model, Cmd Msg )

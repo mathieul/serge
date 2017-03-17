@@ -1,27 +1,19 @@
 module Api
     exposing
-        ( CreateTaskResponse
-        , fetchTasksRequest
+        ( fetchTasksRequest
         , makeTaskRequest
         , updateTaskRequest
+        , deleteTaskRequest
         )
 
 import Json.Encode as JE
 import Json.Decode as JD
 import Http
 import StoryTask exposing (StoryTask)
+import Model exposing (Id, CreateTaskResponse)
 
 
 -- TYPES
-
-
-type alias CreateTaskResponse =
-    { tid : String
-    , task : StoryTask
-    }
-
-
-
 -- DECODERS / ENCODERS
 
 
@@ -51,9 +43,14 @@ createTaskResponseDecoder =
         |> JD.at [ "data", "createTask" ]
 
 
-taskResponseDecoder : JD.Decoder StoryTask
-taskResponseDecoder =
+updateTaskResponseDecoder : JD.Decoder StoryTask
+updateTaskResponseDecoder =
     JD.at [ "data", "updateTask" ] taskDecoder
+
+
+deleteTaskResponseDecoder : JD.Decoder StoryTask
+deleteTaskResponseDecoder =
+    JD.at [ "data", "deleteTask" ] taskDecoder
 
 
 
@@ -165,4 +162,33 @@ updateTaskRequest task =
                 ]
                 |> Http.jsonBody
     in
-        Http.post graphqlUrl body taskResponseDecoder
+        Http.post graphqlUrl body updateTaskResponseDecoder
+
+
+deleteTaskMutation : String
+deleteTaskMutation =
+    """
+    mutation($id: ID!) {
+      deleteTask(id: $id) {
+      id
+      label
+      rank
+      completed
+      completedOn
+      scheduledOn
+    }
+  }
+  """
+
+
+deleteTaskRequest : Id -> Http.Request StoryTask
+deleteTaskRequest id =
+    let
+        body =
+            JE.object
+                [ ( "query", JE.string deleteTaskMutation )
+                , ( "variables", JE.object [ ( "id", JE.string id ) ] )
+                ]
+                |> Http.jsonBody
+    in
+        Http.post graphqlUrl body deleteTaskResponseDecoder

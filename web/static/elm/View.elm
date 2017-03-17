@@ -20,7 +20,7 @@ import Html
         , small
         , input
         )
-import Html.Attributes
+import Html.Attributes as A
     exposing
         ( class
         , classList
@@ -43,7 +43,6 @@ import Bootstrap.Form as Form
 import Bootstrap.Form.Input as Input
 import Bootstrap.Button as Button
 import Bootstrap.Dropdown as Dropdown
-import Bootstrap.Alert as Alert
 import Bootstrap.Modal as Modal
 
 
@@ -62,6 +61,7 @@ view model =
         [ menu model
         , mainContent model
         , summaryModal model
+        , confirmModal model
         ]
 
 
@@ -93,12 +93,13 @@ menu model =
 mainContent : Model -> Html Msg
 mainContent model =
     Grid.containerFluid []
-        [ messageView model.message
-        , div [ class "mt-3" ]
+        [ div [ class "mt-3" ]
             [ Grid.row []
-                [ Grid.col []
-                    [ h2 [] [ text "Tasker" ] ]
-                , Grid.col []
+                [ Grid.col [ Col.sm2 ]
+                    [ h2 [ class "mb-3" ] [ text "Tasker" ] ]
+                , Grid.col [ Col.sm8 ]
+                    [ div [ class "w-100 align-top" ] [ messageView model.message ] ]
+                , Grid.col [ Col.sm2 ]
                     [ Button.button
                         [ Button.warning
                         , Button.attrs [ class "pull-right", onClick ShowSummary ]
@@ -125,6 +126,31 @@ earliestYesterday tasks =
         |> List.map (\task -> Maybe.withDefault "" task.completedOn)
         |> List.minimum
         |> Maybe.withDefault ""
+
+
+confirmModal : Model -> Html Msg
+confirmModal model =
+    let
+        cfg =
+            model.confirmation
+    in
+        Modal.config ConfirmModalMsg
+            |> Modal.h4 [ class "w-100 -text-center" ] [ text cfg.title ]
+            |> Modal.body []
+                [ Html.p [ class "lead" ] [ text cfg.text ] ]
+            |> Modal.footer []
+                [ Button.button [ Button.secondary, Button.attrs [ onClick cfg.msgCancel ] ]
+                    [ text cfg.labelCancel ]
+                , Button.button
+                    [ cfg.btnOk
+                    , Button.attrs
+                        [ onClick cfg.msgOk
+                        , style [ ( "min-width", "100px" ) ]
+                        ]
+                    ]
+                    [ text cfg.labelOk ]
+                ]
+            |> Modal.view model.confirmModalState
 
 
 summaryModal : Model -> Html Msg
@@ -326,7 +352,7 @@ taskCompletionInfo tasks model =
                 , text " "
                 , input
                     [ type_ "checkbox"
-                    , Html.Attributes.id "show-completed"
+                    , A.id "show-completed"
                     , checked model.showCompleted
                     , onClick ToggleShowCompleted
                     ]
@@ -373,14 +399,14 @@ actionButton date label taskLabel task =
     if label == taskLabel then
         Dropdown.buttonItem
             [ class "disabled"
-            , classList [ ( "text-danger", label == "Yesterday" ) ]
+            , classList [ ( "text-ghost", label == "Yesterday" ) ]
             ]
             [ Html.i [ class "fa fa-arrow-right" ] []
             , text <| " " ++ label
             ]
     else
         Dropdown.buttonItem
-            [ classList [ ( "text-danger", label == "Yesterday" ) ]
+            [ classList [ ( "text-ghost", label == "Yesterday" ) ]
             , onClick <| StoryTask.changeSchedule RequestTaskUpdate date task
             ]
             [ Html.i [ class "fa empty" ] []
@@ -435,6 +461,12 @@ taskControl model scheduled task =
             , Dropdown.buttonItem
                 [ onClick <| StoryTask.toggleCompleted RequestTaskUpdate model.context.today task ]
                 completionDisplay
+            , Dropdown.divider
+            , Dropdown.buttonItem
+                [ class "text-danger"
+                , onClick <| ConfirmTaskDeletion task.id task.label
+                ]
+                [ text "Delete" ]
             ]
     in
         Dropdown.dropdown state
@@ -463,7 +495,7 @@ taskEditor task =
             ]
             [ input
                 [ type_ "text"
-                , Html.Attributes.id <| "edit-task-" ++ task.id
+                , A.id <| "edit-task-" ++ task.id
                 , class "form-control pull-left"
                 , style [ ( "width", "80%" ) ]
                 , value task.editingLabel
@@ -493,8 +525,11 @@ taskEditor task =
 messageView : AppMessage -> Html Msg
 messageView message =
     let
-        view alert content =
-            alert
+        view kind content =
+            div
+                [ class <| "mb-0 alert alert-" ++ kind
+                , A.attribute "role" "alert"
+                ]
                 [ button
                     [ type_ "button"
                     , class "close"
@@ -508,8 +543,11 @@ messageView message =
             MessageNone ->
                 div [] []
 
+            MessageSuccess content ->
+                view "success" content
+
             MessageNotice content ->
-                div [ class "my-4" ] [ view Alert.info content ]
+                view "info" content
 
             MessageError content ->
-                div [ class "my-4" ] [ view Alert.danger content ]
+                view "danger" content

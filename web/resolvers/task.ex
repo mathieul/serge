@@ -55,4 +55,15 @@ defmodule Serge.Resolvers.Task do
         { :error, changeset.errors }
     end
   end
+
+  def delete(_parent, %{id: id}, _context) do
+    task = Repo.get!(Task, id)
+    case Repo.delete(task) do
+      { :ok, task } ->
+        {:ok, Task.infer_completed(task) }
+
+      { :error, changeset } ->
+        { :error, changeset.errors }
+    end
+  end
 end
