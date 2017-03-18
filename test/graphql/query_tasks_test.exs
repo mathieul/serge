@@ -26,7 +26,7 @@ defmodule Serge.QueryTaskTest do
     end
   end
 
-  describe "completedYesterday: true - requiring tasks completed yesterday" do
+  describe "includeYesterday: true - requiring tasks completed yesterday" do
     setup ctx do
       three_ago = DH.days_ago(3)
       tasks = %{
@@ -38,14 +38,14 @@ defmodule Serge.QueryTaskTest do
       [tasks: tasks]
     end
 
-    test "it doesn't return tasks completed if false", ctx do
-      doc = "query { tasks(completedYesterday: false) { label } }"
+    test "it doesn't return tasks tasks before yesterday if false", ctx do
+      doc = "query { tasks(includeYesterday: false) { label } }"
       {:ok, %{data: result}} = run(doc, ctx[:user].id)
-      assert task_labels(result) == ["Yesterday", "Today", "Tomorrow"]
+      assert task_labels(result) == ["Today", "Tomorrow"]
     end
 
     test "it returns tasks returned 'yesterday' if true", ctx do
-      doc = "query { tasks(completedYesterday: true) { label } }"
+      doc = "query { tasks(includeYesterday: true) { label } }"
       {:ok, %{data: result}} = run(doc, ctx[:user].id)
       assert task_labels(result) == ["Done 3 days ago", "Yesterday", "Today", "Tomorrow"]
     end
@@ -53,7 +53,7 @@ defmodule Serge.QueryTaskTest do
     test "it doesn't return tasks completed before 'yesterday'", ctx do
       insert(:task, user: ctx[:user], label: "Done 1 day ago", scheduled_on: DH.days_ago(2), completed_on: DH.days_ago(1))
 
-      doc = "query { tasks(completedYesterday: true) { label } }"
+      doc = "query { tasks(includeYesterday: true) { label } }"
       {:ok, %{data: result}} = run(doc, ctx[:user].id)
       assert task_labels(result) == ["Done 1 day ago", "Yesterday", "Today", "Tomorrow"]
     end
@@ -62,7 +62,7 @@ defmodule Serge.QueryTaskTest do
       Serge.Repo.delete(ctx[:tasks].done)
       insert(:task, user: ctx[:user], label: "Done today", scheduled_on: DH.days_from_now(3), completed_on: DH.today())
 
-      doc = "query { tasks(completedYesterday: true) { label } }"
+      doc = "query { tasks(includeYesterday: true) { label } }"
       {:ok, %{data: result}} = run(doc, ctx[:user].id)
       assert task_labels(result) == ["Yesterday", "Today", "Tomorrow", "Done today"]
     end

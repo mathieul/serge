@@ -70,6 +70,6 @@ defmodule Serge.Task do
   end
 
   def starting_from(scope \\ __MODULE__, date) do
-    from(t in scope, where: t.completed_on >= ^date or t.scheduled_on >= ^date)
+    from(t in scope, where: t.completed_on >= ^date or (is_nil(t.completed_on) and t.scheduled_on >= ^date))
   end
 end
