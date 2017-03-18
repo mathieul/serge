@@ -25,6 +25,11 @@ Ready to run in production? Please [check our deployment guides](http://www.phoe
     export GITHUB_CLIENT_ID=18e2f95af473d367c294
     export GITHUB_CLIENT_SECRET=e3b62ba98785a95a88d6238a865ce15a72e78756
 
+## GraphQL ##
+
+Serge is currently using the pre-release [`elm-graphql` package](https://github.com/jamesmacaulay/elm-graphql)
+(Elm files of the library checked into `web/static/elm/GraphQL`).
+
 ## Release ##
 
 Bump application version in `mix.exs` (i.e.: 0.0.5) and run as user `elixir`:
