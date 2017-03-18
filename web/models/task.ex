@@ -64,16 +64,12 @@ defmodule Serge.Task do
     from(t in scope, order_by: [t.scheduled_on, t.rank])
   end
 
-  def excluding_completed(scope \\ __MODULE__) do
-    from(t in scope, where: is_nil(t.completed_on))
-  end
-
   def guess_yesterdays_work_day(scope \\ __MODULE__) do
     today = DateHelpers.today()
     from(t in scope, where: t.completed_on < ^today, select: max(t.completed_on))
   end
 
-  def including_completed_from(scope \\ __MODULE__, date) do
-    from(t in scope, where: t.completed_on >= ^date or is_nil(t.completed_on))
+  def starting_from(scope \\ __MODULE__, date) do
+    from(t in scope, where: t.completed_on >= ^date or (is_nil(t.completed_on) and t.scheduled_on >= ^date))
   end
 end

@@ -43,7 +43,7 @@ exports.config = {
     elmBrunch: {
       mainModules: ['web/static/elm/Tasker.elm'],
       outputFolder: 'web/static/vendor',
-      // makeParameters: ['--debug'],
+      makeParameters: ['--debug'],
     },
     sass: {
       options: {

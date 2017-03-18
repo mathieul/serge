@@ -11,19 +11,14 @@ defmodule Serge.Resolvers.Task do
   end
 
   def all(_parent, args, %{context: ctx}) do
-    from = if args[:completed_yesterday] do
-      Repo.one(Task.guess_yesterdays_work_day) || DateHelpers.today()
+    from = if args[:include_yesterday] do
+      Repo.one(Task.guess_yesterdays_work_day) || DateHelpers.yesterday()
     else
-      nil
+      DateHelpers.today()
     end
 
-    scope = if from do
-      Task.including_completed_from(from)
-    else
-      Task.excluding_completed
-    end
     tasks =
-      scope
+      Task.starting_from(from)
       |> Task.for_user_id(ctx.current_user.id)
       |> Task.ordered_by_schedule_and_rank()
       |> Repo.all()
@@ -53,6 +48,17 @@ defmodule Serge.Resolvers.Task do
     changeset = Task.changeset(task, attributes)
 
     case Repo.update(changeset) do
+      { :ok, task } ->
+        {:ok, Task.infer_completed(task) }
+
+      { :error, changeset } ->
+        { :error, changeset.errors }
+    end
+  end
+
+  def delete(_parent, %{id: id}, _context) do
+    task = Repo.get!(Task, id)
+    case Repo.delete(task) do
       { :ok, task } ->
         {:ok, Task.infer_completed(task) }
 

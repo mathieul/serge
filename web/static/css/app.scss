@@ -2,7 +2,7 @@
 @import "font-awesome";
 
 .fa.empty {
-  width: 14px;
+  width: 16px;
 }
 
 .py-1-5 {
@@ -10,10 +10,13 @@
   padding-bottom: 0.4em;
 }
 
-.task-commands {
-  min-width: 240px;
+.task-control {
+  width: 100px;
+  text-align: right;
 }
 
-.task-commands-yesterday {
-  min-width: 320px;
+.text-ghost {
+  &, &:hover {
+    color: #999;
+  }
 }

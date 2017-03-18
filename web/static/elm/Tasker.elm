@@ -1,14 +1,23 @@
 port module Tasker exposing (main)
 
+import Dict exposing (Dict)
 import Time exposing (Time)
 import Time.TimeZones as TimeZones
 import Html
 import Http
 import Task
 import Dom
+import Bootstrap.Navbar as Navbar
+import Bootstrap.Modal as Modal
+import Bootstrap.Dropdown as Dropdown
+import Bootstrap.Button as Button
+
+
+-- Local imports
+
 import Model exposing (..)
 import View exposing (..)
-import StoryTask exposing (StoryTask, Scheduled(..))
+import StoryTask exposing (StoryTask)
 import Api
 
 
@@ -31,13 +40,18 @@ main =
 
 init : AppConfig -> ( Model, Cmd Msg )
 init config =
-    ( initialModel config
-    , Cmd.batch
-        [ Task.perform UpdateCurrentDates Time.now
-        , Http.send FetchTasks Api.fetchTasksRequest
-        , getTimeZone ()
-        ]
-    )
+    let
+        ( navState, navCmd ) =
+            Navbar.initialState NavMsg
+    in
+        ( initialModel config navState
+        , Cmd.batch
+            [ navCmd
+            , Task.perform UpdateAppContext Time.now
+            , Http.send FetchTasks Api.fetchTasksRequest
+            , getTimeZone ()
+            ]
+        )
 
 
 
@@ -55,11 +69,19 @@ port setTimeZone : (String -> msg) -> Sub msg
 
 
 subscriptions : Model -> Sub Msg
-subscriptions _ =
-    Sub.batch
-        [ setTimeZone SetTimeZone
-        , Time.every Time.minute UpdateCurrentDates
-        ]
+subscriptions model =
+    let
+        dropdownSubscription ( name, state ) =
+            Dropdown.subscriptions state (DropdownMsg name)
+    in
+        model.dropdownStates
+            |> Dict.toList
+            |> List.map dropdownSubscription
+            |> List.append
+                [ setTimeZone SetTimeZone
+                , Time.every Time.minute UpdateAppContext
+                ]
+            |> Sub.batch
 
 
 
@@ -72,14 +94,36 @@ update msg model =
         NoOp ->
             model ! []
 
+        NavMsg state ->
+            { model | navState = state } ! []
+
+        ModalMsg state ->
+            { model | modalState = state } ! []
+
+        ConfirmModalMsg state ->
+            { model | confirmModalState = state } ! []
+
+        DropdownMsg name state ->
+            { model | dropdownStates = Dict.insert name state model.dropdownStates } ! []
+
         ShowSummary ->
-            { model | showSummary = True } ! []
+            { model | modalState = Modal.visibleState } ! []
 
         HideSummary ->
-            { model | showSummary = False } ! []
+            { model | modalState = Modal.hiddenState } ! []
 
-        UpdateCurrentDates time ->
-            ( { model | dates = StoryTask.timeToCurrentDates model.timeZone time }, Cmd.none )
+        RequestConfirmation confirmation ->
+            { model
+                | confirmation = confirmation
+                , confirmModalState = Modal.visibleState
+            }
+                ! []
+
+        DiscardConfirmation ->
+            (hideConfirmModal model) ! []
+
+        UpdateAppContext time ->
+            { model | context = timeToAppContext model.timeZone time } ! []
 
         ClearMessage ->
             { model | message = MessageNone } ! []
@@ -101,35 +145,14 @@ update msg model =
                     model ! []
 
                 _ ->
-                    let
-                        scheduledOn =
-                            case model.scheduleTab of
-                                TabToday ->
-                                    model.dates.today
-
-                                TabTomorrow ->
-                                    model.dates.tomorrow
-
-                                _ ->
-                                    model.dates.later
-
-                        newTask =
-                            StoryTask.makeNewTask
-                                model.currentTaskSeq
-                                model.currentTaskLabel
-                                (List.length model.tasks)
-                                scheduledOn
-                    in
-                        ( { model
-                            | tasks = List.append model.tasks [ newTask ]
-                            , currentTaskLabel = ""
-                            , currentTaskSeq = model.currentTaskSeq + 1
-                          }
-                        , Http.send CreateTask <| Api.makeTaskRequest newTask
-                        )
+                    createNewTask model
 
         FetchTasks (Ok tasks) ->
-            { model | tasks = tasks } ! []
+            { model
+                | tasks = tasks
+                , dropdownStates = dropdownStatesForTasks tasks
+            }
+                ! []
 
         FetchTasks (Err error) ->
             ( { model
@@ -139,7 +162,11 @@ update msg model =
             )
 
         CreateTask (Ok response) ->
-            { model | tasks = replaceTask response.tid response.task model.tasks } ! []
+            { model
+                | tasks = replaceTask response.tid response.task model.tasks
+                , dropdownStates = model.dropdownStates
+            }
+                ! []
 
         CreateTask (Err error) ->
             ( { model
@@ -152,7 +179,11 @@ update msg model =
             model ! [ Http.send UpdateTask <| Api.updateTaskRequest task ]
 
         UpdateTask (Ok task) ->
-            { model | tasks = replaceTask task.id task model.tasks } ! []
+            { model
+                | tasks = replaceTask task.id task model.tasks
+                , dropdownStates = model.dropdownStates
+            }
+                ! []
 
         UpdateTask (Err error) ->
             ( { model
@@ -161,33 +192,118 @@ update msg model =
             , Cmd.none
             )
 
-        ChangeScheduleTab selection ->
-            { model | scheduleTab = selection } ! []
+        RequestTaskDeletion id ->
+            model ! [ Http.send DeleteTask <| Api.deleteTaskRequest id ]
+
+        DeleteTask (Ok task) ->
+            let
+                ( newModel, cmds ) =
+                    model
+                        |> hideConfirmModal
+                        |> update DiscardConfirmation
+
+                tasksUpdated =
+                    List.filter (\item -> item.id /= task.id) model.tasks
+            in
+                ( { newModel
+                    | tasks = tasksUpdated
+                    , message = MessageSuccess <| "Task \"" ++ task.label ++ "\" was deleted successfully."
+                  }
+                , cmds
+                )
+
+        DeleteTask (Err error) ->
+            let
+                newModel =
+                    hideConfirmModal model
+            in
+                ( { newModel
+                    | message = MessageError <| "Updating the task failed: " ++ (httpErrorToMessage error)
+                  }
+                , Cmd.none
+                )
+
+        ChangeDatePeriod selection ->
+            { model | datePeriod = selection } ! []
 
         ToggleShowCompleted ->
             { model | showCompleted = not model.showCompleted } ! []
 
+        ConfirmTaskDeletion id label ->
+            let
+                confirmation =
+                    { emptyConfirmation
+                        | title = "Delete Task"
+                        , text = "Do you really want to delete task \"" ++ label ++ "\"?"
+                        , btnOk = Button.danger
+                        , msgOk = RequestTaskDeletion id
+                    }
+            in
+                update (RequestConfirmation confirmation) model
+
         UpdateEditingTask id editing editingLabel ->
             let
-                tasks =
-                    List.map
-                        (\task ->
-                            if task.id == id then
-                                { task
-                                    | editing = editing
-                                    , editingLabel = editingLabel
-                                }
-                            else
-                                task
-                        )
-                        model.tasks
-
-                textFieldId =
-                    "edit-task-" ++ id
+                updateTaskIfId task =
+                    if task.id == id then
+                        { task
+                            | editing = editing
+                            , editingLabel = editingLabel
+                        }
+                    else
+                        task
             in
-                ( { model | tasks = tasks }
-                , Dom.focus textFieldId |> Task.attempt (\_ -> NoOp)
+                ( { model
+                    | tasks = List.map updateTaskIfId model.tasks
+                    , dropdownStates = model.dropdownStates
+                  }
+                , Dom.focus ("edit-task-" ++ id) |> Task.attempt (\_ -> NoOp)
                 )
+
+
+hideConfirmModal : Model -> Model
+hideConfirmModal model =
+    { model | confirmModalState = Modal.hiddenState }
+
+
+createNewTask : Model -> ( Model, Cmd Msg )
+createNewTask model =
+    let
+        scheduledOn =
+            case model.datePeriod of
+                Yesterday ->
+                    model.context.yesterday
+
+                Today ->
+                    model.context.today
+
+                Tomorrow ->
+                    model.context.tomorrow
+
+                Later ->
+                    model.context.later
+
+        newTask =
+            StoryTask.makeNewTask
+                model.currentTaskSeq
+                model.currentTaskLabel
+                (List.length model.tasks)
+                scheduledOn
+    in
+        ( { model
+            | tasks = List.append model.tasks [ newTask ]
+            , dropdownStates = Dict.insert newTask.id Dropdown.initialState model.dropdownStates
+            , currentTaskLabel = ""
+            , currentTaskSeq = model.currentTaskSeq + 1
+          }
+        , Http.send CreateTask <| Api.makeTaskRequest newTask
+        )
+
+
+dropdownStatesForTasks : List StoryTask -> Dict String Dropdown.State
+dropdownStatesForTasks tasks =
+    tasks
+        |> List.map (\task -> ( task.id, Dropdown.initialState ))
+        |> Dict.fromList
 
 
 replaceTask : String -> StoryTask -> List StoryTask -> List StoryTask

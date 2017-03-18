@@ -23,7 +23,7 @@ defmodule Serge.Schema do
     end
 
     field :tasks, list_of(:task) do
-      arg :completed_yesterday, :boolean
+      arg :include_yesterday, :boolean
 
       resolve &Resolvers.Task.all/3
     end
@@ -46,6 +46,12 @@ defmodule Serge.Schema do
       arg :label, :string
 
       resolve &Resolvers.Task.update/3
+    end
+
+    field :delete_task, :task do
+      arg :id, non_null(:id)
+
+      resolve &Resolvers.Task.delete/3
     end
   end
 end
