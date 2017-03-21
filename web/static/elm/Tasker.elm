@@ -200,7 +200,11 @@ update msg model =
             )
 
         RequestTaskDeletion id ->
-            model ! [ Http.send DeleteTask <| Api.deleteTaskRequest id ]
+            model
+                ! [ Api.deleteTaskRequest id
+                        |> Api.sendMutationRequest
+                        |> Task.attempt DeleteTask
+                  ]
 
         DeleteTask (Ok task) ->
             let
@@ -223,9 +227,17 @@ update msg model =
             let
                 newModel =
                     hideConfirmModal model
+
+                message =
+                    case error of
+                        GraphQLClient.HttpError error ->
+                            httpErrorToMessage error
+
+                        GraphQLClient.GraphQLError errors ->
+                            toString errors
             in
                 ( { newModel
-                    | message = MessageError <| "Updating the task failed: " ++ (httpErrorToMessage error)
+                    | message = MessageError <| "Updating the task failed: " ++ message
                   }
                 , Cmd.none
                 )

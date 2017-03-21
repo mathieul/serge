@@ -86,7 +86,7 @@ type Msg
     | ToggleShowCompleted
     | UpdateEditingTask Id Bool String
     | RequestTaskDeletion Id
-    | DeleteTask (Result Http.Error StoryTask)
+    | DeleteTask (Result GraphQLClient.Error StoryTask)
 
 
 type AppMessage

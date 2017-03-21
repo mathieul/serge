@@ -5,6 +5,7 @@ module Api
         , updateTaskRequest
         , deleteTaskRequest
         , sendQueryRequest
+        , sendMutationRequest
         )
 
 import Json.Encode as JE
@@ -51,11 +52,6 @@ taskDecoder =
         (JD.field "scheduledOn" JD.string)
 
 
-tasksResponseDecoder : JD.Decoder (List StoryTask)
-tasksResponseDecoder =
-    JD.at [ "data", "tasks" ] (JD.list taskDecoder)
-
-
 createTaskResponseDecoder : JD.Decoder CreateTaskResponse
 createTaskResponseDecoder =
     JD.map2 CreateTaskResponse
@@ -69,15 +65,30 @@ updateTaskResponseDecoder =
     JD.at [ "data", "updateTask" ] taskDecoder
 
 
-deleteTaskResponseDecoder : JD.Decoder StoryTask
-deleteTaskResponseDecoder =
-    JD.at [ "data", "deleteTask" ]
-        taskDecoder
-
-
 
 -- Queries
 -- Test elm-graphql
+
+
+sendQueryRequest : B.Request B.Query a -> Task GraphQLClient.Error a
+sendQueryRequest request =
+    GraphQLClient.sendQuery graphqlUrl request
+
+
+sendMutationRequest : B.Request B.Mutation a -> Task GraphQLClient.Error a
+sendMutationRequest request =
+    GraphQLClient.sendMutation graphqlUrl request
+
+
+storyTask : B.ValueSpec B.NonNull B.ObjectType StoryTask vars
+storyTask =
+    B.object StoryTask
+        |> B.with (B.field "id" [] B.id)
+        |> B.with (B.field "label" [] B.string)
+        |> B.with (B.field "rank" [] B.int)
+        |> B.with (B.field "completed" [] B.bool)
+        |> B.with (B.field "completedOn" [] (B.nullable B.string))
+        |> B.with (B.field "scheduledOn" [] B.string)
 
 
 fetchTasksQuery : B.Document B.Query (List StoryTask) { vars | includeYesterday : Bool }
@@ -85,15 +96,6 @@ fetchTasksQuery =
     let
         includeYesterdayVar =
             Var.required "includeYesterday" .includeYesterday Var.bool
-
-        storyTask =
-            B.object StoryTask
-                |> B.with (B.field "id" [] B.id)
-                |> B.with (B.field "label" [] B.string)
-                |> B.with (B.field "rank" [] B.int)
-                |> B.with (B.field "completed" [] B.bool)
-                |> B.with (B.field "completedOn" [] (B.nullable B.string))
-                |> B.with (B.field "scheduledOn" [] B.string)
 
         variables =
             [ ( "includeYesterday", Arg.variable includeYesterdayVar ) ]
@@ -109,9 +111,24 @@ fetchTasksRequest =
         |> B.request { includeYesterday = True }
 
 
-sendQueryRequest : B.Request B.Query a -> Task GraphQLClient.Error a
-sendQueryRequest request =
-    GraphQLClient.sendQuery graphqlUrl request
+deleteTaskQuery : B.Document B.Mutation StoryTask { vars | taskID : String }
+deleteTaskQuery =
+    let
+        taskIDVar =
+            Var.required "taskID" .taskID Var.id
+
+        variables =
+            [ ( "id", Arg.variable taskIDVar ) ]
+    in
+        B.field "deleteTask" variables storyTask
+            |> B.extract
+            |> B.mutationDocument
+
+
+deleteTaskRequest : Id -> B.Request B.Mutation StoryTask
+deleteTaskRequest id =
+    deleteTaskQuery
+        |> B.request { taskID = id }
 
 
 
@@ -193,32 +210,3 @@ updateTaskRequest task =
                 |> Http.jsonBody
     in
         Http.post graphqlUrl body updateTaskResponseDecoder
-
-
-deleteTaskMutation : String
-deleteTaskMutation =
-    """
-    mutation($id: ID!) {
-      deleteTask(id: $id) {
-      id
-      label
-      rank
-      completed
-      completedOn
-      scheduledOn
-    }
-  }
-  """
-
-
-deleteTaskRequest : Id -> Http.Request StoryTask
-deleteTaskRequest id =
-    let
-        body =
-            JE.object
-                [ ( "query", JE.string deleteTaskMutation )
-                , ( "variables", JE.object [ ( "id", JE.string id ) ] )
-                ]
-                |> Http.jsonBody
-    in
-        Http.post graphqlUrl body deleteTaskResponseDecoder
