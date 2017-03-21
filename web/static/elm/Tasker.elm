@@ -11,6 +11,7 @@ import Bootstrap.Navbar as Navbar
 import Bootstrap.Modal as Modal
 import Bootstrap.Dropdown as Dropdown
 import Bootstrap.Button as Button
+import GraphQL.Client.Http as GraphQLClient
 
 
 -- Local imports
@@ -48,10 +49,9 @@ init config =
         , Cmd.batch
             [ navCmd
             , Task.perform UpdateAppContext Time.now
-            , Http.send FetchTasks Api.fetchTasksRequest
             , getTimeZone ()
-            , Api.sendQueryRequest Api.fetchTaskQueryRequest
-                |> Task.attempt FetchTask
+            , Api.sendQueryRequest Api.fetchTasksRequest
+                |> Task.attempt FetchTasks
             ]
         )
 
@@ -157,11 +157,16 @@ update msg model =
                 ! []
 
         FetchTasks (Err error) ->
-            ( { model
-                | message = MessageError <| "Fetching tasks failed: " ++ (httpErrorToMessage error)
-              }
-            , Cmd.none
-            )
+            let
+                message =
+                    case error of
+                        GraphQLClient.HttpError error ->
+                            httpErrorToMessage error
+
+                        GraphQLClient.GraphQLError errors ->
+                            toString errors
+            in
+                { model | message = MessageError <| "Fetching tasks failed: " ++ message } ! []
 
         CreateTask (Ok response) ->
             { model
@@ -260,20 +265,6 @@ update msg model =
                   }
                 , Dom.focus ("edit-task-" ++ id) |> Task.attempt (\_ -> NoOp)
                 )
-
-        FetchTask (Ok task) ->
-            let
-                _ =
-                    Debug.log "FetchTask OK" task
-            in
-                model ! []
-
-        FetchTask (Err error) ->
-            let
-                _ =
-                    Debug.log "FetchTask ERR" error
-            in
-                model ! []
 
 
 hideConfirmModal : Model -> Model

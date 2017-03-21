@@ -5,7 +5,6 @@ module Api
         , updateTaskRequest
         , deleteTaskRequest
         , sendQueryRequest
-        , fetchTaskQueryRequest
         )
 
 import Json.Encode as JE
@@ -81,11 +80,11 @@ deleteTaskResponseDecoder =
 -- Test elm-graphql
 
 
-fetchTaskQuery : B.Document B.Query StoryTask { vars | taskID : String }
-fetchTaskQuery =
+fetchTasksQuery : B.Document B.Query (List StoryTask) { vars | includeYesterday : Bool }
+fetchTasksQuery =
     let
-        taskIDVar =
-            Var.required "taskID" .taskID Var.id
+        includeYesterdayVar =
+            Var.required "includeYesterday" .includeYesterday Var.bool
 
         storyTask =
             B.object StoryTask
@@ -97,17 +96,17 @@ fetchTaskQuery =
                 |> B.with (B.field "scheduledOn" [] B.string)
 
         variables =
-            [ ( "id", Arg.variable taskIDVar ) ]
+            [ ( "includeYesterday", Arg.variable includeYesterdayVar ) ]
     in
-        B.field "task" variables storyTask
+        B.field "tasks" variables (B.list storyTask)
             |> B.extract
             |> B.queryDocument
 
 
-fetchTaskQueryRequest : B.Request B.Query StoryTask
-fetchTaskQueryRequest =
-    fetchTaskQuery
-        |> B.request { taskID = "35" }
+fetchTasksRequest : B.Request B.Query (List StoryTask)
+fetchTasksRequest =
+    fetchTasksQuery
+        |> B.request { includeYesterday = True }
 
 
 sendQueryRequest : B.Request B.Query a -> Task GraphQLClient.Error a
@@ -117,32 +116,6 @@ sendQueryRequest request =
 
 
 -- Plain style
-
-
-fetchTasksQuery : String
-fetchTasksQuery =
-    """
-    query {
-      tasks(includeYesterday: true) {
-        id
-        label
-        rank
-        completed
-        completedOn
-        scheduledOn
-      }
-    }
-  """
-
-
-fetchTasksRequest : Http.Request (List StoryTask)
-fetchTasksRequest =
-    let
-        body =
-            JE.object [ ( "query", JE.string fetchTasksQuery ) ]
-                |> Http.jsonBody
-    in
-        Http.post graphqlUrl body tasksResponseDecoder
 
 
 makeTaskMutation : String

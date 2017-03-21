@@ -72,7 +72,7 @@ type Msg
     | HideSummary
     | RequestConfirmation Confirmation
     | DiscardConfirmation
-    | FetchTasks (Result Http.Error (List StoryTask))
+    | FetchTasks (Result GraphQLClient.Error (List StoryTask))
     | CreateTask (Result Http.Error CreateTaskResponse)
     | UpdateTask (Result Http.Error StoryTask)
     | ClearMessage
@@ -87,7 +87,6 @@ type Msg
     | UpdateEditingTask Id Bool String
     | RequestTaskDeletion Id
     | DeleteTask (Result Http.Error StoryTask)
-    | FetchTask (Result GraphQLClient.Error StoryTask)
 
 
 type AppMessage
