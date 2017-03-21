@@ -4,8 +4,8 @@ module Api
         , makeTaskRequest
         , updateTaskRequest
         , deleteTaskRequest
-        , sendQueryRequest
-        , fetchTaskQueryRequest
+          -- , sendQueryRequest
+          -- , fetchTaskQueryRequest
         )
 
 import Json.Encode as JE
@@ -15,13 +15,10 @@ import Task exposing (Task)
 
 
 -- elm-graphql imports
-
-import GraphQL.Request.Builder as B exposing (SelectionSpec, Field)
-import GraphQL.Request.Builder.Arg as Arg
-import GraphQL.Request.Builder.Variable as Var
-import GraphQL.Client.Http as GraphQLClient
-
-
+-- import GraphQL.Request.Builder as B exposing (SelectionSpec, Field)
+-- import GraphQL.Request.Builder.Arg as Arg
+-- import GraphQL.Request.Builder.Variable as Var
+-- import GraphQL.Client.Http as GraphQLClient
 -- Local imports
 
 import StoryTask exposing (StoryTask)
@@ -81,44 +78,39 @@ deleteTaskResponseDecoder =
 
 -- Queries
 -- Test elm-graphql
-
-
-fetchTaskQuery : B.Document B.Query { vars | taskID : String } StoryTask
-fetchTaskQuery =
-    let
-        taskIDVar =
-            Var.required "taskID" .taskID Var.id
-
-        task =
-            B.object StoryTask
-                |> B.with (B.field "id" [] B.id)
-                |> B.with (B.field "label" [] B.string)
-                |> B.with (B.field "rank" [] B.int)
-                |> B.with (B.field "completed" [] B.bool)
-                |> B.with (B.field "completedOn" [] (B.nullable B.string))
-                |> B.with (B.field "scheduledOn" [] B.string)
-                |> B.with (B.field "label" [] B.string)
-
-        queryRoot =
-            B.field "task"
-                [ ( "id", Arg.variable taskIDVar ) ]
-                task
-    in
-        B.queryDocument queryRoot
-
-
-fetchTaskQueryRequest : B.Request B.Query StoryTask
-fetchTaskQueryRequest =
-    fetchTaskQuery
-        |> B.request { taskID = "35" }
-
-
-sendQueryRequest : B.Request B.Query a -> Task GraphQLClient.Error a
-sendQueryRequest request =
-    GraphQLClient.sendQuery graphqlUrl request
-
-
-
+-- fetchTaskQuery : B.Document B.Query { vars | taskID : String } StoryTask
+-- fetchTaskQuery =
+--     let
+--         taskIDVar =
+--             Var.required "taskID" .taskID Var.id
+--
+--         task =
+--             B.object StoryTask
+--                 |> B.with (B.field "id" [] B.id)
+--                 |> B.with (B.field "label" [] B.string)
+--                 |> B.with (B.field "rank" [] B.int)
+--                 |> B.with (B.field "completed" [] B.bool)
+--                 |> B.with (B.field "completedOn" [] (B.nullable B.string))
+--                 |> B.with (B.field "scheduledOn" [] B.string)
+--                 |> B.with (B.field "label" [] B.string)
+--
+--         queryRoot =
+--             B.field "task"
+--                 [ ( "id", Arg.variable taskIDVar ) ]
+--                 task
+--     in
+--         B.queryDocument queryRoot
+--
+--
+-- fetchTaskQueryRequest : B.Request B.Query StoryTask
+-- fetchTaskQueryRequest =
+--     fetchTaskQuery
+--         |> B.request { taskID = "35" }
+--
+--
+-- sendQueryRequest : B.Request B.Query a -> Task GraphQLClient.Error a
+-- sendQueryRequest request =
+--     GraphQLClient.sendQuery graphqlUrl request
 -- Plain style
 
 

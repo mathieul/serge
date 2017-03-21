@@ -80,7 +80,10 @@ type Msg
     | UpdateEditingTask Id Bool String
     | RequestTaskDeletion Id
     | DeleteTask (Result Http.Error StoryTask)
-    | FetchTask (Result GraphQLClient.Error StoryTask)
+
+
+
+-- | FetchTask (Result GraphQLClient.Error StoryTask)
 
 
 type AppMessage
