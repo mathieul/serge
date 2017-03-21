@@ -14,9 +14,9 @@ import Time.DateTime as DateTime exposing (DateTime)
 import Time.TimeZone exposing (TimeZone)
 import Time.ZonedDateTime as ZonedDateTime
 import Time.Date as Date exposing (Date)
-import GraphQL.Client.Http as GraphQLClient
 
 
+-- import GraphQL.Client.Http as GraphQLClient
 -- Local imports
 
 import StoryTask exposing (StoryTask)
@@ -37,6 +37,13 @@ type alias AppConfig =
     }
 
 
+type alias TaskEditor =
+    { task : StoryTask
+    , editing : Bool
+    , editingLabel : String
+    }
+
+
 type alias Model =
     { config : AppConfig
     , navState : Navbar.State
@@ -48,7 +55,7 @@ type alias Model =
     , timeZone : TimeZone
     , currentTaskLabel : String
     , currentTaskSeq : Int
-    , tasks : List StoryTask
+    , taskEditors : List TaskEditor
     , datePeriod : DatePeriod
     , showCompleted : Bool
     , confirmation : Confirmation
@@ -141,7 +148,7 @@ initialModel config navState =
     , timeZone = TimeZones.utc ()
     , currentTaskLabel = ""
     , currentTaskSeq = 1
-    , tasks = []
+    , taskEditors = []
     , datePeriod = Today
     , showCompleted = False
     , confirmation = emptyConfirmation
@@ -192,3 +199,18 @@ emptyConfirmation =
     , labelCancel = "Cancel"
     , msgCancel = DiscardConfirmation
     }
+
+
+makeNewTaskEditor : Model -> String -> TaskEditor
+makeNewTaskEditor model scheduledOn =
+    StoryTask.makeNewTask
+        model.currentTaskSeq
+        model.currentTaskLabel
+        (List.length model.taskEditors)
+        scheduledOn
+        |> taskToEditor
+
+
+taskToEditor : StoryTask -> TaskEditor
+taskToEditor task =
+    TaskEditor task False task.label

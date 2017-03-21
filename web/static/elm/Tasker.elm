@@ -151,7 +151,7 @@ update msg model =
 
         FetchTasks (Ok tasks) ->
             { model
-                | tasks = tasks
+                | taskEditors = List.map taskToEditor tasks
                 , dropdownStates = dropdownStatesForTasks tasks
             }
                 ! []
@@ -165,7 +165,7 @@ update msg model =
 
         CreateTask (Ok response) ->
             { model
-                | tasks = replaceTask response.tid response.task model.tasks
+                | taskEditors = replaceTask response.tid response.task model.taskEditors
                 , dropdownStates = model.dropdownStates
             }
                 ! []
@@ -182,7 +182,7 @@ update msg model =
 
         UpdateTask (Ok task) ->
             { model
-                | tasks = replaceTask task.id task model.tasks
+                | taskEditors = replaceTask task.id task model.taskEditors
                 , dropdownStates = model.dropdownStates
             }
                 ! []
@@ -204,11 +204,11 @@ update msg model =
                         |> hideConfirmModal
                         |> update DiscardConfirmation
 
-                tasksUpdated =
-                    List.filter (\item -> item.id /= task.id) model.tasks
+                updatedTaskEditors =
+                    List.filter (\editor -> editor.task.id /= task.id) model.taskEditors
             in
                 ( { newModel
-                    | tasks = tasksUpdated
+                    | taskEditors = updatedTaskEditors
                     , message = MessageSuccess <| "Task \"" ++ task.label ++ "\" was deleted successfully."
                   }
                 , cmds
@@ -245,17 +245,17 @@ update msg model =
 
         UpdateEditingTask id editing editingLabel ->
             let
-                updateTaskIfId task =
-                    if task.id == id then
-                        { task
+                updateTaskIfId editor =
+                    if editor.task.id == id then
+                        { editor
                             | editing = editing
                             , editingLabel = editingLabel
                         }
                     else
-                        task
+                        editor
             in
                 ( { model
-                    | tasks = List.map updateTaskIfId model.tasks
+                    | taskEditors = List.map updateTaskIfId model.taskEditors
                     , dropdownStates = model.dropdownStates
                   }
                 , Dom.focus ("edit-task-" ++ id) |> Task.attempt (\_ -> NoOp)
@@ -301,19 +301,15 @@ createNewTask model =
                     model.context.later
 
         newTask =
-            StoryTask.makeNewTask
-                model.currentTaskSeq
-                model.currentTaskLabel
-                (List.length model.tasks)
-                scheduledOn
+            makeNewTaskEditor model scheduledOn
     in
         ( { model
-            | tasks = List.append model.tasks [ newTask ]
-            , dropdownStates = Dict.insert newTask.id Dropdown.initialState model.dropdownStates
+            | taskEditors = List.append model.taskEditors [ newTask ]
+            , dropdownStates = Dict.insert newTask.task.id Dropdown.initialState model.dropdownStates
             , currentTaskLabel = ""
             , currentTaskSeq = model.currentTaskSeq + 1
           }
-        , Http.send CreateTask <| Api.makeTaskRequest newTask
+        , Http.send CreateTask <| Api.makeTaskRequest newTask.task
         )
 
 
@@ -324,16 +320,16 @@ dropdownStatesForTasks tasks =
         |> Dict.fromList
 
 
-replaceTask : String -> StoryTask -> List StoryTask -> List StoryTask
-replaceTask id task tasks =
+replaceTask : String -> StoryTask -> List TaskEditor -> List TaskEditor
+replaceTask id task taskEditors =
     List.map
-        (\item ->
-            if item.id == id then
-                task
+        (\editor ->
+            if editor.task.id == id then
+                { editor | task = task }
             else
-                item
+                editor
         )
-        tasks
+        taskEditors
 
 
 httpErrorToMessage : Http.Error -> String

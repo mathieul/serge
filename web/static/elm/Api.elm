@@ -11,9 +11,9 @@ module Api
 import Json.Encode as JE
 import Json.Decode as JD
 import Http
-import Task exposing (Task)
 
 
+-- import Task exposing (Task)
 -- elm-graphql imports
 -- import GraphQL.Request.Builder as B exposing (SelectionSpec, Field)
 -- import GraphQL.Request.Builder.Arg as Arg
@@ -40,15 +40,13 @@ graphqlUrl =
 
 taskDecoder : JD.Decoder StoryTask
 taskDecoder =
-    JD.map8 StoryTask
+    JD.map6 StoryTask
         (JD.field "id" JD.string)
         (JD.field "label" JD.string)
         (JD.field "rank" JD.int)
         (JD.field "completed" JD.bool)
         (JD.field "completedOn" <| JD.nullable JD.string)
         (JD.field "scheduledOn" JD.string)
-        (JD.succeed False)
-        (JD.field "label" JD.string)
 
 
 tasksResponseDecoder : JD.Decoder (List StoryTask)
