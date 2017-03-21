@@ -16,7 +16,7 @@ import Task exposing (Task)
 
 -- elm-graphql imports
 
-import GraphQL.Request.Builder exposing (..)
+import GraphQL.Request.Builder as B exposing (SelectionSpec, Field)
 import GraphQL.Request.Builder.Arg as Arg
 import GraphQL.Request.Builder.Variable as Var
 import GraphQL.Client.Http as GraphQLClient
@@ -83,38 +83,37 @@ deleteTaskResponseDecoder =
 -- Test elm-graphql
 
 
-fetchTaskQuery : Document Query { vars | taskID : String } StoryTask
+fetchTaskQuery : B.Document B.Query { vars | taskID : String } StoryTask
 fetchTaskQuery =
     let
         taskIDVar =
             Var.required "taskID" .taskID Var.id
 
         task =
-            object StoryTask
-                |> withField "id" [] string
-                |> withField "label" [] string
-                |> withField "rank" [] int
-                |> withField "completed" [] bool
-                |> withField "completedOn" [] (nullable string)
-                |> withField "scheduledOn" [] string
-                |> withField "id" [] (produce False)
-                |> withField "label" [] string
+            B.object StoryTask
+                |> B.with (B.field "id" [] B.id)
+                |> B.with (B.field "label" [] B.string)
+                |> B.with (B.field "rank" [] B.int)
+                |> B.with (B.field "completed" [] B.bool)
+                |> B.with (B.field "completedOn" [] (B.nullable B.string))
+                |> B.with (B.field "scheduledOn" [] B.string)
+                |> B.with (B.field "label" [] B.string)
 
         queryRoot =
-            field "task"
-                [ args [ ( "id", Arg.variable taskIDVar ) ] ]
+            B.field "task"
+                [ ( "id", Arg.variable taskIDVar ) ]
                 task
     in
-        queryDocument queryRoot
+        B.queryDocument queryRoot
 
 
-fetchTaskQueryRequest : Request Query StoryTask
+fetchTaskQueryRequest : B.Request B.Query StoryTask
 fetchTaskQueryRequest =
     fetchTaskQuery
-        |> request { taskID = "35" }
+        |> B.request { taskID = "35" }
 
 
-sendQueryRequest : Request Query a -> Task GraphQLClient.Error a
+sendQueryRequest : B.Request B.Query a -> Task GraphQLClient.Error a
 sendQueryRequest request =
     GraphQLClient.sendQuery graphqlUrl request
 
