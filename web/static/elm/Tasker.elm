@@ -50,6 +50,8 @@ init config =
             , Task.perform UpdateAppContext Time.now
             , Http.send FetchTasks Api.fetchTasksRequest
             , getTimeZone ()
+            , Api.sendQueryRequest Api.fetchTaskQueryRequest
+                |> Task.attempt FetchTask
             ]
         )
 
@@ -258,6 +260,20 @@ update msg model =
                   }
                 , Dom.focus ("edit-task-" ++ id) |> Task.attempt (\_ -> NoOp)
                 )
+
+        FetchTask (Ok task) ->
+            let
+                _ =
+                    Debug.log "FetchTask OK" task
+            in
+                model ! []
+
+        FetchTask (Err error) ->
+            let
+                _ =
+                    Debug.log "FetchTask ERR" error
+            in
+                model ! []
 
 
 hideConfirmModal : Model -> Model

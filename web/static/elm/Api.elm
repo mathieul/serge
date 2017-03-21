@@ -4,13 +4,37 @@ module Api
         , makeTaskRequest
         , updateTaskRequest
         , deleteTaskRequest
+        , sendQueryRequest
+        , fetchTaskQueryRequest
         )
 
 import Json.Encode as JE
 import Json.Decode as JD
 import Http
+import Task exposing (Task)
+
+
+-- elm-graphql imports
+
+import GraphQL.Request.Builder exposing (..)
+import GraphQL.Request.Builder.Arg as Arg
+import GraphQL.Request.Builder.Variable as Var
+import GraphQL.Client.Http as GraphQLClient
+
+
+-- Local imports
+
 import StoryTask exposing (StoryTask)
 import Model exposing (Id, CreateTaskResponse)
+
+
+-- Constants
+
+
+graphqlUrl : String
+graphqlUrl =
+    "/graphql"
+
 
 
 -- TYPES
@@ -50,16 +74,53 @@ updateTaskResponseDecoder =
 
 deleteTaskResponseDecoder : JD.Decoder StoryTask
 deleteTaskResponseDecoder =
-    JD.at [ "data", "deleteTask" ] taskDecoder
+    JD.at [ "data", "deleteTask" ]
+        taskDecoder
 
 
 
--- API
+-- Queries
+-- Test elm-graphql
 
 
-graphqlUrl : String
-graphqlUrl =
-    "/graphql"
+fetchTaskQuery : Document Query { vars | taskID : String } StoryTask
+fetchTaskQuery =
+    let
+        taskIDVar =
+            Var.required "taskID" .taskID Var.id
+
+        task =
+            object StoryTask
+                |> withField "id" [] string
+                |> withField "label" [] string
+                |> withField "rank" [] int
+                |> withField "completed" [] bool
+                |> withField "completedOn" [] (nullable string)
+                |> withField "scheduledOn" [] string
+                |> withField "id" [] (produce False)
+                |> withField "label" [] string
+
+        queryRoot =
+            field "task"
+                [ args [ ( "id", Arg.variable taskIDVar ) ] ]
+                task
+    in
+        queryDocument queryRoot
+
+
+fetchTaskQueryRequest : Request Query StoryTask
+fetchTaskQueryRequest =
+    fetchTaskQuery
+        |> request { taskID = "35" }
+
+
+sendQueryRequest : Request Query a -> Task GraphQLClient.Error a
+sendQueryRequest request =
+    GraphQLClient.sendQuery graphqlUrl request
+
+
+
+-- Plain style
 
 
 fetchTasksQuery : String

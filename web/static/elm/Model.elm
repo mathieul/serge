@@ -14,6 +14,7 @@ import Time.DateTime as DateTime exposing (DateTime)
 import Time.TimeZone exposing (TimeZone)
 import Time.ZonedDateTime as ZonedDateTime
 import Time.Date as Date exposing (Date)
+import GraphQL.Client.Http as GraphQLClient
 
 
 -- Local imports
@@ -79,6 +80,7 @@ type Msg
     | UpdateEditingTask Id Bool String
     | RequestTaskDeletion Id
     | DeleteTask (Result Http.Error StoryTask)
+    | FetchTask (Result GraphQLClient.Error StoryTask)
 
 
 type AppMessage
