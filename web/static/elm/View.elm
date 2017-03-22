@@ -46,7 +46,7 @@ import Bootstrap.Dropdown as Dropdown
 import Bootstrap.Modal as Modal
 
 
--- Local imports
+-- LOCAL IMPORTS
 
 import Model exposing (..)
 import StoryTask exposing (StoryTask)
@@ -119,11 +119,11 @@ mainContent model =
         ]
 
 
-earliestYesterday : List StoryTask -> String
-earliestYesterday tasks =
-    tasks
-        |> List.filter .completed
-        |> List.map (\task -> Maybe.withDefault "" task.completedOn)
+earliestYesterday : List TaskEditor -> String
+earliestYesterday taskEditors =
+    taskEditors
+        |> List.filter (\editor -> editor.task.completed)
+        |> List.map (\editor -> Maybe.withDefault "" editor.task.completedOn)
         |> List.minimum
         |> Maybe.withDefault ""
 
@@ -157,13 +157,13 @@ summaryModal : Model -> Html Msg
 summaryModal model =
     let
         completedTasks =
-            List.filter (\task -> task.completed) model.tasks
+            List.filter (\editor -> editor.task.completed) model.taskEditors
 
         scheduledTasks =
-            List.filter (\task -> not task.completed && task.scheduledOn <= model.context.today) model.tasks
+            List.filter (\editor -> not editor.task.completed && editor.task.scheduledOn <= model.context.today) model.taskEditors
 
-        summaryTaskView task =
-            li [] [ text task.label ]
+        summaryTaskView editor =
+            li [] [ text editor.task.label ]
     in
         Modal.config ModalMsg
             |> Modal.h4 [ class "w-100 text-center" ] [ text "Scrum Summary" ]
@@ -234,11 +234,11 @@ tasksCardView model =
                 Nothing ->
                     True
 
-        withSchedule task =
-            ( taskSchedule model.context task, task )
+        withSchedule editor =
+            ( taskSchedule model.context editor.task, editor )
 
         selectedTasks =
-            model.tasks
+            model.taskEditors
                 |> List.map withSchedule
                 |> List.filter (\( period, _ ) -> period == model.datePeriod)
                 |> List.map Tuple.second
@@ -255,7 +255,7 @@ taskSelectionTabs : Model -> Html Msg
 taskSelectionTabs model =
     let
         yesterday =
-            earliestYesterday model.tasks
+            earliestYesterday model.taskEditors
 
         aTab schedule =
             li [ class "nav-item" ]
@@ -296,20 +296,20 @@ tabLabel datePeriod context yesterday =
                 "Later"
 
 
-taskList : Model -> List StoryTask -> Html Msg
-taskList model tasks =
+taskList : Model -> List TaskEditor -> Html Msg
+taskList model taskEditors =
     let
         tasksToShow =
             if model.showCompleted then
-                tasks
+                taskEditors
             else
-                List.filter (\task -> not task.completed) tasks
+                List.filter (\editor -> not editor.task.completed) taskEditors
 
-        view task =
-            if task.editing then
-                taskEditor task
+        view editor =
+            if editor.editing then
+                taskEditorView editor
             else
-                taskViewer model task
+                taskViewerView model editor
     in
         if List.isEmpty tasksToShow then
             div [ class "alert alert-info mt-3" ]
@@ -321,22 +321,22 @@ taskList model tasks =
                 ]
 
 
-taskCompletionInfo : List StoryTask -> Model -> Html Msg
-taskCompletionInfo tasks model =
+taskCompletionInfo : List TaskEditor -> Model -> Html Msg
+taskCompletionInfo editors model =
     let
         countCompleted =
             List.foldl
-                (\task count ->
-                    if task.completed then
+                (\editor count ->
+                    if editor.task.completed then
                         count + 1
                     else
                         count
                 )
                 0
-                tasks
+                editors
 
         count =
-            (List.length tasks) - countCompleted
+            (List.length editors) - countCompleted
 
         label =
             (String.Extra.pluralize "task" "tasks" count)
@@ -361,26 +361,26 @@ taskCompletionInfo tasks model =
             ]
 
 
-taskViewer : Model -> StoryTask -> Html Msg
-taskViewer model task =
+taskViewerView : Model -> TaskEditor -> Html Msg
+taskViewerView model editor =
     let
         datePeriod =
-            taskSchedule model.context task
+            taskSchedule model.context editor.task
 
         startEditingMsg =
-            UpdateEditingTask task.id True task.editingLabel
+            UpdateEditingTask editor.task.id True editor.editingLabel
 
         label =
-            if task.completed then
-                Html.s [ class "text-muted" ] [ text task.label ]
+            if editor.task.completed then
+                Html.s [ class "text-muted" ] [ text editor.task.label ]
             else if datePeriod == Yesterday then
                 span [ onDoubleClick startEditingMsg ]
-                    [ text task.label
+                    [ text editor.task.label
                     , Html.i [ class "fa fa-clock-o text-danger ml-2" ] []
                     ]
             else
                 span [ onDoubleClick startEditingMsg ]
-                    [ text task.label ]
+                    [ text editor.task.label ]
     in
         li [ class "list-group-item d-flex flex-column align-items-start" ]
             [ div [ class " w-100 d-flex justify-content-between align-items-center" ]
@@ -388,7 +388,7 @@ taskViewer model task =
                 , div
                     [ class "d-flex justify-content-end" ]
                     [ div [ class "btn-group" ]
-                        [ taskControl model datePeriod task ]
+                        [ taskControl model datePeriod editor.task ]
                     ]
                 ]
             ]
@@ -453,14 +453,14 @@ taskControl model scheduled task =
                     "Later"
 
         actions =
-            [ actionButton model.context.yesterday "Yesterday" actionLabel task
+            [ Dropdown.buttonItem
+                [ onClick <| StoryTask.toggleCompleted RequestTaskUpdate model.context.today task ]
+                completionDisplay
+            , Dropdown.divider
+            , actionButton model.context.yesterday "Yesterday" actionLabel task
             , actionButton model.context.today "Today" actionLabel task
             , actionButton model.context.tomorrow "Tomorrow" actionLabel task
             , actionButton model.context.later "Later" actionLabel task
-            , Dropdown.divider
-            , Dropdown.buttonItem
-                [ onClick <| StoryTask.toggleCompleted RequestTaskUpdate model.context.today task ]
-                completionDisplay
             , Dropdown.divider
             , Dropdown.buttonItem
                 [ class "text-danger"
@@ -483,22 +483,25 @@ taskControl model scheduled task =
             }
 
 
-taskEditor : StoryTask -> Html Msg
-taskEditor task =
+taskEditorView : TaskEditor -> Html Msg
+taskEditorView editor =
     let
         updateEditingLabelMsg editingLabel =
-            UpdateEditingTask task.id True editingLabel
+            UpdateEditingTask editor.task.id True editingLabel
+
+        task =
+            editor.task
     in
         Html.form
             [ class "px-2 py-1-5"
-            , onSubmit (RequestTaskUpdate { task | label = task.editingLabel })
+            , onSubmit (RequestTaskUpdate { task | label = editor.editingLabel })
             ]
             [ input
                 [ type_ "text"
-                , A.id <| "edit-task-" ++ task.id
+                , A.id <| "edit-task-" ++ editor.task.id
                 , class "form-control pull-left"
                 , style [ ( "width", "80%" ) ]
-                , value task.editingLabel
+                , value editor.editingLabel
                 , onInput updateEditingLabelMsg
                 ]
                 []
@@ -515,7 +518,7 @@ taskEditor task =
                 , button
                     [ type_ "button"
                     , class "btn btn-secondary btn-sm"
-                    , onClick <| UpdateEditingTask task.id False task.label
+                    , onClick <| UpdateEditingTask editor.task.id False editor.task.label
                     ]
                     [ text "Cancel" ]
                 ]

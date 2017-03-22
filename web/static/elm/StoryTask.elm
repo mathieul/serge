@@ -16,9 +16,11 @@ type alias StoryTask =
     , completed : Bool
     , completedOn : Maybe String
     , scheduledOn : String
-    , editing : Bool
-    , editingLabel : String
     }
+
+
+
+-- FUNCTIONS
 
 
 makeNewTask : Int -> String -> Int -> String -> StoryTask
@@ -29,8 +31,6 @@ makeNewTask sequence label count scheduledOn =
     , completed = False
     , completedOn = Nothing
     , scheduledOn = scheduledOn
-    , editing = False
-    , editingLabel = ""
     }
 
 

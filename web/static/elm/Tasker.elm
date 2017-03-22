@@ -11,9 +11,10 @@ import Bootstrap.Navbar as Navbar
 import Bootstrap.Modal as Modal
 import Bootstrap.Dropdown as Dropdown
 import Bootstrap.Button as Button
+import GraphQL.Client.Http as GraphQLClient
 
 
--- Local imports
+-- LOCAL IMPORTS
 
 import Model exposing (..)
 import View exposing (..)
@@ -48,8 +49,10 @@ init config =
         , Cmd.batch
             [ navCmd
             , Task.perform UpdateAppContext Time.now
-            , Http.send FetchTasks Api.fetchTasksRequest
             , getTimeZone ()
+            , Api.fetchTasksRequest
+                |> Api.sendQueryRequest
+                |> Task.attempt FetchTasks
             ]
         )
 
@@ -149,51 +152,47 @@ update msg model =
 
         FetchTasks (Ok tasks) ->
             { model
-                | tasks = tasks
+                | taskEditors = List.map taskToEditor tasks
                 , dropdownStates = dropdownStatesForTasks tasks
             }
                 ! []
 
         FetchTasks (Err error) ->
-            ( { model
-                | message = MessageError <| "Fetching tasks failed: " ++ (httpErrorToMessage error)
-              }
-            , Cmd.none
-            )
+            { model | message = MessageError <| graphQLErrorToMessage "Fetching tasks failed" error } ! []
 
         CreateTask (Ok response) ->
             { model
-                | tasks = replaceTask response.tid response.task model.tasks
+                | taskEditors = replaceTask response.tid response.task model.taskEditors
                 , dropdownStates = model.dropdownStates
             }
                 ! []
 
         CreateTask (Err error) ->
-            ( { model
-                | message = MessageError <| "Creating the task failed: " ++ (httpErrorToMessage error)
-              }
-            , Cmd.none
-            )
+            { model | message = MessageError <| graphQLErrorToMessage "Creating the task failed" error } ! []
 
         RequestTaskUpdate task ->
-            model ! [ Http.send UpdateTask <| Api.updateTaskRequest task ]
+            model
+                ! [ Api.updateTaskRequest task
+                        |> Api.sendMutationRequest
+                        |> Task.attempt UpdateTask
+                  ]
 
         UpdateTask (Ok task) ->
             { model
-                | tasks = replaceTask task.id task model.tasks
+                | taskEditors = replaceTask task.id task model.taskEditors
                 , dropdownStates = model.dropdownStates
             }
                 ! []
 
         UpdateTask (Err error) ->
-            ( { model
-                | message = MessageError <| "Updating the task failed: " ++ (httpErrorToMessage error)
-              }
-            , Cmd.none
-            )
+            { model | message = MessageError <| graphQLErrorToMessage "Updating the task failed" error } ! []
 
         RequestTaskDeletion id ->
-            model ! [ Http.send DeleteTask <| Api.deleteTaskRequest id ]
+            model
+                ! [ Api.deleteTaskRequest id
+                        |> Api.sendMutationRequest
+                        |> Task.attempt DeleteTask
+                  ]
 
         DeleteTask (Ok task) ->
             let
@@ -202,11 +201,11 @@ update msg model =
                         |> hideConfirmModal
                         |> update DiscardConfirmation
 
-                tasksUpdated =
-                    List.filter (\item -> item.id /= task.id) model.tasks
+                updatedTaskEditors =
+                    List.filter (\editor -> editor.task.id /= task.id) model.taskEditors
             in
                 ( { newModel
-                    | tasks = tasksUpdated
+                    | taskEditors = updatedTaskEditors
                     , message = MessageSuccess <| "Task \"" ++ task.label ++ "\" was deleted successfully."
                   }
                 , cmds
@@ -217,11 +216,7 @@ update msg model =
                 newModel =
                     hideConfirmModal model
             in
-                ( { newModel
-                    | message = MessageError <| "Updating the task failed: " ++ (httpErrorToMessage error)
-                  }
-                , Cmd.none
-                )
+                { newModel | message = MessageError <| graphQLErrorToMessage "Updating the task failed" error } ! []
 
         ChangeDatePeriod selection ->
             { model | datePeriod = selection } ! []
@@ -243,17 +238,17 @@ update msg model =
 
         UpdateEditingTask id editing editingLabel ->
             let
-                updateTaskIfId task =
-                    if task.id == id then
-                        { task
+                updateTaskIfId editor =
+                    if editor.task.id == id then
+                        { editor
                             | editing = editing
                             , editingLabel = editingLabel
                         }
                     else
-                        task
+                        editor
             in
                 ( { model
-                    | tasks = List.map updateTaskIfId model.tasks
+                    | taskEditors = List.map updateTaskIfId model.taskEditors
                     , dropdownStates = model.dropdownStates
                   }
                 , Dom.focus ("edit-task-" ++ id) |> Task.attempt (\_ -> NoOp)
@@ -283,19 +278,17 @@ createNewTask model =
                     model.context.later
 
         newTask =
-            StoryTask.makeNewTask
-                model.currentTaskSeq
-                model.currentTaskLabel
-                (List.length model.tasks)
-                scheduledOn
+            makeNewTaskEditor model scheduledOn
     in
         ( { model
-            | tasks = List.append model.tasks [ newTask ]
-            , dropdownStates = Dict.insert newTask.id Dropdown.initialState model.dropdownStates
+            | taskEditors = List.append model.taskEditors [ newTask ]
+            , dropdownStates = Dict.insert newTask.task.id Dropdown.initialState model.dropdownStates
             , currentTaskLabel = ""
             , currentTaskSeq = model.currentTaskSeq + 1
           }
-        , Http.send CreateTask <| Api.makeTaskRequest newTask
+        , Api.createTaskRequest newTask.task
+            |> Api.sendMutationRequest
+            |> Task.attempt CreateTask
         )
 
 
@@ -306,16 +299,16 @@ dropdownStatesForTasks tasks =
         |> Dict.fromList
 
 
-replaceTask : String -> StoryTask -> List StoryTask -> List StoryTask
-replaceTask id task tasks =
+replaceTask : String -> StoryTask -> List TaskEditor -> List TaskEditor
+replaceTask id task taskEditors =
     List.map
-        (\item ->
-            if item.id == id then
-                task
+        (\editor ->
+            if editor.task.id == id then
+                { editor | task = task }
             else
-                item
+                editor
         )
-        tasks
+        taskEditors
 
 
 httpErrorToMessage : Http.Error -> String
@@ -341,3 +334,17 @@ httpErrorToMessage error =
 
         _ ->
             (toString error)
+
+
+graphQLErrorToMessage : String -> GraphQLClient.Error -> String
+graphQLErrorToMessage label error =
+    let
+        message =
+            case error of
+                GraphQLClient.HttpError error ->
+                    httpErrorToMessage error
+
+                GraphQLClient.GraphQLError errors ->
+                    toString errors
+    in
+        label ++ ": " ++ message

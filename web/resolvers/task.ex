@@ -6,7 +6,7 @@ defmodule Serge.Resolvers.Task do
   def find(_parent, %{ id: id }, _info) do
     case Repo.get(Task, id) do
       nil  -> { :error, "Task id #{id} not found" }
-      task -> { :ok, task }
+      task -> { :ok, Task.infer_completed(task) }
     end
   end
 

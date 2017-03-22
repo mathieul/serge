@@ -1,7 +1,6 @@
 module Model exposing (..)
 
 import Dict exposing (Dict)
-import Http
 import Time exposing (Time)
 import Time.TimeZone exposing (TimeZone)
 import Time.TimeZones as TimeZones
@@ -14,26 +13,15 @@ import Time.DateTime as DateTime exposing (DateTime)
 import Time.TimeZone exposing (TimeZone)
 import Time.ZonedDateTime as ZonedDateTime
 import Time.Date as Date exposing (Date)
+import GraphQL.Client.Http as GraphQLClient
 
 
--- Local imports
+-- LOCAL IMPORTS
 
 import StoryTask exposing (StoryTask)
 
 
--- Types
-
-
-type alias Id =
-    String
-
-
-type alias AppConfig =
-    { id : Int
-    , name : String
-    , email : String
-    , access_token : String
-    }
+-- MODEL
 
 
 type alias Model =
@@ -47,81 +35,11 @@ type alias Model =
     , timeZone : TimeZone
     , currentTaskLabel : String
     , currentTaskSeq : Int
-    , tasks : List StoryTask
+    , taskEditors : List TaskEditor
     , datePeriod : DatePeriod
     , showCompleted : Bool
     , confirmation : Confirmation
     }
-
-
-type Msg
-    = NoOp
-    | NavMsg Navbar.State
-    | ModalMsg Modal.State
-    | ConfirmModalMsg Modal.State
-    | DropdownMsg String Dropdown.State
-    | ShowSummary
-    | HideSummary
-    | RequestConfirmation Confirmation
-    | DiscardConfirmation
-    | FetchTasks (Result Http.Error (List StoryTask))
-    | CreateTask (Result Http.Error CreateTaskResponse)
-    | UpdateTask (Result Http.Error StoryTask)
-    | ClearMessage
-    | UpdateCurrentTask String
-    | AddCurrentTask
-    | UpdateAppContext Time
-    | SetTimeZone String
-    | RequestTaskUpdate StoryTask
-    | ConfirmTaskDeletion Id String
-    | ChangeDatePeriod DatePeriod
-    | ToggleShowCompleted
-    | UpdateEditingTask Id Bool String
-    | RequestTaskDeletion Id
-    | DeleteTask (Result Http.Error StoryTask)
-
-
-type AppMessage
-    = MessageNone
-    | MessageSuccess String
-    | MessageNotice String
-    | MessageError String
-
-
-type DatePeriod
-    = Yesterday
-    | Today
-    | Tomorrow
-    | Later
-
-
-type alias AppContext =
-    { yesterday : String
-    , today : String
-    , tomorrow : String
-    , later : String
-    }
-
-
-type alias Confirmation =
-    { title : String
-    , text : String
-    , labelOk : String
-    , btnOk : Button.Option Msg
-    , msgOk : Msg
-    , labelCancel : String
-    , msgCancel : Msg
-    }
-
-
-type alias CreateTaskResponse =
-    { tid : String
-    , task : StoryTask
-    }
-
-
-
--- Functions
 
 
 initialModel : AppConfig -> Navbar.State -> Model
@@ -136,23 +54,54 @@ initialModel config navState =
     , timeZone = TimeZones.utc ()
     , currentTaskLabel = ""
     , currentTaskSeq = 1
-    , tasks = []
+    , taskEditors = []
     , datePeriod = Today
     , showCompleted = False
     , confirmation = emptyConfirmation
     }
 
 
-taskSchedule : AppContext -> StoryTask -> DatePeriod
-taskSchedule context task =
-    if task.scheduledOn < context.today then
-        Yesterday
-    else if task.scheduledOn == context.today then
-        Today
-    else if task.scheduledOn == context.tomorrow then
-        Tomorrow
-    else
-        Later
+
+-- MESSAGES
+
+
+type Msg
+    = NoOp
+    | NavMsg Navbar.State
+    | ModalMsg Modal.State
+    | ConfirmModalMsg Modal.State
+    | DropdownMsg String Dropdown.State
+    | ShowSummary
+    | HideSummary
+    | RequestConfirmation Confirmation
+    | DiscardConfirmation
+    | UpdateCurrentTask String
+    | UpdateEditingTask Id Bool String
+    | AddCurrentTask
+    | RequestTaskUpdate StoryTask
+    | RequestTaskDeletion Id
+    | FetchTasks (Result GraphQLClient.Error (List StoryTask))
+    | CreateTask (Result GraphQLClient.Error CreateTaskResponse)
+    | UpdateTask (Result GraphQLClient.Error StoryTask)
+    | DeleteTask (Result GraphQLClient.Error StoryTask)
+    | ClearMessage
+    | UpdateAppContext Time
+    | SetTimeZone String
+    | ConfirmTaskDeletion Id String
+    | ChangeDatePeriod DatePeriod
+    | ToggleShowCompleted
+
+
+
+-- APPLICATION CONTEXT
+
+
+type alias AppContext =
+    { yesterday : String
+    , today : String
+    , tomorrow : String
+    , later : String
+    }
 
 
 makeEmptyAppContext : AppContext
@@ -177,6 +126,33 @@ timeToAppContext timeZone time =
         }
 
 
+taskSchedule : AppContext -> StoryTask -> DatePeriod
+taskSchedule context task =
+    if task.scheduledOn < context.today then
+        Yesterday
+    else if task.scheduledOn == context.today then
+        Today
+    else if task.scheduledOn == context.tomorrow then
+        Tomorrow
+    else
+        Later
+
+
+
+-- CONFIRMATION
+
+
+type alias Confirmation =
+    { title : String
+    , text : String
+    , labelOk : String
+    , btnOk : Button.Option Msg
+    , msgOk : Msg
+    , labelCancel : String
+    , msgCancel : Msg
+    }
+
+
 emptyConfirmation : Confirmation
 emptyConfirmation =
     { title = ""
@@ -186,4 +162,66 @@ emptyConfirmation =
     , btnOk = Button.primary
     , labelCancel = "Cancel"
     , msgCancel = DiscardConfirmation
+    }
+
+
+
+-- TASK EDITOR
+
+
+type alias TaskEditor =
+    { task : StoryTask
+    , editing : Bool
+    , editingLabel : String
+    }
+
+
+makeNewTaskEditor : Model -> String -> TaskEditor
+makeNewTaskEditor model scheduledOn =
+    StoryTask.makeNewTask
+        model.currentTaskSeq
+        model.currentTaskLabel
+        (List.length model.taskEditors)
+        scheduledOn
+        |> taskToEditor
+
+
+taskToEditor : StoryTask -> TaskEditor
+taskToEditor task =
+    TaskEditor task False task.label
+
+
+
+-- MISCELLANEOUS
+
+
+type alias Id =
+    String
+
+
+type alias AppConfig =
+    { id : Int
+    , name : String
+    , email : String
+    , access_token : String
+    }
+
+
+type AppMessage
+    = MessageNone
+    | MessageSuccess String
+    | MessageNotice String
+    | MessageError String
+
+
+type DatePeriod
+    = Yesterday
+    | Today
+    | Tomorrow
+    | Later
+
+
+type alias CreateTaskResponse =
+    { tid : String
+    , task : StoryTask
     }
