@@ -1,39 +1,9 @@
-module View exposing (..)
+module View exposing (view)
 
 import Dict
 import String.Extra
-import Html
-    exposing
-        ( Html
-        , div
-        , span
-        , text
-        , nav
-        , button
-        , a
-        , ul
-        , li
-        , h1
-        , h2
-        , h4
-        , h6
-        , small
-        , input
-        )
-import Html.Attributes as A
-    exposing
-        ( class
-        , classList
-        , style
-        , href
-        , type_
-        , placeholder
-        , value
-        , checked
-        , autofocus
-        , disabled
-        , for
-        )
+import Html as H exposing (Html, div, span, text)
+import Html.Attributes as A exposing (class, classList, type_)
 import Html.Events exposing (onClick, onSubmit, onInput, onDoubleClick)
 import Bootstrap.Navbar as Navbar
 import Bootstrap.Grid as Grid
@@ -70,9 +40,9 @@ menu model =
     Navbar.config NavMsg
         |> Navbar.withAnimation
         |> Navbar.primary
-        |> Navbar.brand [ href "/" ]
+        |> Navbar.brand [ A.href "/" ]
             [ text model.config.name
-            , small [ class "pl-3" ] [ text <| "(" ++ model.config.email ++ ")" ]
+            , H.small [ class "pl-3" ] [ text <| "(" ++ model.config.email ++ ")" ]
             ]
         |> Navbar.customItems
             [ Navbar.textItem
@@ -82,7 +52,7 @@ menu model =
                 (span
                     [ class "pull-right " ]
                     [ Button.linkButton
-                        [ Button.danger, Button.attrs [ href "/auth/logout" ] ]
+                        [ Button.danger, Button.attrs [ A.href "/auth/logout" ] ]
                         [ text "Logout" ]
                     ]
                 )
@@ -96,7 +66,7 @@ mainContent model =
         [ div [ class "mt-3" ]
             [ Grid.row []
                 [ Grid.col [ Col.sm2 ]
-                    [ h2 [ class "mb-3" ] [ text "Tasker" ] ]
+                    [ H.h2 [ class "mb-3" ] [ text "Tasker" ] ]
                 , Grid.col [ Col.sm8 ]
                     [ div [ class "w-100 align-top" ] [ messageView model.message ] ]
                 , Grid.col [ Col.sm2 ]
@@ -104,7 +74,7 @@ mainContent model =
                         [ Button.warning
                         , Button.attrs [ class "pull-right", onClick ShowSummary ]
                         ]
-                        [ Html.i [ class "fa fa-calendar" ] []
+                        [ H.i [ class "fa fa-calendar" ] []
                         , text " Summary"
                         ]
                     ]
@@ -112,20 +82,11 @@ mainContent model =
             , Card.config [ Card.attrs [ class "mt-3" ] ]
                 |> Card.block []
                     [ Card.custom <| newTaskForm model
-                    , Card.custom <| tasksCardView model
+                    , Card.custom <| tasksCard model
                     ]
                 |> Card.view
             ]
         ]
-
-
-earliestYesterday : List TaskEditor -> String
-earliestYesterday taskEditors =
-    taskEditors
-        |> List.filter (\editor -> editor.task.completed)
-        |> List.map (\editor -> Maybe.withDefault "" editor.task.completedOn)
-        |> List.minimum
-        |> Maybe.withDefault ""
 
 
 confirmModal : Model -> Html Msg
@@ -137,7 +98,7 @@ confirmModal model =
         Modal.config ConfirmModalMsg
             |> Modal.h4 [ class "w-100 -text-center" ] [ text cfg.title ]
             |> Modal.body []
-                [ Html.p [ class "lead" ] [ text cfg.text ] ]
+                [ H.p [ class "lead" ] [ text cfg.text ] ]
             |> Modal.footer []
                 [ Button.button [ Button.secondary, Button.attrs [ onClick cfg.msgCancel ] ]
                     [ text cfg.labelCancel ]
@@ -145,7 +106,7 @@ confirmModal model =
                     [ cfg.btnOk
                     , Button.attrs
                         [ onClick cfg.msgOk
-                        , style [ ( "min-width", "100px" ) ]
+                        , A.style [ ( "min-width", "100px" ) ]
                         ]
                     ]
                     [ text cfg.labelOk ]
@@ -163,23 +124,23 @@ summaryModal model =
             List.filter (\editor -> not editor.task.completed && editor.task.scheduledOn <= model.context.today) model.taskEditors
 
         summaryTaskView editor =
-            li [] [ text editor.task.label ]
+            H.li [] [ text editor.task.label ]
     in
         Modal.config ModalMsg
             |> Modal.h4 [ class "w-100 text-center" ] [ text "Scrum Summary" ]
             |> Modal.body []
                 [ div [ class "mt-3 mb-4" ]
-                    [ h6 [ class "text-center mb-3" ]
+                    [ H.h6 [ class "text-center mb-3" ]
                         [ text "Yesterday"
-                        , small [ class "ml-1 text-muted" ]
+                        , H.small [ class "ml-1 text-muted" ]
                             [ text <| "(" ++ (earliestYesterday completedTasks) ++ ")" ]
                         ]
-                    , ul [] (List.map summaryTaskView completedTasks)
+                    , H.ul [] (List.map summaryTaskView completedTasks)
                     ]
                 , div [ class "mt-3 mb-4" ]
-                    [ h6 [ class "text-center mb-3" ]
+                    [ H.h6 [ class "text-center mb-3" ]
                         [ text "Today" ]
-                    , ul [] (List.map summaryTaskView scheduledTasks)
+                    , H.ul [] (List.map summaryTaskView scheduledTasks)
                     ]
                 ]
             |> Modal.footer []
@@ -188,6 +149,15 @@ summaryModal model =
                     [ text "Done" ]
                 ]
             |> Modal.view model.modalState
+
+
+earliestYesterday : List TaskEditor -> String
+earliestYesterday taskEditors =
+    taskEditors
+        |> List.filter (\editor -> editor.task.completed)
+        |> List.map (\editor -> Maybe.withDefault "" editor.task.completedOn)
+        |> List.minimum
+        |> Maybe.withDefault ""
 
 
 newTaskForm : Model -> Html Msg
@@ -201,8 +171,8 @@ newTaskForm model =
                         , Input.onInput UpdateCurrentTask
                         , Input.value model.currentTaskLabel
                         , Input.attrs
-                            [ placeholder "Enter new task..."
-                            , autofocus True
+                            [ A.placeholder "Enter new task..."
+                            , A.autofocus True
                             ]
                         ]
                     ]
@@ -213,7 +183,7 @@ newTaskForm model =
                         , Button.large
                         , Button.attrs
                             [ type_ "submit"
-                            , disabled (model.currentTaskLabel == "")
+                            , A.disabled (model.currentTaskLabel == "")
                             ]
                         ]
                         [ text "Create" ]
@@ -223,8 +193,8 @@ newTaskForm model =
         ]
 
 
-tasksCardView : Model -> Html Msg
-tasksCardView model =
+tasksCard : Model -> Html Msg
+tasksCard model =
     let
         notCompletedBeforeToday task =
             case task.completedOn of
@@ -258,11 +228,11 @@ taskSelectionTabs model =
             earliestYesterday model.taskEditors
 
         aTab schedule =
-            li [ class "nav-item" ]
-                [ a
+            H.li [ class "nav-item" ]
+                [ H.a
                     [ class "nav-link"
                     , classList [ ( "active", model.datePeriod == schedule ) ]
-                    , href "#"
+                    , A.href "#"
                     , onClick (ChangeDatePeriod schedule)
                     ]
                     [ text <| tabLabel schedule model.context yesterday ]
@@ -273,7 +243,7 @@ taskSelectionTabs model =
                 aTab
                 [ Yesterday, Today, Tomorrow, Later ]
     in
-        ul [ class "nav nav-tabs card-header-tabs" ] theTabs
+        H.ul [ class "nav nav-tabs card-header-tabs" ] theTabs
 
 
 tabLabel : DatePeriod -> AppContext -> String -> String
@@ -316,7 +286,7 @@ taskList model taskEditors =
                 [ text "No tasks found." ]
         else
             div [ class "card" ]
-                [ ul [ class "list-group list-group-flush" ]
+                [ H.ul [ class "list-group list-group-flush" ]
                     (List.map view tasksToShow)
                 ]
 
@@ -348,12 +318,12 @@ taskCompletionInfo editors model =
             [ div [ class "col pl-3" ]
                 [ text label ]
             , div [ class "col pr-3 text-right" ]
-                [ Html.label [ for "show-completed" ] [ text "show completed" ]
+                [ H.label [ A.for "show-completed" ] [ text "show completed" ]
                 , text " "
-                , input
+                , H.input
                     [ type_ "checkbox"
                     , A.id "show-completed"
-                    , checked model.showCompleted
+                    , A.checked model.showCompleted
                     , onClick ToggleShowCompleted
                     ]
                     []
@@ -372,17 +342,17 @@ taskViewerView model editor =
 
         label =
             if editor.task.completed then
-                Html.s [ class "text-muted" ] [ text editor.task.label ]
+                H.s [ class "text-muted" ] [ text editor.task.label ]
             else if datePeriod == Yesterday then
                 span [ onDoubleClick startEditingMsg ]
                     [ text editor.task.label
-                    , Html.i [ class "fa fa-clock-o text-danger ml-2" ] []
+                    , H.i [ class "fa fa-clock-o text-danger ml-2" ] []
                     ]
             else
                 span [ onDoubleClick startEditingMsg ]
                     [ text editor.task.label ]
     in
-        li [ class "list-group-item d-flex flex-column align-items-start" ]
+        H.li [ class "list-group-item d-flex flex-column align-items-start" ]
             [ div [ class " w-100 d-flex justify-content-between align-items-center" ]
                 [ label
                 , div
@@ -401,7 +371,7 @@ actionButton date label taskLabel task =
             [ class "disabled"
             , classList [ ( "text-ghost", label == "Yesterday" ) ]
             ]
-            [ Html.i [ class "fa fa-arrow-right" ] []
+            [ H.i [ class "fa fa-arrow-right" ] []
             , text <| " " ++ label
             ]
     else
@@ -409,7 +379,7 @@ actionButton date label taskLabel task =
             [ classList [ ( "text-ghost", label == "Yesterday" ) ]
             , onClick <| StoryTask.changeSchedule RequestTaskUpdate date task
             ]
-            [ Html.i [ class "fa empty" ] []
+            [ H.i [ class "fa empty" ] []
             , text <| " " ++ label
             ]
 
@@ -426,13 +396,13 @@ taskControl model scheduled task =
 
         ( completionDisplay, buttonKind ) =
             if task.completed then
-                ( [ Html.i [ class "fa fa-square-o" ] []
+                ( [ H.i [ class "fa fa-square-o" ] []
                   , text " Uncomplete"
                   ]
                 , Button.secondary
                 )
             else
-                ( [ Html.i [ class "fa fa-check-square-o" ] []
+                ( [ H.i [ class "fa fa-check-square-o" ] []
                   , text " Complete"
                   ]
                 , Button.outlineInfo
@@ -492,33 +462,37 @@ taskEditorView editor =
         task =
             editor.task
     in
-        Html.form
+        H.form
             [ class "px-2 py-1-5"
             , onSubmit (RequestTaskUpdate { task | label = editor.editingLabel })
             ]
-            [ input
+            [ H.input
                 [ type_ "text"
                 , A.id <| "edit-task-" ++ editor.task.id
                 , class "form-control pull-left"
-                , style [ ( "width", "80%" ) ]
-                , value editor.editingLabel
+                , A.style [ ( "width", "80%" ) ]
+                , A.value editor.editingLabel
                 , onInput updateEditingLabelMsg
                 ]
                 []
             , div
                 [ class "pull-left pt-1 pl-2 text-center"
-                , style [ ( "width", "20%" ) ]
+                , A.style [ ( "width", "20%" ) ]
                 ]
-                [ button
-                    [ type_ "submit"
-                    , class "btn btn-primary btn-sm"
+                [ Button.button
+                    [ Button.small
+                    , Button.primary
+                    , Button.attrs [ type_ "submit" ]
                     ]
                     [ text "Update" ]
                 , text " "
-                , button
-                    [ type_ "button"
-                    , class "btn btn-secondary btn-sm"
-                    , onClick <| UpdateEditingTask editor.task.id False editor.task.label
+                , Button.button
+                    [ Button.small
+                    , Button.secondary
+                    , Button.attrs
+                        [ onClick <|
+                            UpdateEditingTask editor.task.id False editor.task.label
+                        ]
                     ]
                     [ text "Cancel" ]
                 ]
@@ -533,7 +507,7 @@ messageView message =
                 [ class <| "mb-0 alert alert-" ++ kind
                 , A.attribute "role" "alert"
                 ]
-                [ button
+                [ H.button
                     [ type_ "button"
                     , class "close"
                     , onClick ClearMessage

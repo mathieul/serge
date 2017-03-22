@@ -17,7 +17,7 @@ import GraphQL.Client.Http as GraphQLClient
 -- LOCAL IMPORTS
 
 import Model exposing (..)
-import View exposing (..)
+import View exposing (view)
 import StoryTask exposing (StoryTask)
 import Api
 
