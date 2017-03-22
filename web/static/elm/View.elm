@@ -46,7 +46,7 @@ import Bootstrap.Dropdown as Dropdown
 import Bootstrap.Modal as Modal
 
 
--- Local imports
+-- LOCAL IMPORTS
 
 import Model exposing (..)
 import StoryTask exposing (StoryTask)

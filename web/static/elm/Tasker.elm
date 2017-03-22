@@ -14,7 +14,7 @@ import Bootstrap.Button as Button
 import GraphQL.Client.Http as GraphQLClient
 
 
--- Local imports
+-- LOCAL IMPORTS
 
 import Model exposing (..)
 import View exposing (..)
@@ -50,7 +50,8 @@ init config =
             [ navCmd
             , Task.perform UpdateAppContext Time.now
             , getTimeZone ()
-            , Api.sendQueryRequest Api.fetchTasksRequest
+            , Api.fetchTasksRequest
+                |> Api.sendQueryRequest
                 |> Task.attempt FetchTasks
             ]
         )
@@ -157,16 +158,7 @@ update msg model =
                 ! []
 
         FetchTasks (Err error) ->
-            let
-                message =
-                    case error of
-                        GraphQLClient.HttpError error ->
-                            httpErrorToMessage error
-
-                        GraphQLClient.GraphQLError errors ->
-                            toString errors
-            in
-                { model | message = MessageError <| "Fetching tasks failed: " ++ message } ! []
+            { model | message = MessageError <| graphQLErrorToMessage "Fetching tasks failed" error } ! []
 
         CreateTask (Ok response) ->
             { model
@@ -176,14 +168,14 @@ update msg model =
                 ! []
 
         CreateTask (Err error) ->
-            ( { model
-                | message = MessageError <| "Creating the task failed: " ++ (httpErrorToMessage error)
-              }
-            , Cmd.none
-            )
+            { model | message = MessageError <| graphQLErrorToMessage "Creating the task failed" error } ! []
 
         RequestTaskUpdate task ->
-            model ! [ Http.send UpdateTask <| Api.updateTaskRequest task ]
+            model
+                ! [ Api.updateTaskRequest task
+                        |> Api.sendMutationRequest
+                        |> Task.attempt UpdateTask
+                  ]
 
         UpdateTask (Ok task) ->
             { model
@@ -193,11 +185,7 @@ update msg model =
                 ! []
 
         UpdateTask (Err error) ->
-            ( { model
-                | message = MessageError <| "Updating the task failed: " ++ (httpErrorToMessage error)
-              }
-            , Cmd.none
-            )
+            { model | message = MessageError <| graphQLErrorToMessage "Updating the task failed" error } ! []
 
         RequestTaskDeletion id ->
             model
@@ -227,20 +215,8 @@ update msg model =
             let
                 newModel =
                     hideConfirmModal model
-
-                message =
-                    case error of
-                        GraphQLClient.HttpError error ->
-                            httpErrorToMessage error
-
-                        GraphQLClient.GraphQLError errors ->
-                            toString errors
             in
-                ( { newModel
-                    | message = MessageError <| "Updating the task failed: " ++ message
-                  }
-                , Cmd.none
-                )
+                { newModel | message = MessageError <| graphQLErrorToMessage "Updating the task failed" error } ! []
 
         ChangeDatePeriod selection ->
             { model | datePeriod = selection } ! []
@@ -310,7 +286,9 @@ createNewTask model =
             , currentTaskLabel = ""
             , currentTaskSeq = model.currentTaskSeq + 1
           }
-        , Http.send CreateTask <| Api.makeTaskRequest newTask.task
+        , Api.createTaskRequest newTask.task
+            |> Api.sendMutationRequest
+            |> Task.attempt CreateTask
         )
 
 
@@ -356,3 +334,17 @@ httpErrorToMessage error =
 
         _ ->
             (toString error)
+
+
+graphQLErrorToMessage : String -> GraphQLClient.Error -> String
+graphQLErrorToMessage label error =
+    let
+        message =
+            case error of
+                GraphQLClient.HttpError error ->
+                    httpErrorToMessage error
+
+                GraphQLClient.GraphQLError errors ->
+                    toString errors
+    in
+        label ++ ": " ++ message

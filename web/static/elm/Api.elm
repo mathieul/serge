@@ -1,34 +1,26 @@
 module Api
     exposing
-        ( fetchTasksRequest
-        , makeTaskRequest
+        ( sendQueryRequest
+        , sendMutationRequest
+        , fetchTasksRequest
+        , createTaskRequest
         , updateTaskRequest
         , deleteTaskRequest
-        , sendQueryRequest
-        , sendMutationRequest
         )
 
-import Json.Encode as JE
-import Json.Decode as JD
-import Http
-import Task exposing (Task)
-
-
--- elm-graphql imports
-
-import GraphQL.Request.Builder as B exposing (SelectionSpec, Field)
+import GraphQL.Request.Builder as B
 import GraphQL.Request.Builder.Arg as Arg
 import GraphQL.Request.Builder.Variable as Var
 import GraphQL.Client.Http as GraphQLClient
 
 
--- Local imports
+-- LOCAL IMPORTS
 
 import StoryTask exposing (StoryTask)
 import Model exposing (Id, CreateTaskResponse)
 
 
--- Constants
+-- CONSTANTS
 
 
 graphqlUrl : String
@@ -37,45 +29,15 @@ graphqlUrl =
 
 
 
--- TYPES
--- DECODERS / ENCODERS
+-- QUERIES, MUTATIONS & REQUESTS
 
 
-taskDecoder : JD.Decoder StoryTask
-taskDecoder =
-    JD.map6 StoryTask
-        (JD.field "id" JD.string)
-        (JD.field "label" JD.string)
-        (JD.field "rank" JD.int)
-        (JD.field "completed" JD.bool)
-        (JD.field "completedOn" <| JD.nullable JD.string)
-        (JD.field "scheduledOn" JD.string)
-
-
-createTaskResponseDecoder : JD.Decoder CreateTaskResponse
-createTaskResponseDecoder =
-    JD.map2 CreateTaskResponse
-        (JD.field "tid" JD.string)
-        (JD.field "task" taskDecoder)
-        |> JD.at [ "data", "createTask" ]
-
-
-updateTaskResponseDecoder : JD.Decoder StoryTask
-updateTaskResponseDecoder =
-    JD.at [ "data", "updateTask" ] taskDecoder
-
-
-
--- Queries
--- Test elm-graphql
-
-
-sendQueryRequest : B.Request B.Query a -> Task GraphQLClient.Error a
+sendQueryRequest : B.Request B.Query a -> Platform.Task GraphQLClient.Error a
 sendQueryRequest request =
     GraphQLClient.sendQuery graphqlUrl request
 
 
-sendMutationRequest : B.Request B.Mutation a -> Task GraphQLClient.Error a
+sendMutationRequest : B.Request B.Mutation a -> Platform.Task GraphQLClient.Error a
 sendMutationRequest request =
     GraphQLClient.sendMutation graphqlUrl request
 
@@ -89,6 +51,10 @@ storyTask =
         |> B.with (B.field "completed" [] B.bool)
         |> B.with (B.field "completedOn" [] (B.nullable B.string))
         |> B.with (B.field "scheduledOn" [] B.string)
+
+
+
+-- FETCH TASKS
 
 
 fetchTasksQuery : B.Document B.Query (List StoryTask) { vars | includeYesterday : Bool }
@@ -111,6 +77,83 @@ fetchTasksRequest =
         |> B.request { includeYesterday = True }
 
 
+
+-- CREATE TASK
+
+
+createTaskQuery :
+    B.Document B.Mutation
+        CreateTaskResponse
+        { vars
+            | id : String
+            , label : String
+            , rank : Int
+            , scheduledOn : String
+        }
+createTaskQuery =
+    let
+        response =
+            B.object CreateTaskResponse
+                |> B.with (B.field "tid" [] B.id)
+                |> B.with (B.field "task" [] storyTask)
+
+        variables =
+            [ ( "tid", Arg.variable (Var.required "tmpId" .id Var.id) )
+            , ( "label", Arg.variable (Var.required "label" .label Var.string) )
+            , ( "position", Arg.variable (Var.required "position" .rank Var.int) )
+            , ( "scheduledOn", Arg.variable (Var.required "scheduledOn" .scheduledOn Var.string) )
+            ]
+    in
+        response
+            |> B.field "createTask" variables
+            |> B.extract
+            |> B.mutationDocument
+
+
+createTaskRequest : StoryTask -> B.Request B.Mutation CreateTaskResponse
+createTaskRequest task =
+    createTaskQuery
+        |> B.request task
+
+
+
+-- UPDATE TASK
+
+
+updateTaskQuery :
+    B.Document B.Mutation
+        StoryTask
+        { vars
+            | id : String
+            , label : String
+            , completed : Bool
+            , scheduledOn : String
+        }
+updateTaskQuery =
+    let
+        variables =
+            [ ( "id", Arg.variable (Var.required "taskID" .id Var.id) )
+            , ( "label", Arg.variable (Var.required "label" .label Var.string) )
+            , ( "completed", Arg.variable (Var.required "completed" .completed Var.bool) )
+            , ( "scheduledOn", Arg.variable (Var.required "scheduledOn" .scheduledOn Var.string) )
+            ]
+    in
+        storyTask
+            |> B.field "updateTask" variables
+            |> B.extract
+            |> B.mutationDocument
+
+
+updateTaskRequest : StoryTask -> B.Request B.Mutation StoryTask
+updateTaskRequest task =
+    updateTaskQuery
+        |> B.request task
+
+
+
+-- DELETE TASK
+
+
 deleteTaskQuery : B.Document B.Mutation StoryTask { vars | taskID : String }
 deleteTaskQuery =
     let
@@ -120,7 +163,8 @@ deleteTaskQuery =
         variables =
             [ ( "id", Arg.variable taskIDVar ) ]
     in
-        B.field "deleteTask" variables storyTask
+        storyTask
+            |> B.field "deleteTask" variables
             |> B.extract
             |> B.mutationDocument
 
@@ -129,84 +173,3 @@ deleteTaskRequest : Id -> B.Request B.Mutation StoryTask
 deleteTaskRequest id =
     deleteTaskQuery
         |> B.request { taskID = id }
-
-
-
--- Plain style
-
-
-makeTaskMutation : String
-makeTaskMutation =
-    """
-    mutation($tid: String!, $label: String!, $position: Int!, $scheduledOn: String!) {
-      createTask(tid: $tid, label:$label, position:$position, scheduledOn: $scheduledOn) {
-        tid
-        task {
-          id
-          label
-          rank
-          completed
-          completedOn
-          scheduledOn
-        }
-      }
-    }
-  """
-
-
-makeTaskRequest : StoryTask -> Http.Request CreateTaskResponse
-makeTaskRequest task =
-    let
-        variables =
-            JE.object
-                [ ( "tid", JE.string task.id )
-                , ( "label", JE.string task.label )
-                , ( "position", JE.int task.rank )
-                , ( "scheduledOn", JE.string task.scheduledOn )
-                ]
-
-        body =
-            JE.object
-                [ ( "query", JE.string makeTaskMutation )
-                , ( "variables", variables )
-                ]
-                |> Http.jsonBody
-    in
-        Http.post graphqlUrl body createTaskResponseDecoder
-
-
-updateTaskMutation : String
-updateTaskMutation =
-    """
-  mutation($id: ID!, $scheduledOn: String!, $completed: Boolean!, $label: String!) {
-    updateTask(id: $id, scheduledOn: $scheduledOn, completed: $completed, label: $label) {
-      id
-      label
-      rank
-      completed
-      completedOn
-      scheduledOn
-    }
-  }
-  """
-
-
-updateTaskRequest : StoryTask -> Http.Request StoryTask
-updateTaskRequest task =
-    let
-        variables =
-            JE.object
-                [ ( "id", JE.string task.id )
-                , ( "scheduledOn", JE.string task.scheduledOn )
-                , ( "completed", JE.bool task.completed )
-                , ( "label", JE.string task.label )
-                ]
-
-        body =
-            JE.object
-                [ ( "query", JE.string updateTaskMutation )
-                , ( "variables", variables )
-                ]
-                |> Http.jsonBody
-    in
-        Http.post graphqlUrl body updateTaskResponseDecoder

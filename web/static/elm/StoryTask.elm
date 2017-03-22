@@ -19,6 +19,10 @@ type alias StoryTask =
     }
 
 
+
+-- FUNCTIONS
+
+
 makeNewTask : Int -> String -> Int -> String -> StoryTask
 makeNewTask sequence label count scheduledOn =
     { id = "TMP:" ++ (toString sequence)
