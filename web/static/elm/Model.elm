@@ -128,14 +128,24 @@ timeToAppContext timeZone time =
 
 taskSchedule : AppContext -> StoryTask -> DatePeriod
 taskSchedule context task =
-    if task.scheduledOn < context.today then
-        Yesterday
-    else if task.scheduledOn == context.today then
-        Today
-    else if task.scheduledOn == context.tomorrow then
-        Tomorrow
-    else
-        Later
+    case task.completedOn of
+        Just completedOn ->
+            if completedOn < context.today then
+                Yesterday
+            else if completedOn == context.today then
+                Today
+            else
+                Tomorrow
+
+        Nothing ->
+            if task.scheduledOn < context.today then
+                Yesterday
+            else if task.scheduledOn == context.today then
+                Today
+            else if task.scheduledOn == context.tomorrow then
+                Tomorrow
+            else
+                Later
 
 
 
@@ -173,6 +183,7 @@ type alias TaskEditor =
     { task : StoryTask
     , editing : Bool
     , editingLabel : String
+    , period : DatePeriod
     }
 
 
@@ -183,12 +194,16 @@ makeNewTaskEditor model scheduledOn =
         model.currentTaskLabel
         (List.length model.taskEditors)
         scheduledOn
-        |> taskToEditor
+        |> taskToEditor model.context
 
 
-taskToEditor : StoryTask -> TaskEditor
-taskToEditor task =
-    TaskEditor task False task.label
+taskToEditor : AppContext -> StoryTask -> TaskEditor
+taskToEditor context task =
+    { task = task
+    , editing = False
+    , editingLabel = task.label
+    , period = taskSchedule context task
+    }
 
 
 
