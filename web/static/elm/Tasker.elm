@@ -152,7 +152,7 @@ update msg model =
 
         FetchTasks (Ok tasks) ->
             { model
-                | taskEditors = List.map taskToEditor tasks
+                | taskEditors = List.map (taskToEditor model.context) tasks
                 , dropdownStates = dropdownStatesForTasks tasks
             }
                 ! []
@@ -162,7 +162,7 @@ update msg model =
 
         CreateTask (Ok response) ->
             { model
-                | taskEditors = replaceTask response.tid response.task model.taskEditors
+                | taskEditors = replaceTask response.tid response.task model
                 , dropdownStates = model.dropdownStates
             }
                 ! []
@@ -179,7 +179,7 @@ update msg model =
 
         UpdateTask (Ok task) ->
             { model
-                | taskEditors = replaceTask task.id task model.taskEditors
+                | taskEditors = replaceTask task.id task model
                 , dropdownStates = model.dropdownStates
             }
                 ! []
@@ -299,16 +299,16 @@ dropdownStatesForTasks tasks =
         |> Dict.fromList
 
 
-replaceTask : String -> StoryTask -> List TaskEditor -> List TaskEditor
-replaceTask id task taskEditors =
+replaceTask : String -> StoryTask -> Model -> List TaskEditor
+replaceTask id task model =
     List.map
         (\editor ->
             if editor.task.id == id then
-                { editor | task = task }
+                taskToEditor model.context task
             else
                 editor
         )
-        taskEditors
+        model.taskEditors
 
 
 httpErrorToMessage : Http.Error -> String

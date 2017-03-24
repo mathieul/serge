@@ -234,14 +234,8 @@ tasksCardView model =
                 Nothing ->
                     True
 
-        withSchedule editor =
-            ( taskSchedule model.context editor.task, editor )
-
         selectedTasks =
-            model.taskEditors
-                |> List.map withSchedule
-                |> List.filter (\( period, _ ) -> period == model.datePeriod)
-                |> List.map Tuple.second
+            List.filter (\editor -> editor.period == model.datePeriod) model.taskEditors
     in
         Card.config [ Card.attrs [ class "mt-3" ] ]
             |> Card.header [] [ taskSelectionTabs model ]
@@ -287,10 +281,10 @@ tabLabel datePeriod context yesterday =
                 "Yesterday (" ++ (day yesterday) ++ ")"
 
             Today ->
-                "Today (" ++ (day context.today) ++ ")"
+                "Today"
 
             Tomorrow ->
-                "Tomorrow (" ++ (day context.tomorrow) ++ ")"
+                "Tomorrow"
 
             Later ->
                 "Later"
@@ -364,16 +358,13 @@ taskCompletionInfo editors model =
 taskViewerView : Model -> TaskEditor -> Html Msg
 taskViewerView model editor =
     let
-        datePeriod =
-            taskSchedule model.context editor.task
-
         startEditingMsg =
             UpdateEditingTask editor.task.id True editor.editingLabel
 
         label =
             if editor.task.completed then
                 Html.s [ class "text-muted" ] [ text editor.task.label ]
-            else if datePeriod == Yesterday then
+            else if editor.period == Yesterday then
                 span [ onDoubleClick startEditingMsg ]
                     [ text editor.task.label
                     , Html.i [ class "fa fa-clock-o text-danger ml-2" ] []
@@ -388,7 +379,7 @@ taskViewerView model editor =
                 , div
                     [ class "d-flex justify-content-end" ]
                     [ div [ class "btn-group" ]
-                        [ taskControl model datePeriod editor.task ]
+                        [ taskControl model editor.period editor.task ]
                     ]
                 ]
             ]
