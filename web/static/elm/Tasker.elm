@@ -126,7 +126,7 @@ update msg model =
             (hideConfirmModal model) ! []
 
         UpdateAppContext time ->
-            { model | context = timeToAppContext model.timeZone time } ! []
+            (updateModelForTime time model) ! []
 
         ClearMessage ->
             { model | message = MessageNone } ! []
@@ -253,6 +253,27 @@ update msg model =
                   }
                 , Dom.focus ("edit-task-" ++ id) |> Task.attempt (\_ -> NoOp)
                 )
+
+
+updateModelForTime : Time -> Model -> Model
+updateModelForTime time model =
+    let
+        newContext =
+            timeToAppContext model.timeZone time
+
+        updateSchedule editor =
+            { editor | period = taskSchedule newContext editor.task }
+    in
+        if newContext.today == model.context.today then
+            model
+        else
+            { model
+                | context = newContext
+                , taskEditors =
+                    model.taskEditors
+                        |> discardOldTasks newContext
+                        |> List.map updateSchedule
+            }
 
 
 hideConfirmModal : Model -> Model

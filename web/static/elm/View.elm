@@ -119,15 +119,6 @@ mainContent model =
         ]
 
 
-earliestYesterday : List TaskEditor -> String
-earliestYesterday taskEditors =
-    taskEditors
-        |> List.filter (\editor -> editor.task.completed)
-        |> List.map (\editor -> Maybe.withDefault "" editor.task.completedOn)
-        |> List.minimum
-        |> Maybe.withDefault ""
-
-
 confirmModal : Model -> Html Msg
 confirmModal model =
     let
@@ -278,7 +269,7 @@ tabLabel datePeriod context yesterday =
     in
         case datePeriod of
             Yesterday ->
-                "Yesterday (" ++ (day yesterday) ++ ")"
+                "Late (" ++ (day yesterday) ++ ")"
 
             Today ->
                 "Today"
@@ -287,7 +278,7 @@ tabLabel datePeriod context yesterday =
                 "Tomorrow"
 
             Later ->
-                "Later"
+                "Future"
 
 
 taskList : Model -> List TaskEditor -> Html Msg
@@ -441,7 +432,7 @@ taskControl model scheduled task =
                     "Tomorrow"
 
                 Later ->
-                    "Later"
+                    "Future"
 
         actions =
             [ Dropdown.buttonItem

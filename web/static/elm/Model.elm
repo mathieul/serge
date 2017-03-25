@@ -206,6 +206,50 @@ taskToEditor context task =
     }
 
 
+earliestYesterday : List TaskEditor -> String
+earliestYesterday editors =
+    editors
+        |> List.filter (\editor -> editor.task.completed)
+        |> List.map (\editor -> Maybe.withDefault "" editor.task.completedOn)
+        |> List.minimum
+        |> Maybe.withDefault ""
+
+
+latestYesterday : String -> List TaskEditor -> String
+latestYesterday today editors =
+    let
+        completedBeforeToday editor =
+            case editor.task.completedOn of
+                Just completedOn ->
+                    completedOn < today
+
+                Nothing ->
+                    False
+    in
+        editors
+            |> List.filter completedBeforeToday
+            |> List.map (\editor -> Maybe.withDefault "" editor.task.completedOn)
+            |> List.maximum
+            |> Maybe.withDefault ""
+
+
+discardOldTasks : AppContext -> List TaskEditor -> List TaskEditor
+discardOldTasks context editors =
+    let
+        yesterday =
+            latestYesterday context.today editors
+
+        shouldKeep editor =
+            case editor.task.completedOn of
+                Just completedOn ->
+                    completedOn >= yesterday
+
+                Nothing ->
+                    True
+    in
+        List.filter shouldKeep editors
+
+
 
 -- MISCELLANEOUS
 
