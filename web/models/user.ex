@@ -19,4 +19,8 @@ defmodule Serge.User do
   end
 
   def provider_uid(name, id), do: "#{name}:#{id}"
+
+  def find_by_email(scope \\ __MODULE__, email) do
+    from(u in scope, where: u.email == ^email)
+  end
 end

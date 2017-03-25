@@ -21,7 +21,14 @@ defmodule Serge.Task do
     |> cast(params, [:label, :completed, :scheduled_on, :position, :user_id])
     |> set_order(:position, :rank, :user_id)
     |> update_completed_on
+    |> validate_required([:label, :scheduled_on, :user_id])
     |> assoc_constraint(:user)
+  end
+
+  def admin_changeset(task, params \\ %{}) do
+    task
+    |> cast(params, [:label, :completed_on, :scheduled_on, :position, :user_id])
+    |> set_order(:position, :rank, :user_id)
     |> validate_required([:label, :scheduled_on, :user_id])
   end
 
@@ -70,6 +77,8 @@ defmodule Serge.Task do
   end
 
   def starting_from(scope \\ __MODULE__, date) do
-    from(t in scope, where: t.completed_on >= ^date or (is_nil(t.completed_on) and t.scheduled_on >= ^date))
+    from(t in scope,
+      where: t.completed_on >= ^date,
+      or_where: is_nil(t.completed_on) and t.scheduled_on >= ^date)
   end
 end

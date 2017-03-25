@@ -148,6 +148,11 @@ taskSchedule context task =
                 Later
 
 
+formatShortDate : String -> String
+formatShortDate date =
+    (String.slice 5 7 date) ++ "/" ++ (String.slice 8 10 date)
+
+
 
 -- CONFIRMATION
 

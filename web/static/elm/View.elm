@@ -209,9 +209,6 @@ tasksCardView model =
 taskSelectionTabs : Model -> Html Msg
 taskSelectionTabs model =
     let
-        yesterday =
-            earliestYesterday model.taskEditors
-
         aTab schedule =
             H.li [ class "nav-item" ]
                 [ H.a
@@ -220,7 +217,7 @@ taskSelectionTabs model =
                     , A.href "#"
                     , onClick (ChangeDatePeriod schedule)
                     ]
-                    [ text <| tabLabel schedule model.context yesterday ]
+                    [ text <| datePeriodLabel schedule ]
                 ]
 
         theTabs =
@@ -231,24 +228,20 @@ taskSelectionTabs model =
         H.ul [ class "nav nav-tabs card-header-tabs" ] theTabs
 
 
-tabLabel : DatePeriod -> AppContext -> String -> String
-tabLabel datePeriod context yesterday =
-    let
-        day date =
-            String.slice 5 10 date
-    in
-        case datePeriod of
-            Yesterday ->
-                "Late (" ++ (day yesterday) ++ ")"
+datePeriodLabel : DatePeriod -> String
+datePeriodLabel datePeriod =
+    case datePeriod of
+        Yesterday ->
+            "Late"
 
-            Today ->
-                "Today"
+        Today ->
+            "Today"
 
-            Tomorrow ->
-                "Tomorrow"
+        Tomorrow ->
+            "Tomorrow"
 
-            Later ->
-                "Future"
+        Later ->
+            "Future"
 
 
 taskList : Model -> List TaskEditor -> Html Msg
@@ -322,9 +315,24 @@ taskViewerView model editor =
         startEditingMsg =
             UpdateEditingTask editor.task.id True editor.editingLabel
 
+        completedExponent task =
+            case task.completedOn of
+                Just completedOn ->
+                    H.sup [ class "badge badge-default badge-completed" ]
+                        [ text <| formatShortDate completedOn ]
+
+                Nothing ->
+                    H.span [] []
+
         label =
             if editor.task.completed then
-                H.s [ class "text-muted" ] [ text editor.task.label ]
+                div []
+                    [ H.span []
+                        [ H.s [ class "text-muted" ] [ text editor.task.label ]
+                        , text " "
+                        , completedExponent editor.task
+                        ]
+                    ]
             else if editor.period == Yesterday then
                 H.span [ onDoubleClick startEditingMsg ]
                     [ text editor.task.label
@@ -391,18 +399,7 @@ taskControl model scheduled task =
                 )
 
         actionLabel =
-            case scheduled of
-                Yesterday ->
-                    "Yesterday"
-
-                Today ->
-                    "Today"
-
-                Tomorrow ->
-                    "Tomorrow"
-
-                Later ->
-                    "Future"
+            datePeriodLabel scheduled
 
         actions =
             [ Dropdown.buttonItem

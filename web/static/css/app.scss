@@ -20,3 +20,11 @@
     color: #999;
   }
 }
+
+sup {
+  vertical-align: super;
+}
+
+sup.badge-completed {
+  font-size: 8px;
+}
