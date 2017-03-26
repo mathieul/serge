@@ -195,8 +195,14 @@ tasksCardView model =
                 Nothing ->
                     True
 
+        selectPeriod editor =
+            if model.showYesterday && editor.period /= Today then
+                editor.period == model.datePeriod
+            else
+                editor.period == model.datePeriod || editor.period == Yesterday
+
         selectedTasks =
-            List.filter (\editor -> editor.period == model.datePeriod) model.taskEditors
+            List.filter selectPeriod model.taskEditors
     in
         Card.config [ Card.attrs [ class "mt-3" ] ]
             |> Card.header [] [ taskSelectionTabs model ]
@@ -220,10 +226,14 @@ taskSelectionTabs model =
                     [ text <| datePeriodLabel schedule ]
                 ]
 
-        theTabs =
-            List.map
-                aTab
+        tabPeriods =
+            if model.showYesterday then
                 [ Yesterday, Today, Tomorrow, Later ]
+            else
+                [ Today, Tomorrow, Later ]
+
+        theTabs =
+            tabPeriods |> List.map aTab
     in
         H.ul [ class "nav nav-tabs card-header-tabs" ] theTabs
 
@@ -232,7 +242,7 @@ datePeriodLabel : DatePeriod -> String
 datePeriodLabel datePeriod =
     case datePeriod of
         Yesterday ->
-            "Late"
+            "Yesterday"
 
         Today ->
             "Today"
@@ -241,7 +251,7 @@ datePeriodLabel datePeriod =
             "Tomorrow"
 
         Later ->
-            "Future"
+            "Later"
 
 
 taskList : Model -> List TaskEditor -> Html Msg
@@ -296,7 +306,17 @@ taskCompletionInfo editors model =
             [ div [ class "col pl-3" ]
                 [ text label ]
             , div [ class "col pr-3 text-right" ]
-                [ H.label [ A.for "show-completed" ] [ text "show completed" ]
+                [ H.label [ A.for "show-yesterday" ] [ text "show yesterday" ]
+                , text " "
+                , H.input
+                    [ A.type_ "checkbox"
+                    , A.id "show-yesterday"
+                    , A.checked model.showYesterday
+                    , class "mr-4"
+                    , onClick ToggleShowYesterday
+                    ]
+                    []
+                , H.label [ A.for "show-completed" ] [ text "show completed" ]
                 , text " "
                 , H.input
                     [ A.type_ "checkbox"

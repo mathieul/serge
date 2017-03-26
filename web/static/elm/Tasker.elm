@@ -224,6 +224,9 @@ update msg model =
         ToggleShowCompleted ->
             { model | showCompleted = not model.showCompleted } ! []
 
+        ToggleShowYesterday ->
+            { model | showYesterday = not model.showYesterday } ! []
+
         ConfirmTaskDeletion id label ->
             let
                 confirmation =
