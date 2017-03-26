@@ -45,13 +45,9 @@ exports.config = {
       outputFolder: 'web/static/vendor',
       makeParameters: ['--debug'],
     },
-    sass: {
-      options: {
-        includePaths: [
-          'node_modules/bootstrap/scss/',
-          'node_modules/font-awesome/scss/'
-        ]
-      }
+    elmCss: {
+      sourcePath: 'web/static/elm/Stylesheets.elm',
+      outputDir: 'web/static/css'
     },
     copycat: {
       fonts: [
@@ -69,6 +65,10 @@ exports.config = {
   },
 
   npm: {
-    enabled: true
+    enabled: true,
+    styles: {
+      bootstrap: ['dist/css/bootstrap.min.css'],
+      "font-awesome": ['css/font-awesome.min.css']
+    }
   }
 };

@@ -17,6 +17,7 @@ erl_crash.dump
 # this depending on your deployment strategy.
 /priv/static/
 /web/static/vendor/*.js
+/web/static/css/app.css
 /rel/
 
 # The config/prod.secret.exs file by default contains sensitive

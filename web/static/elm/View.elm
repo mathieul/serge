@@ -338,7 +338,7 @@ taskViewerView model editor =
         completedExponent task =
             case task.completedOn of
                 Just completedOn ->
-                    H.sup [ class "badge badge-default badge-completed" ]
+                    H.sup [ class "badge badge-default BadgeCompleted" ]
                         [ text <| formatShortDate completedOn ]
 
                 Nothing ->
@@ -379,17 +379,17 @@ actionButton date label taskLabel task =
     if label == taskLabel then
         Dropdown.buttonItem
             [ class "disabled"
-            , classList [ ( "text-ghost", label == "Yesterday" ) ]
+            , classList [ ( "TextGhost", label == "Yesterday" ) ]
             ]
             [ H.i [ class "fa fa-arrow-right" ] []
             , text <| " " ++ label
             ]
     else
         Dropdown.buttonItem
-            [ classList [ ( "text-ghost", label == "Yesterday" ) ]
+            [ classList [ ( "TextGhost", label == "Yesterday" ) ]
             , onClick <| StoryTask.changeSchedule RequestTaskUpdate date task
             ]
-            [ H.i [ class "fa empty" ] []
+            [ H.i [ class "FaEmpty" ] []
             , text <| " " ++ label
             ]
 
@@ -445,7 +445,7 @@ taskControl model scheduled task =
                 Dropdown.toggle
                     [ buttonKind
                     , Button.small
-                    , Button.attrs [ class "task-control" ]
+                    , Button.attrs [ class "TaskControl" ]
                     ]
                     [ text actionLabel ]
             , items = actions
@@ -462,7 +462,7 @@ taskEditorView editor =
             editor.task
     in
         H.form
-            [ class "px-2 py-1-5"
+            [ class "px-2 Py15"
             , onSubmit (RequestTaskUpdate { task | label = editor.editingLabel })
             ]
             [ H.input
