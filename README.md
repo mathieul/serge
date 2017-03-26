@@ -38,9 +38,9 @@ Bump application version in `mix.exs` (i.e.: 0.0.5) and run as user `elixir`:
     $ git pull
     $ mix deps.get && yarn && elm package install -y
     $ brunch build && mix do phoenix.digest, compile, release
-    $ cp -r rel/serge/releases/0.0.5/ /apps/serge/releases/
+    $ cp -r rel/serge/releases/0.3.2/ /apps/serge/releases/
     $ cd /apps/serge
-    $ ./bin/serge upgrade 0.0.5
+    $ ./bin/serge upgrade 0.3.2
 
 As user `root`:
 
