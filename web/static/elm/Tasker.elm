@@ -225,7 +225,15 @@ update msg model =
             { model | showCompleted = not model.showCompleted } ! []
 
         ToggleShowYesterday ->
-            { model | showYesterday = not model.showYesterday } ! []
+            { model
+                | showYesterday = not model.showYesterday
+                , datePeriod =
+                    if model.datePeriod == Yesterday then
+                        Today
+                    else
+                        model.datePeriod
+            }
+                ! []
 
         ConfirmTaskDeletion id label ->
             let
