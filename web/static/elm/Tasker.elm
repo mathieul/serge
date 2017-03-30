@@ -238,6 +238,12 @@ update msg model =
         ToggleEditTasks ->
             { model | editingTasks = not model.editingTasks } ! []
 
+        MoveTask editor ->
+            { model | movingTask = Just editor } ! []
+
+        CancelMoveTask ->
+            { model | movingTask = Nothing } ! []
+
         ConfirmTaskDeletion id label ->
             let
                 confirmation =

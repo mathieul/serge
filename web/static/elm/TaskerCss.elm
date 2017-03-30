@@ -41,7 +41,8 @@ css =
             , right (px 40)
             ]
         , class SortHandle
-            [ fontSize (px 30)
+            [ cursor move
+            , fontSize (px 30)
             , marginTop (px -18)
             , padding (px 2)
             , position absolute

@@ -4,7 +4,8 @@ import Dict
 import String.Extra
 import Html as H exposing (Html, div, text)
 import Html.Attributes as A exposing (class, classList)
-import Html.Events exposing (onClick, onSubmit, onInput, onDoubleClick)
+import Html.Events exposing (on, onClick, onSubmit, onInput, onDoubleClick)
+import Json.Decode
 import Bootstrap.Navbar as Navbar
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
@@ -20,6 +21,20 @@ import Bootstrap.Modal as Modal
 
 import Model exposing (..)
 import StoryTask exposing (StoryTask)
+
+
+-- EVENTS
+
+
+onDragStart : msg -> H.Attribute msg
+onDragStart message =
+    on "dragstart" (Json.Decode.succeed message)
+
+
+onDragEnd : msg -> H.Attribute msg
+onDragEnd message =
+    on "dragend" (Json.Decode.succeed message)
+
 
 
 -- VIEW
@@ -379,8 +394,24 @@ taskViewerView model editor =
             else
                 H.span [ onDoubleClick startEditingMsg ]
                     [ text editor.task.label ]
+
+        commonAttrs =
+            [ class "list-group-item d-flex flex-column align-items-start" ]
+
+        taskAttrs =
+            if model.editingTasks then
+                List.concat
+                    [ commonAttrs
+                    , [ onDragStart <| MoveTask editor
+                      , onDragEnd CancelMoveTask
+                      , A.attribute "draggable" "true"
+                      , A.attribute "ondragstart" "event.dataTransfer.setData(\"text/plain\", \"\")"
+                      ]
+                    ]
+            else
+                commonAttrs
     in
-        H.li [ class "list-group-item d-flex flex-column align-items-start" ]
+        H.li taskAttrs
             [ div [ class " w-100 d-flex justify-content-between align-items-center" ]
                 [ label
                 , div
