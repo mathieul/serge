@@ -37,6 +37,7 @@ type alias Model =
     , currentTaskSeq : Int
     , taskEditors : List TaskEditor
     , datePeriod : DatePeriod
+    , editingTasks : Bool
     , showCompleted : Bool
     , showYesterday : Bool
     , confirmation : Confirmation
@@ -57,6 +58,7 @@ initialModel config navState =
     , currentTaskSeq = 1
     , taskEditors = []
     , datePeriod = Today
+    , editingTasks = False
     , showCompleted = False
     , showYesterday = False
     , confirmation = emptyConfirmation
@@ -93,6 +95,7 @@ type Msg
     | ChangeDatePeriod DatePeriod
     | ToggleShowCompleted
     | ToggleShowYesterday
+    | ToggleEditTasks
 
 
 

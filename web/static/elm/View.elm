@@ -71,7 +71,7 @@ mainContent model =
                     [ div [ class "w-100 align-top" ] [ messageView model.message ] ]
                 , Grid.col [ Col.sm2 ]
                     [ Button.button
-                        [ Button.warning
+                        [ Button.success
                         , Button.attrs [ class "pull-right", onClick ShowSummary ]
                         ]
                         [ H.i [ class "fa fa-calendar" ] []
@@ -233,7 +233,25 @@ taskSelectionTabs model =
                 [ Today, Tomorrow, Later ]
 
         theTabs =
-            tabPeriods |> List.map aTab
+            tabPeriods
+                |> List.map aTab
+                |> (::)
+                    (H.li
+                        [ class "nav-item SortButton" ]
+                        [ Button.button
+                            [ Button.secondary
+                            , Button.small
+                            , Button.attrs [ onClick ToggleEditTasks ]
+                            ]
+                            [ H.i [ class "fa fa-sort" ] []
+                            , text <|
+                                if model.editingTasks then
+                                    " Done"
+                                else
+                                    " Sort"
+                            ]
+                        ]
+                    )
     in
         H.ul [ class "nav nav-tabs card-header-tabs" ] theTabs
 
@@ -368,10 +386,19 @@ taskViewerView model editor =
                 , div
                     [ class "d-flex justify-content-end" ]
                     [ div [ class "btn-group" ]
-                        [ taskControl model editor.period editor.task ]
+                        [ if model.editingTasks then
+                            sortHandle model editor
+                          else
+                            taskControl model editor.period editor.task
+                        ]
                     ]
                 ]
             ]
+
+
+sortHandle : Model -> TaskEditor -> Html Msg
+sortHandle model editor =
+    div [ class "badge badge-default SortHandle" ] [ H.i [ class "fa fa-arrows" ] [] ]
 
 
 actionButton : String -> String -> String -> StoryTask -> Dropdown.DropdownItem Msg
