@@ -100,6 +100,7 @@ type Msg
     | ToggleEditTasks
     | MoveTask TaskEditor
     | CancelMoveTask
+    | DropTask TaskEditor
 
 
 

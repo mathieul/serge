@@ -4,7 +4,7 @@ import Dict
 import String.Extra
 import Html as H exposing (Html, div, text)
 import Html.Attributes as A exposing (class, classList)
-import Html.Events exposing (on, onClick, onSubmit, onInput, onDoubleClick)
+import Html.Events exposing (on, onWithOptions, onClick, onSubmit, onInput, onDoubleClick)
 import Json.Decode
 import Bootstrap.Navbar as Navbar
 import Bootstrap.Grid as Grid
@@ -28,12 +28,37 @@ import StoryTask exposing (StoryTask)
 
 onDragStart : msg -> H.Attribute msg
 onDragStart message =
-    on "dragstart" (Json.Decode.succeed message)
+    onDragHelper "dragstart" message
 
 
 onDragEnd : msg -> H.Attribute msg
 onDragEnd message =
-    on "dragend" (Json.Decode.succeed message)
+    onDragHelper "dragend" message
+
+
+onDrop : msg -> H.Attribute msg
+onDrop message =
+    onPreventHelper "drop" message
+
+
+onPreventHelper : String -> msg -> H.Attribute msg
+onPreventHelper eventName message =
+    onWithOptions
+        eventName
+        { preventDefault = True
+        , stopPropagation = False
+        }
+        (Json.Decode.succeed message)
+
+
+onDragHelper : String -> msg -> H.Attribute msg
+onDragHelper eventName message =
+    onWithOptions
+        eventName
+        { preventDefault = False
+        , stopPropagation = False
+        }
+        (Json.Decode.succeed message)
 
 
 
@@ -45,6 +70,12 @@ view model =
     div []
         [ menu model
         , mainContent model
+          -- , div
+          --     [ A.style [ ( "padding", "10px" ), ( "border", "1px solid blue" ) ]
+          --     , A.attribute "ondragover" "return false"
+          --     , onDrop <| DropTask "target"
+          --     ]
+          --     [ text "DROP HERE" ]
         , summaryModal model
         , confirmModal model
         ]
@@ -398,15 +429,20 @@ taskViewerView model editor =
         commonAttrs =
             [ class "list-group-item d-flex flex-column align-items-start" ]
 
+        dndAttributes =
+            [ onDragEnd CancelMoveTask
+            , A.attribute "draggable" "true"
+            , A.attribute "ondragstart" "event.dataTransfer.setData(\"text/plain\", \"\")"
+            , A.attribute "ondragover" "return false"
+            , onDrop <| DropTask editor
+            ]
+
         taskAttrs =
             if model.editingTasks then
                 List.concat
                     [ commonAttrs
-                    , [ onDragStart <| MoveTask editor
-                      , onDragEnd CancelMoveTask
-                      , A.attribute "draggable" "true"
-                      , A.attribute "ondragstart" "event.dataTransfer.setData(\"text/plain\", \"\")"
-                      ]
+                    , [ onDragStart <| MoveTask editor ]
+                    , dndAttributes
                     ]
             else
                 commonAttrs

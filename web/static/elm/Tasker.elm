@@ -244,6 +244,13 @@ update msg model =
         CancelMoveTask ->
             { model | movingTask = Nothing } ! []
 
+        DropTask editor ->
+            let
+                _ =
+                    Debug.log "DropTask" editor
+            in
+                model ! []
+
         ConfirmTaskDeletion id label ->
             let
                 confirmation =
