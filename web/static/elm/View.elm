@@ -432,8 +432,8 @@ taskViewerView model editor =
         dndAttributes =
             [ onDragEnd CancelMoveTask
             , A.attribute "draggable" "true"
-            , A.attribute "ondragstart" "event.dataTransfer.setData(\"text/plain\", \"\")"
-            , A.attribute "ondragover" "return false"
+            , A.attribute "ondragstart" "event.dataTransfer.setData('text/plain', '')"
+            , A.attribute "ondragover" "event.stopPropagation(); event.preventDefault();"
             , onDrop <| DropTask editor
             ]
 
