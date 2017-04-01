@@ -25,7 +25,7 @@ exports.config = {
   // Phoenix paths configuration
   paths: {
     // Dependencies and current project directories to watch
-    watched: ["static", "css", "js", "vendor"],
+    watched: ["static", "css", "js", "elm", "vendor"],
 
     // Where to compile files to
     public: "../priv/static"
@@ -38,19 +38,19 @@ exports.config = {
       ignore: [/vendor/]
     },
     elmBrunch: {
-      mainModules: ['static/elm/Tasker.elm'],
-      outputFolder: 'static/vendor',
-      makeParameters: ['--debug'],
+      mainModules: ['elm/Tasker.elm'],
+      outputFolder: 'vendor',
+      makeParameters: ['--debug --warn']
     },
     elmCss: {
-      sourcePath: 'static/elm/Stylesheets.elm',
-      outputDir: 'static/css'
+      sourcePath: 'elm/Stylesheets.elm',
+      outputDir: 'css/'
     },
     copycat: {
       fonts: [
         "node_modules/font-awesome/fonts"
       ],
-      verbose: true,
+      verbose: false,
       onlyChanged: true
     }
   },
