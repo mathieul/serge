@@ -127,12 +127,7 @@ defmodule Serge.Tasking do
   end
 
   defp infer_task_if_ok(result) do
-    case result do
-      { :ok, task } ->
-        { :ok, Task.infer_completed(task) }
-      error ->
-        error
-    end
+    with {:ok, task} <- result, do: {:ok, Task.infer_completed(task)}
   end
 
   defp task_changeset(%Task{} = task, attrs) do
