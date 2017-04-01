@@ -1,7 +1,7 @@
 defmodule Serge.TaskTest do
   use Serge.ModelCase
 
-  alias Serge.Task
+  alias Serge.Web.Task
 
   @valid_attrs %{completed: false, label: "some content", rank: 42, scheduled_on: "2017-03-09", user_id: 12}
   @invalid_attrs %{}

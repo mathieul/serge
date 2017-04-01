@@ -2,13 +2,13 @@ defmodule Serge.Factory do
   use ExMachina.Ecto, repo: Serge.Repo
 
   def user_factory do
-    %Serge.User{
+    %Serge.Web.User{
       email: sequence(:email, &"email-#{&1}@example.com"),
     }
   end
 
   def task_factory do
-    %Serge.Task{
+    %Serge.Web.Task{
       user:         build(:user),
       label:        sequence("Do that thing #"),
       scheduled_on: Serge.DateHelpers.tomorrow,

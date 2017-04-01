@@ -11,7 +11,7 @@ defmodule Serge do
       # Start the Ecto repository
       supervisor(Serge.Repo, []),
       # Start the endpoint when the application starts
-      supervisor(Serge.Endpoint, []),
+      supervisor(Serge.Web.Endpoint, []),
       # Start your own worker by calling: Serge.Worker.start_link(arg1, arg2, arg3)
       # worker(Serge.Worker, [arg1, arg2, arg3]),
     ]
@@ -20,12 +20,5 @@ defmodule Serge do
     # for other strategies and supported options
     opts = [strategy: :one_for_one, name: Serge.Supervisor]
     Supervisor.start_link(children, opts)
-  end
-
-  # Tell Phoenix to update the endpoint configuration
-  # whenever the application is updated.
-  def config_change(changed, _new, removed) do
-    Serge.Endpoint.config_change(changed, removed)
-    :ok
   end
 end

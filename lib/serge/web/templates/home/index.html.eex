@@ -1,0 +1,29 @@
+<%= if @current_user do %>
+  <div id="elm-tasker"></div>
+
+  <script src="<%= static_path(@conn, "/js/app.js") %>"></script>
+  <%= render Serge.Web.SharedView, "elm_init.html",
+                               elm_module:     assigns[:elm_module],
+                               elm_app_config: assigns[:elm_app_config] %>
+<% else %>
+  <div class="container">
+    <%= if get_flash(@conn, :info) do %>
+      <p class="alert alert-info" role="alert"><%= get_flash(@conn, :info) %></p>
+    <% end %>
+    <%= if get_flash(@conn, :error) do %>
+      <p class="alert alert-danger" role="alert"><%= get_flash(@conn, :error) %></p>
+    <% end %>
+    <div class="card mx-auto my-5 w-50">
+      <div class="card-header">
+        Featured
+      </div>
+      <div class="card-block">
+        <h4 class="card-title">Authentication</h4>
+        <p class="card-text">Please authenticate to access the application.</p>
+        <a class="btn btn-primary btn-lg" href="<%= auth_path @conn, :index, "github" %>">
+          Sign in with GitHub
+        </a>
+      </div>
+    </div>
+  </div>
+<% end %>

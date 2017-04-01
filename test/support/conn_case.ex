@@ -25,10 +25,10 @@ defmodule Serge.ConnCase do
       import Ecto.Changeset
       import Ecto.Query
 
-      import Serge.Router.Helpers
+      import Serge.Web.Router.Helpers
 
       # The default endpoint for testing
-      @endpoint Serge.Endpoint
+      @endpoint Serge.Web.Endpoint
     end
   end
 

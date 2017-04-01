@@ -27,7 +27,7 @@ defmodule Serge.ChannelCase do
 
 
       # The default endpoint for testing
-      @endpoint Serge.Endpoint
+      @endpoint Serge.Web.Endpoint
     end
   end
 

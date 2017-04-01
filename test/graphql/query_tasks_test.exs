@@ -73,6 +73,6 @@ defmodule Serge.QueryTaskTest do
   end
 
   defp run(doc, user_id) do
-    Absinthe.run(doc, Serge.Schema, context: %{current_user: %{id: user_id}})
+    Absinthe.run(doc, Serge.Web.Schema, context: %{current_user: %{id: user_id}})
   end
 end

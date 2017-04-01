@@ -1,7 +1,7 @@
 defmodule Serge.UserTest do
   use Serge.ModelCase
 
-  alias Serge.User
+  alias Serge.Web.User
 
   @valid_attrs %{email: "janedoe@example.com", uid: "1qaz2wsx"}
   @invalid_attrs %{}

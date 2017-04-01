@@ -10,11 +10,11 @@ config :serge,
   ecto_repos: [Serge.Repo]
 
 # Configures the endpoint
-config :serge, Serge.Endpoint,
+config :serge, Serge.Web.Endpoint,
   url: [host: "localhost"],
   secret_key_base: "tlV9yDTRhI5DHnGhKVpzBQKmruikJHsbqFtviWFkVwi65Xdc7LGOoFiwbwVmUWdl",
-  render_errors: [view: Serge.ErrorView, accepts: ~w(html json)],
-  pubsub: [name: Serge.PubSub,
+  render_errors: [view: Serge.Web.ErrorView, accepts: ~w(html json)],
+  pubsub: [name: Serge.Web.PubSub,
            adapter: Phoenix.PubSub.PG2]
 
 # Configures Elixir's Logger
