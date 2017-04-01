@@ -28,7 +28,7 @@ defmodule Serge.Authentication do
   @doc """
   Gets a user by email.
   """
-  def get_user_by_email!(scope \\ __MODULE__, email) do
+  def get_user_by_email!(scope \\ User, email) do
     from(u in scope, where: u.email == ^email)
     |> Repo.one!()
   end

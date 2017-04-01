@@ -10,7 +10,7 @@ defmodule Serge.Tasking do
   alias Serge.Tasking.Task
 
   @doc """
-  Returns the list of task.
+  Returns the list of Tasks.
   """
   def list_task do
     Repo.all(Task)
@@ -71,6 +71,15 @@ defmodule Serge.Tasking do
   end
 
   @doc """
+  Provision a task, intended for seeding.
+  """
+  def seed_task(attrs) do
+    %Task{}
+    |> task_seed_changeset(attrs)
+    |> Repo.insert()
+  end
+
+  @doc """
   Updates a task.
   """
   def update_task(%Task{} = task, attrs) do
@@ -104,6 +113,13 @@ defmodule Serge.Tasking do
   end
 
   @doc """
+  Deletes all the Tasks.
+  """
+  def delete_all_tasks() do
+    Repo.delete_all(Task)
+  end
+
+  @doc """
   Returns an `%Ecto.Changeset{}` for tracking task changes.
   """
   def change_task(%Task{} = task) do
@@ -126,5 +142,12 @@ defmodule Serge.Tasking do
     |> Task.update_completed_on
     |> validate_required([:label, :scheduled_on, :user_id])
     |> assoc_constraint(:user)
+  end
+
+  defp task_seed_changeset(%Task{} = task, attrs) do
+    task
+    |> cast(attrs, [:label, :completed_on, :scheduled_on, :position, :user_id])
+    |> Task.ordered
+    |> validate_required([:label, :scheduled_on, :user_id])
   end
 end

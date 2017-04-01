@@ -1,5 +1,6 @@
 defmodule Serge.Tasking.Task do
   use Serge.Web, :model
+  # use Ecto.Schema
   import EctoOrdered
   alias Serge.DateHelpers
 
@@ -18,13 +19,6 @@ defmodule Serge.Tasking.Task do
 
   def ordered(changeset) do
     set_order(changeset, :position, :rank, :user_id)
-  end
-
-  def admin_changeset(task, params \\ %{}) do
-    task
-    |> cast(params, [:label, :completed_on, :scheduled_on, :position, :user_id])
-    |> set_order(:position, :rank, :user_id)
-    |> validate_required([:label, :scheduled_on, :user_id])
   end
 
   def update_completed_on(changeset) do
