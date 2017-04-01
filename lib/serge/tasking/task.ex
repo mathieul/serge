@@ -1,7 +1,10 @@
 defmodule Serge.Tasking.Task do
-  use Serge.Web, :model
-  # use Ecto.Schema
+  use Ecto.Schema
+
+  import Ecto.Query
+  import Ecto.Changeset
   import EctoOrdered
+
   alias Serge.DateHelpers
 
   schema "tasks" do

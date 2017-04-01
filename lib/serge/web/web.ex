@@ -1,14 +1,4 @@
 defmodule Serge.Web do
-  def model do
-    quote do
-      use Ecto.Schema
-
-      import Ecto
-      import Ecto.Changeset
-      import Ecto.Query
-    end
-  end
-
   def controller do
     quote do
       use Phoenix.Controller, namespace: Serge.Web
