@@ -1,69 +1,61 @@
 defmodule Serge.Web.Resolvers.Task do
-  alias Serge.Web.Task
-  alias Serge.Repo
+  alias Serge.Tasking
   alias Serge.DateHelpers
 
   def find(_parent, %{ id: id }, _info) do
-    case Repo.get(Task, id) do
-      nil  -> { :error, "Task id #{id} not found" }
-      task -> { :ok, Task.infer_completed(task) }
+    case Tasking.get_task(id) do
+      nil ->
+        { :error, "Task id #{id} not found" }
+      task ->
+        { :ok, task }
     end
   end
 
   def all(_parent, args, %{context: ctx}) do
     from = if args[:include_yesterday] do
-      Repo.one(Task.guess_yesterdays_work_day) || DateHelpers.yesterday()
+      Tasking.previous_work_day()
     else
       DateHelpers.today()
     end
 
-    tasks =
-      Task.starting_from(from)
-      |> Task.for_user_id(ctx.current_user.id)
-      |> Task.ordered_by_schedule_and_rank()
-      |> Repo.all()
-      |> Repo.preload(:user)
-      |> Enum.map(&Task.infer_completed/1)
+    tasks = Tasking.list_tasks_since(from, user_id: ctx.current_user.id)
     { :ok, tasks }
   end
 
   def create(_parent, attributes = %{tid: tid}, %{context: ctx}) do
-    params =
-      attributes
-      |> Map.put_new(:user_id, ctx.current_user.id)
-      |> Map.delete(:tid)
-
-    changeset = Task.changeset(%Task{}, params)
-    case Repo.insert(changeset) do
+    case Tasking.create_task(attributes, user_id: ctx.current_user.id) do
       { :ok, task } ->
-        { :ok, %{ tid: tid, task: Task.infer_completed(task) } }
+        { :ok, %{ tid: tid, task: task } }
 
       { :error, changeset } ->
-        { :error, changeset.errors }
+        { :error, format_changeset_errors(changeset) }
     end
   end
 
   def update(_parent, attributes, _info) do
-    task = Repo.get!(Task, attributes[:id])
-    changeset = Task.changeset(task, attributes)
-
-    case Repo.update(changeset) do
-      { :ok, task } ->
-        {:ok, Task.infer_completed(task) }
-
+    case Tasking.update_task_by_id(attributes) do
       { :error, changeset } ->
-        { :error, changeset.errors }
+        { :error, format_changeset_errors(changeset) }
+      ok ->
+        ok
     end
   end
 
   def delete(_parent, %{id: id}, _context) do
-    task = Repo.get!(Task, id)
-    case Repo.delete(task) do
-      { :ok, task } ->
-        {:ok, Task.infer_completed(task) }
-
+    case Tasking.delete_task(id) do
       { :error, changeset } ->
-        { :error, changeset.errors }
+        { :error, format_changeset_errors(changeset) }
+      ok ->
+        ok
     end
+  end
+
+  defp format_changeset_errors(changeset) do
+    evaluated = Ecto.Changeset.traverse_errors(changeset, fn {msg, opts} ->
+      Enum.reduce(opts, msg, fn {key, value}, acc ->
+        String.replace(acc, "%{#{key}}", to_string(value))
+      end)
+    end)
+    Enum.map(evaluated, fn { attr, message } -> "#{attr} #{message}" end)
   end
 end

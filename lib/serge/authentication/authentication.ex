@@ -30,7 +30,7 @@ defmodule Serge.Authentication do
   """
   def get_user_by_email!(scope \\ __MODULE__, email) do
     from(u in scope, where: u.email == ^email)
-    |> Repo.one!
+    |> Repo.one!()
   end
 
   @doc """

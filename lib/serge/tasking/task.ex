@@ -1,4 +1,4 @@
-defmodule Serge.Web.Task do
+defmodule Serge.Tasking.Task do
   use Serge.Web, :model
   import EctoOrdered
   alias Serge.DateHelpers
@@ -16,13 +16,8 @@ defmodule Serge.Web.Task do
     timestamps()
   end
 
-  def changeset(task, params \\ %{}) do
-    task
-    |> cast(params, [:label, :completed, :scheduled_on, :position, :user_id])
-    |> set_order(:position, :rank, :user_id)
-    |> update_completed_on
-    |> validate_required([:label, :scheduled_on, :user_id])
-    |> assoc_constraint(:user)
+  def ordered(changeset) do
+    set_order(changeset, :position, :rank, :user_id)
   end
 
   def admin_changeset(task, params \\ %{}) do
@@ -32,7 +27,7 @@ defmodule Serge.Web.Task do
     |> validate_required([:label, :scheduled_on, :user_id])
   end
 
-  defp update_completed_on(changeset) do
+  def update_completed_on(changeset) do
     completed_on = get_field(changeset, :completed_on)
     case get_field(changeset, :completed) do
       true ->
@@ -71,7 +66,7 @@ defmodule Serge.Web.Task do
     from(t in scope, order_by: [t.scheduled_on, t.rank])
   end
 
-  def guess_yesterdays_work_day(scope \\ __MODULE__) do
+  def previous_work_day(scope \\ __MODULE__) do
     today = DateHelpers.today()
     from(t in scope, where: t.completed_on < ^today, select: max(t.completed_on))
   end

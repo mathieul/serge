@@ -8,7 +8,7 @@ defmodule Serge.Factory do
   end
 
   def task_factory do
-    %Serge.Web.Task{
+    %Serge.Tasking.Task{
       user:         build(:user),
       label:        sequence("Do that thing #"),
       scheduled_on: Serge.DateHelpers.tomorrow,

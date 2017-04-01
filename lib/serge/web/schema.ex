@@ -6,16 +6,6 @@ defmodule Serge.Web.Schema do
   import_types Serge.Web.Schema.Types
 
   query do
-    field :user, :user do
-      arg :id, non_null(:id)
-
-      resolve &Resolvers.User.find/3
-    end
-
-    field :users, list_of(:user) do
-      resolve &Resolvers.User.all/3
-    end
-
     field :task, :task do
       arg :id, non_null(:id)
 
