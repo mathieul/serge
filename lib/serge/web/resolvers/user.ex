@@ -1,7 +1,7 @@
 defmodule Serge.Web.Resolvers.User do
 
-  alias Serge.Web.User
-  alias Serge.Web.Repo
+  alias Serge.Authentication.User
+  alias Serge.Repo
 
   def find(_parent, %{ id: id }, _info) do
     case Repo.get(User, id) do

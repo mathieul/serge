@@ -48,7 +48,7 @@ defmodule Serge.Web.Router do
       nil ->
         assign(conn, :current_user, nil)
       id ->
-        user = Serge.Repo.get(Serge.Web.User, id)
+        user = Serge.Repo.get(Serge.Authentication.User, id)
         assign(conn, :current_user, user)
     end
   end

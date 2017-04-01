@@ -2,7 +2,7 @@ defmodule Serge.Factory do
   use ExMachina.Ecto, repo: Serge.Repo
 
   def user_factory do
-    %Serge.Web.User{
+    %Serge.Authentication.User{
       email: sequence(:email, &"email-#{&1}@example.com"),
     }
   end

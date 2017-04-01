@@ -1,6 +1,6 @@
 defmodule Serge.Web.AuthController do
   use Serge.Web, :controller
-  alias Serge.Web.User
+  alias Serge.Authentication
 
   @doc """
   This action is reached via `/auth/:provider` and redirects to the OAuth2 provider
@@ -51,18 +51,13 @@ defmodule Serge.Web.AuthController do
 
   defp get_user!(provider, client) do
     params = params_for(provider, client)
-    case Repo.get_by(User, uid: params.uid) do
-      nil ->
-        User.changeset(%User{}, params) |> Repo.insert!
-      user ->
-        user
-    end
+    Authentication.get_user_by_uid_or_create(params.uid, params)
   end
 
   defp params_for("github", client) do
     %{body: payload} = OAuth2.Client.get!(client, "/user")
     %{
-      uid: User.provider_uid("github", payload["id"]),
+      uid: Authentication.make_user_provider_uid("github", payload["id"]),
       name: payload["name"],
       avatar_url: payload["avatar_url"],
       email: payload["email"]

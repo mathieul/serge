@@ -12,7 +12,7 @@
 
 alias Serge.{Repo, Task, User, DateHelpers}
 
-user = Repo.one!(User.find_by_email("mathieu@caring.com"))
+user = Authentication.get_user_by_email!("mathieu@caring.com")
 
 Repo.delete_all(Task)
 

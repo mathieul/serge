@@ -1,21 +1,4 @@
 defmodule Serge.Web do
-  @moduledoc """
-  A module that keeps using definitions for controllers,
-  views and so on.
-
-  This can be used in your application as:
-
-      use Serge.Web, :controller
-      use Serge.Web, :view
-
-  The definitions below will be executed for every view,
-  controller, etc, so keep them short and clean, focused
-  on imports, uses and aliases.
-
-  Do NOT define functions inside the quoted expressions
-  below.
-  """
-
   def model do
     quote do
       use Ecto.Schema
@@ -29,11 +12,7 @@ defmodule Serge.Web do
   def controller do
     quote do
       use Phoenix.Controller, namespace: Serge.Web
-
-      alias Serge.Repo
-      import Ecto
-      import Ecto.Query
-
+      import Plug.Conn
       import Serge.Web.Router.Helpers
       import Serge.Web.Gettext
     end
@@ -58,16 +37,14 @@ defmodule Serge.Web do
   def router do
     quote do
       use Phoenix.Router
+      import Plug.Conn
+      import Phoenix.Controller
     end
   end
 
   def channel do
     quote do
       use Phoenix.Channel
-
-      alias Serge.Repo
-      import Ecto
-      import Ecto.Query
       import Serge.Web.Gettext
     end
   end

@@ -11,7 +11,7 @@ defmodule Serge.Web.Task do
     field :completed_on,  Ecto.Date
     field :scheduled_on,  Ecto.Date
 
-    belongs_to :user, Serge.Web.User
+    belongs_to :user, Serge.Authentication.User
 
     timestamps()
   end
