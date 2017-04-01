@@ -27,8 +27,9 @@ import StoryTask exposing (StoryTask)
 type alias Model =
     { config : AppConfig
     , navState : Navbar.State
-    , modalState : Modal.State
+    , summaryModalState : Modal.State
     , confirmModalState : Modal.State
+    , orderingModalState : Modal.State
     , dropdownStates : Dict String Dropdown.State
     , message : AppMessage
     , context : AppContext
@@ -47,8 +48,9 @@ initialModel : AppConfig -> Navbar.State -> Model
 initialModel config navState =
     { config = config
     , navState = navState
-    , modalState = Modal.hiddenState
+    , summaryModalState = Modal.hiddenState
     , confirmModalState = Modal.hiddenState
+    , orderingModalState = Modal.hiddenState
     , dropdownStates = Dict.empty
     , message = MessageNone
     , context = makeEmptyAppContext
@@ -70,13 +72,16 @@ initialModel config navState =
 type Msg
     = NoOp
     | NavMsg Navbar.State
-    | ModalMsg Modal.State
+    | SummaryModalMsg Modal.State
     | ConfirmModalMsg Modal.State
+    | OrderingModalMsg Modal.State
     | DropdownMsg String Dropdown.State
     | ShowSummary
     | HideSummary
     | RequestConfirmation Confirmation
     | DiscardConfirmation
+    | ShowOrdering
+    | HideOrdering
     | UpdateCurrentTask String
     | UpdateEditingTask Id Bool String
     | AddCurrentTask

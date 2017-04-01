@@ -32,6 +32,7 @@ view model =
         , mainContent model
         , summaryModal model
         , confirmModal model
+        , orderingModal model
         ]
 
 
@@ -126,7 +127,7 @@ summaryModal model =
         summaryTaskView editor =
             H.li [] [ text editor.task.label ]
     in
-        Modal.config ModalMsg
+        Modal.config SummaryModalMsg
             |> Modal.h4 [ class "w-100 text-center" ] [ text "Scrum Summary" ]
             |> Modal.body []
                 [ div [ class "mt-3 mb-4" ]
@@ -148,7 +149,21 @@ summaryModal model =
                     [ Button.primary, Button.attrs [ onClick HideSummary ] ]
                     [ text "Done" ]
                 ]
-            |> Modal.view model.modalState
+            |> Modal.view model.summaryModalState
+
+
+orderingModal : Model -> Html Msg
+orderingModal model =
+    Modal.config OrderingModalMsg
+        |> Modal.h4 [ class "w-100 text-center" ] [ text "Sort Tasks" ]
+        |> Modal.body []
+            [ H.h4 [] [ text "TODO" ] ]
+        |> Modal.footer []
+            [ Button.button
+                [ Button.primary, Button.attrs [ onClick HideOrdering ] ]
+                [ text "Done" ]
+            ]
+        |> Modal.view model.orderingModalState
 
 
 newTaskForm : Model -> Html Msg

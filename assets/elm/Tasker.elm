@@ -100,8 +100,8 @@ update msg model =
         NavMsg state ->
             { model | navState = state } ! []
 
-        ModalMsg state ->
-            { model | modalState = state } ! []
+        SummaryModalMsg state ->
+            { model | summaryModalState = state } ! []
 
         ConfirmModalMsg state ->
             { model | confirmModalState = state } ! []
@@ -110,10 +110,10 @@ update msg model =
             { model | dropdownStates = Dict.insert name state model.dropdownStates } ! []
 
         ShowSummary ->
-            { model | modalState = Modal.visibleState } ! []
+            { model | summaryModalState = Modal.visibleState } ! []
 
         HideSummary ->
-            { model | modalState = Modal.hiddenState } ! []
+            { model | summaryModalState = Modal.hiddenState } ! []
 
         RequestConfirmation confirmation ->
             { model
@@ -264,6 +264,12 @@ update msg model =
                   }
                 , Dom.focus ("edit-task-" ++ id) |> Task.attempt (\_ -> NoOp)
                 )
+
+        ShowOrdering ->
+            { model | orderingModalState = Modal.visibleState } ! []
+
+        HideOrdering ->
+            { model | orderingModalState = Modal.hiddenState } ! []
 
 
 updateModelForTime : Time -> Model -> Model
