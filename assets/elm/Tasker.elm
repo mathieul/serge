@@ -12,6 +12,7 @@ import Bootstrap.Modal as Modal
 import Bootstrap.Dropdown as Dropdown
 import Bootstrap.Button as Button
 import GraphQL.Client.Http as GraphQLClient
+import Html5.DragDrop as DragDrop
 
 
 -- LOCAL IMPORTS
@@ -273,6 +274,19 @@ update msg model =
 
         HideOrdering ->
             { model | orderingModalState = Modal.hiddenState } ! []
+
+        DragDropMsg msg_ ->
+            let
+                ( model_, result ) =
+                    DragDrop.update msg_ model.dragDrop
+
+                _ =
+                    Debug.log "result" result
+            in
+                { model
+                    | dragDrop = model_
+                }
+                    ! []
 
 
 updateModelForTime : Time -> Model -> Model

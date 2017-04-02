@@ -16,6 +16,7 @@ import Bootstrap.Grid.Col as Col
 import Bootstrap.ListGroup as ListGroup
 import Bootstrap.Modal as Modal
 import Bootstrap.Navbar as Navbar
+import Html5.DragDrop as DragDrop
 
 
 -- LOCAL IMPORTS
@@ -158,11 +159,18 @@ orderingModal : Model -> Html Msg
 orderingModal model =
     let
         taskItem editor =
-            ListGroup.li
-                [ ListGroup.attrs [ class "justify-content-between" ] ]
-                [ text editor.task.label
-                , Badge.pill [] [ H.i [ class "fa fa-arrows SortHandle" ] [] ]
-                ]
+            let
+                attrs =
+                    List.concat
+                        [ [ class "justify-content-between" ]
+                        , DragDrop.draggable DragDropMsg editor
+                        , DragDrop.droppable DragDropMsg editor
+                        ]
+            in
+                ListGroup.li [ ListGroup.attrs attrs ]
+                    [ text editor.task.label
+                    , Badge.pill [] [ H.i [ class "fa fa-arrows SortHandle" ] [] ]
+                    ]
 
         taskList =
             tasksForCurrentTaskPeriod model
@@ -172,13 +180,14 @@ orderingModal model =
             |> Modal.large
             |> Modal.h4 [ class "w-100 text-center" ] [ text "Sort Tasks" ]
             |> Modal.body []
-                [ H.p [] [ text "Re-order tasks and press 'Save'." ]
+                [ H.p [ class "mt-2 mb-4" ]
+                    [ text "Drag and drop tasks to re-order them and press 'Save' when done." ]
                 , ListGroup.ul taskList
                 ]
             |> Modal.footer []
                 [ Button.button
                     [ Button.primary, Button.onClick HideOrdering ]
-                    [ text "Done" ]
+                    [ text "Save" ]
                 ]
             |> Modal.view model.orderingModalState
 
