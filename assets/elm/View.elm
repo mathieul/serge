@@ -182,10 +182,6 @@ orderingModal model =
                                         |> Maybe.map .label
                                         |> Maybe.withDefault "-"
                                 }
-
-                        -- commonClass =
-                        --   if Just editor == dragged && dragged == hovered then
-                        --     "HoveredUnselectableTask"
                     in
                         List.concat
                             [ [ class "justify-content-between" ]
@@ -269,12 +265,6 @@ tasksCardView model =
 
                 Nothing ->
                     True
-
-        selectPeriod editor =
-            if model.showYesterday && editor.period /= Today then
-                editor.period == model.datePeriod
-            else
-                editor.period == model.datePeriod || editor.period == Yesterday
 
         selectedTasks =
             tasksForCurrentTaskPeriod model

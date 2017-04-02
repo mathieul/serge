@@ -294,10 +294,10 @@ tasksForCurrentTaskPeriod : Model -> List TaskEditor
 tasksForCurrentTaskPeriod model =
     let
         selectPeriod editor =
-            if model.showYesterday && editor.period /= Today then
-                editor.period == model.datePeriod
+            if not model.showYesterday && model.datePeriod == Today then
+                editor.period == Yesterday || editor.period == Today
             else
-                editor.period == model.datePeriod || editor.period == Yesterday
+                editor.period == model.datePeriod
     in
         List.filter selectPeriod model.taskEditors
 
