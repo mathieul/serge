@@ -9,6 +9,8 @@ type CssClasses
     | TaskControl
     | TextGhost
     | BadgeCompleted
+    | SortButton
+    | SortHandle
 
 
 css : Stylesheet
@@ -34,4 +36,10 @@ css =
             , withClass BadgeCompleted
                 [ fontSize (px 8) ]
             ]
+        , class SortButton
+            [ position absolute
+            , right (px 40)
+            ]
+        , class SortHandle
+            [ fontSize (px 16) ]
         ]

@@ -1,4 +1,25 @@
-module Model exposing (..)
+module Model
+    exposing
+        ( AppConfig
+        , AppMessage(..)
+        , Confirmation
+        , CreateTaskResponse
+        , DatePeriod(..)
+        , Id
+        , Model
+        , Msg(..)
+        , TaskEditor
+        , discardOldTasks
+        , earliestYesterday
+        , emptyConfirmation
+        , formatShortDate
+        , initialModel
+        , makeNewTaskEditor
+        , taskSchedule
+        , tasksForCurrentTaskPeriod
+        , taskToEditor
+        , timeToAppContext
+        )
 
 import Dict exposing (Dict)
 import Time exposing (Time)
@@ -261,6 +282,18 @@ discardOldTasks context editors =
                     True
     in
         List.filter shouldKeep editors
+
+
+tasksForCurrentTaskPeriod : Model -> List TaskEditor
+tasksForCurrentTaskPeriod model =
+    let
+        selectPeriod editor =
+            if model.showYesterday && editor.period /= Today then
+                editor.period == model.datePeriod
+            else
+                editor.period == model.datePeriod || editor.period == Yesterday
+    in
+        List.filter selectPeriod model.taskEditors
 
 
 

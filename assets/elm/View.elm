@@ -5,15 +5,17 @@ import String.Extra
 import Html as H exposing (Html, div, text)
 import Html.Attributes as A exposing (class, classList)
 import Html.Events exposing (onClick, onSubmit, onInput, onDoubleClick)
-import Bootstrap.Navbar as Navbar
-import Bootstrap.Grid as Grid
-import Bootstrap.Grid.Col as Col
+import Bootstrap.Button as Button
+import Bootstrap.Badge as Badge
 import Bootstrap.Card as Card
+import Bootstrap.Dropdown as Dropdown
 import Bootstrap.Form as Form
 import Bootstrap.Form.Input as Input
-import Bootstrap.Button as Button
-import Bootstrap.Dropdown as Dropdown
+import Bootstrap.Grid as Grid
+import Bootstrap.Grid.Col as Col
+import Bootstrap.ListGroup as ListGroup
 import Bootstrap.Modal as Modal
+import Bootstrap.Navbar as Navbar
 
 
 -- LOCAL IMPORTS
@@ -73,7 +75,8 @@ mainContent model =
                 , Grid.col [ Col.sm2 ]
                     [ Button.button
                         [ Button.warning
-                        , Button.attrs [ class "pull-right", onClick ShowSummary ]
+                        , Button.onClick ShowSummary
+                        , Button.attrs [ class "pull-right" ]
                         ]
                         [ H.i [ class "fa fa-calendar" ] []
                         , text " Summary"
@@ -101,14 +104,13 @@ confirmModal model =
             |> Modal.body []
                 [ H.p [ class "lead" ] [ text cfg.text ] ]
             |> Modal.footer []
-                [ Button.button [ Button.secondary, Button.attrs [ onClick cfg.msgCancel ] ]
+                [ Button.button
+                    [ Button.secondary, Button.onClick cfg.msgCancel ]
                     [ text cfg.labelCancel ]
                 , Button.button
                     [ cfg.btnOk
-                    , Button.attrs
-                        [ onClick cfg.msgOk
-                        , A.style [ ( "min-width", "100px" ) ]
-                        ]
+                    , Button.onClick cfg.msgOk
+                    , Button.attrs [ A.style [ ( "min-width", "100px" ) ] ]
                     ]
                     [ text cfg.labelOk ]
                 ]
@@ -146,7 +148,7 @@ summaryModal model =
                 ]
             |> Modal.footer []
                 [ Button.button
-                    [ Button.primary, Button.attrs [ onClick HideSummary ] ]
+                    [ Button.primary, Button.onClick HideSummary ]
                     [ text "Done" ]
                 ]
             |> Modal.view model.summaryModalState
@@ -154,16 +156,31 @@ summaryModal model =
 
 orderingModal : Model -> Html Msg
 orderingModal model =
-    Modal.config OrderingModalMsg
-        |> Modal.h4 [ class "w-100 text-center" ] [ text "Sort Tasks" ]
-        |> Modal.body []
-            [ H.h4 [] [ text "TODO" ] ]
-        |> Modal.footer []
-            [ Button.button
-                [ Button.primary, Button.attrs [ onClick HideOrdering ] ]
-                [ text "Done" ]
-            ]
-        |> Modal.view model.orderingModalState
+    let
+        taskItem editor =
+            ListGroup.li
+                [ ListGroup.attrs [ class "justify-content-between" ] ]
+                [ text editor.task.label
+                , Badge.pill [] [ H.i [ class "fa fa-arrows SortHandle" ] [] ]
+                ]
+
+        taskList =
+            tasksForCurrentTaskPeriod model
+                |> List.map taskItem
+    in
+        Modal.config OrderingModalMsg
+            |> Modal.large
+            |> Modal.h4 [ class "w-100 text-center" ] [ text "Sort Tasks" ]
+            |> Modal.body []
+                [ H.p [] [ text "Re-order tasks and press 'Save'." ]
+                , ListGroup.ul taskList
+                ]
+            |> Modal.footer []
+                [ Button.button
+                    [ Button.primary, Button.onClick HideOrdering ]
+                    [ text "Done" ]
+                ]
+            |> Modal.view model.orderingModalState
 
 
 newTaskForm : Model -> Html Msg
@@ -217,7 +234,7 @@ tasksCardView model =
                 editor.period == model.datePeriod || editor.period == Yesterday
 
         selectedTasks =
-            List.filter selectPeriod model.taskEditors
+            tasksForCurrentTaskPeriod model
     in
         Card.config [ Card.attrs [ class "mt-3" ] ]
             |> Card.header [] [ taskSelectionTabs model ]
@@ -248,7 +265,21 @@ taskSelectionTabs model =
                 [ Today, Tomorrow, Later ]
 
         theTabs =
-            tabPeriods |> List.map aTab
+            tabPeriods
+                |> List.map aTab
+                |> (::)
+                    (H.li
+                        [ class "nav-item SortButton" ]
+                        [ Button.button
+                            [ Button.secondary
+                            , Button.small
+                            , Button.onClick ShowOrdering
+                            ]
+                            [ H.i [ class "fa fa-sort" ] []
+                            , text " Sort"
+                            ]
+                        ]
+                    )
     in
         H.ul [ class "nav nav-tabs card-header-tabs" ] theTabs
 
