@@ -11,6 +11,9 @@ type CssClasses
     | BadgeCompleted
     | SortButton
     | SortHandle
+    | UnselectableTask
+    | HoveredUnselectableTask
+    | HoveredTask
 
 
 css : Stylesheet
@@ -42,4 +45,15 @@ css =
             ]
         , class SortHandle
             [ fontSize (px 16) ]
+        , class UnselectableTask
+            [ opacity (num 0.4) ]
+        , class HoveredUnselectableTask
+            [ backgroundColor (hex "f2dede")
+            , color (hex "a94442")
+            , opacity (num 0.4)
+            ]
+        , class HoveredTask
+            [ backgroundColor (hex "dff0d8")
+            , color (hex "3c763d")
+            ]
         ]

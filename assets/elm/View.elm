@@ -158,14 +158,48 @@ summaryModal model =
 orderingModal : Model -> Html Msg
 orderingModal model =
     let
+        dragged =
+            DragDrop.getDragId model.dragDrop
+
+        hovered =
+            DragDrop.getDropId model.dragDrop
+
         taskItem editor =
             let
                 attrs =
-                    List.concat
-                        [ [ class "justify-content-between" ]
-                        , DragDrop.draggable DragDropMsg editor
-                        , DragDrop.droppable DragDropMsg editor
-                        ]
+                    let
+                        _ =
+                            Debug.log "attrs"
+                                { label = editor.task.label
+                                , dragged =
+                                    dragged
+                                        |> Maybe.map .task
+                                        |> Maybe.map .label
+                                        |> Maybe.withDefault "-"
+                                , hovered =
+                                    hovered
+                                        |> Maybe.map .task
+                                        |> Maybe.map .label
+                                        |> Maybe.withDefault "-"
+                                }
+
+                        -- commonClass =
+                        --   if Just editor == dragged && dragged == hovered then
+                        --     "HoveredUnselectableTask"
+                    in
+                        List.concat
+                            [ [ class "justify-content-between" ]
+                            , DragDrop.draggable DragDropMsg editor
+                            , if Just editor == dragged && dragged == hovered then
+                                [ class "HoveredUnselectableTask" ]
+                              else if Just editor == dragged then
+                                [ class "UnselectableTask" ]
+                              else if Just editor == hovered then
+                                class "HoveredTask" :: (DragDrop.droppable DragDropMsg editor)
+                              else
+                                []
+                            , DragDrop.droppable DragDropMsg editor
+                            ]
             in
                 ListGroup.li [ ListGroup.attrs attrs ]
                     [ text editor.task.label

@@ -277,16 +277,18 @@ update msg model =
 
         DragDropMsg msg_ ->
             let
-                ( model_, result ) =
+                ( dragDropModel, result ) =
                     DragDrop.update msg_ model.dragDrop
 
                 _ =
-                    Debug.log "result" result
+                    case result of
+                        Just ( dragged, dropped ) ->
+                            Debug.log "(dragged, dropped)" ( dragged.task.label, dropped.task.label )
+
+                        Nothing ->
+                            ( "nope", "nope" )
             in
-                { model
-                    | dragDrop = model_
-                }
-                    ! []
+                { model | dragDrop = dragDropModel } ! []
 
 
 updateModelForTime : Time -> Model -> Model
