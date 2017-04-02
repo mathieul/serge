@@ -167,39 +167,31 @@ orderingModal model =
         taskItem editor =
             let
                 attrs =
-                    let
-                        _ =
-                            Debug.log "attrs"
-                                { label = editor.task.label
-                                , dragged =
-                                    dragged
-                                        |> Maybe.map .task
-                                        |> Maybe.map .label
-                                        |> Maybe.withDefault "-"
-                                , hovered =
-                                    hovered
-                                        |> Maybe.map .task
-                                        |> Maybe.map .label
-                                        |> Maybe.withDefault "-"
-                                }
-                    in
-                        List.concat
-                            [ [ class "justify-content-between" ]
-                            , DragDrop.draggable DragDropMsg editor
-                            , if Just editor == dragged && dragged == hovered then
-                                [ class "HoveredUnselectableTask" ]
-                              else if Just editor == dragged then
-                                [ class "UnselectableTask" ]
-                              else if Just editor == hovered then
-                                class "HoveredTask" :: (DragDrop.droppable DragDropMsg editor)
-                              else
-                                []
-                            , DragDrop.droppable DragDropMsg editor
-                            ]
+                    List.concat
+                        [ [ class "justify-content-start" ]
+                        , DragDrop.draggable DragDropMsg editor
+                        , if Just editor == dragged && dragged == hovered then
+                            [ class "HoveredUnselectableTask" ]
+                          else if Just editor == dragged then
+                            [ class "UnselectableTask" ]
+                          else if Just editor == hovered then
+                            class "HoveredTask" :: (DragDrop.droppable DragDropMsg editor)
+                          else
+                            []
+                        , DragDrop.droppable DragDropMsg editor
+                        ]
             in
                 ListGroup.li [ ListGroup.attrs attrs ]
-                    [ text editor.task.label
-                    , Badge.pill [] [ H.i [ class "fa fa-arrows SortHandle" ] [] ]
+                    [ H.span
+                        [ A.style
+                            [ ( "display", "inline-block" )
+                            , ( "width", "75px" )
+                            ]
+                        , class "badge badge-success mr-3"
+                        ]
+                        [ text <| datePeriodLabel editor.period ]
+                    , text editor.task.label
+                    , Badge.pill [ class "ml-auto" ] [ H.i [ class "fa fa-arrows SortHandle" ] [] ]
                     ]
 
         taskList =
@@ -214,7 +206,7 @@ orderingModal model =
                     [ text "Drag and drop tasks to re-order them and press 'Save' when done." ]
                 , ListGroup.ul taskList
                 ]
-            |> Modal.footer []
+            |> Modal.footer [ class "mt-3" ]
                 [ Button.button
                     [ Button.primary, Button.onClick HideOrdering ]
                     [ text "Save" ]

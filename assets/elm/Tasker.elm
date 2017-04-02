@@ -272,7 +272,7 @@ update msg model =
         ShowOrdering ->
             { model
                 | orderingModalState = Modal.visibleState
-                , reOrdered = tasksForCurrentTaskPeriod model
+                , reOrdered = model.taskEditors
             }
                 ! []
 
