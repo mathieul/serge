@@ -272,7 +272,7 @@ update msg model =
         ShowOrdering ->
             { model
                 | orderingModalState = Modal.visibleState
-                , reOrdered = List.filter (\editor -> not editor.task.completed) model.taskEditors
+                , reOrdered = List.filter (.task >> .completed >> not) model.taskEditors
             }
                 ! []
 
