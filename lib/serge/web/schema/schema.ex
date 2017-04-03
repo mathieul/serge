@@ -3,7 +3,9 @@ defmodule Serge.Web.Schema do
 
   alias Serge.Web.Resolvers
 
-  import_types Serge.Web.Schema.Types
+  import_types Serge.Web.Schema.CommonTypes
+  import_types Serge.Web.Schema.UserTypes
+  import_types Serge.Web.Schema.TaskTypes
 
   query do
     field :task, :task do

@@ -34,6 +34,19 @@ defmodule Serge.Tasking do
   end
 
   @doc """
+  Gets a single task for user.
+  """
+  def get_task(id, user_id: user_id)  do
+    scope = Task.for_user_id(user_id)
+    case Repo.get(scope, id) do
+      nil ->
+        nil
+      task ->
+        Task.infer_completed(task)
+    end
+  end
+
+  @doc """
   Guess what the previous day of work was.
   """
   def previous_work_day do

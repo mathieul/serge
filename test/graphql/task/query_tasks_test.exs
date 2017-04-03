@@ -1,4 +1,4 @@
-defmodule Serge.QueryTaskTest do
+defmodule Serge.Task.QueryTasksTest do
   use ExUnit.Case, async: true
   import Serge.Factory
   alias Serge.DateHelpers, as: DH
