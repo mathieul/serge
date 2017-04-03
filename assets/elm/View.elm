@@ -168,8 +168,7 @@ orderingModal model =
             let
                 attrs =
                     List.concat
-                        [ [ class "justify-content-start" ]
-                        , DragDrop.draggable DragDropMsg editor
+                        [ DragDrop.draggable DragDropMsg editor
                         , if Just editor == dragged && dragged == hovered then
                             [ class "HoveredUnselectableTask" ]
                           else if Just editor == dragged then
@@ -177,26 +176,23 @@ orderingModal model =
                           else if Just editor == hovered then
                             class "HoveredTask" :: (DragDrop.droppable DragDropMsg editor)
                           else
-                            []
-                        , DragDrop.droppable DragDropMsg editor
+                            DragDrop.droppable DragDropMsg editor
+                        , [ class "justify-content-start" ]
                         ]
+
+                ( periodLabel, periodBadge ) =
+                    datePeriodConfig editor.period
             in
                 ListGroup.li [ ListGroup.attrs attrs ]
                     [ H.span
-                        [ A.style
-                            [ ( "display", "inline-block" )
-                            , ( "width", "75px" )
-                            ]
-                        , class "badge badge-success mr-3"
-                        ]
-                        [ text <| datePeriodLabel editor.period ]
-                    , text editor.task.label
+                        [ class <| "PeriodBadge badge mr-3 " ++ periodBadge ]
+                        [ text periodLabel ]
+                    , text <| editor.task.label ++ "(" ++ (toString editor.task.completedOn) ++ ")"
                     , Badge.pill [ class "ml-auto" ] [ H.i [ class "fa fa-arrows SortHandle" ] [] ]
                     ]
 
         taskList =
-            tasksForCurrentTaskPeriod model
-                |> List.map taskItem
+            List.map taskItem model.reOrdered
     in
         Modal.config OrderingModalMsg
             |> Modal.large
@@ -309,20 +305,25 @@ taskSelectionTabs model =
         H.ul [ class "nav nav-tabs card-header-tabs" ] theTabs
 
 
-datePeriodLabel : DatePeriod -> String
-datePeriodLabel datePeriod =
+datePeriodConfig : DatePeriod -> ( String, String )
+datePeriodConfig datePeriod =
     case datePeriod of
         Yesterday ->
-            "Yesterday"
+            ( "Yesterday", "badge-warning" )
 
         Today ->
-            "Today"
+            ( "Today", "badge-success" )
 
         Tomorrow ->
-            "Tomorrow"
+            ( "Tomorrow", "badge-info" )
 
         Later ->
-            "Later"
+            ( "Later", "badge-default" )
+
+
+datePeriodLabel : DatePeriod -> String
+datePeriodLabel datePeriod =
+    datePeriodConfig datePeriod |> Tuple.first
 
 
 taskList : Model -> List TaskEditor -> Html Msg

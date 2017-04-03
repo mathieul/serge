@@ -272,13 +272,16 @@ update msg model =
         ShowOrdering ->
             { model
                 | orderingModalState = Modal.visibleState
-                , reOrdered = model.taskEditors
+                , reOrdered = List.filter (\editor -> not editor.task.completed) model.taskEditors
             }
                 ! []
 
         HideOrdering ->
             { model
-                | orderingModalState = Modal.hiddenState
+                | orderingModalState =
+                    Modal.hiddenState
+                    -- replace re-ordered slice of updatedTasks within mocel.taskEditors
+                , taskEditors = model.taskEditors
                 , reOrdered = []
             }
                 ! []
@@ -288,25 +291,16 @@ update msg model =
                 ( dragDropModel, result ) =
                     DragDrop.update msg_ model.dragDrop
 
-                updatedTasks =
-                    model.reOrdered
-
-                _ =
+                newModel =
                     case result of
                         Just ( dragged, dropped ) ->
-                            Debug.log "(dragged, dropped)" ( dragged.task.label, dropped.task.label )
+                            -- re-order the task dropped
+                            { model | reOrdered = model.reOrdered }
 
                         Nothing ->
-                            ( "nope", "nope" )
+                            model
             in
-                { model
-                    | dragDrop = dragDropModel
-                    , taskEditors =
-                        model.taskEditors
-                        -- replace reordred slice of updatedTasks within mocel.taskEditors
-                    , reOrdered = []
-                }
-                    ! []
+                { newModel | dragDrop = dragDropModel } ! []
 
 
 updateModelForTime : Time -> Model -> Model

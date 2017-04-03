@@ -14,6 +14,7 @@ type CssClasses
     | UnselectableTask
     | HoveredUnselectableTask
     | HoveredTask
+    | PeriodBadge
 
 
 css : Stylesheet
@@ -55,5 +56,9 @@ css =
         , class HoveredTask
             [ backgroundColor (hex "dff0d8")
             , color (hex "3c763d")
+            ]
+        , class PeriodBadge
+            [ display inlineBlock
+            , width (px 75)
             ]
         ]
