@@ -19,7 +19,10 @@ defmodule Serge.Tasking do
   @doc """
   Gets a single task and raise Ecto.NoResultsError if not found.
   """
-  def get_task!(id), do: Repo.get!(Task, id)
+  def get_task!(id) do
+    Repo.get!(Task, id)
+    |> Task.infer_completed
+  end
 
   @doc """
   Gets a single task.
@@ -37,7 +40,7 @@ defmodule Serge.Tasking do
   Gets a single task for user.
   """
   def get_task(id, user_id: user_id)  do
-    scope = Task.for_user_id(user_id)
+    scope = Task.for_user_id(Task, user_id)
     case Repo.get(scope, id) do
       nil ->
         nil

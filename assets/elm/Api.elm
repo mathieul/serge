@@ -2,6 +2,7 @@ module Api
     exposing
         ( sendQueryRequest
         , sendMutationRequest
+        , fetchTaskRequest
         , fetchTasksRequest
         , createTaskRequest
         , updateTaskRequest
@@ -51,6 +52,30 @@ storyTask =
         |> B.with (B.field "completed" [] B.bool)
         |> B.with (B.field "completedOn" [] (B.nullable B.string))
         |> B.with (B.field "scheduledOn" [] B.string)
+
+
+
+-- FETCH TASK
+
+
+fetchTaskQuery : B.Document B.Query StoryTask { vars | id : String }
+fetchTaskQuery =
+    let
+        taskIDVar =
+            Var.required "id" .id Var.id
+
+        variables =
+            [ ( "id", Arg.variable taskIDVar ) ]
+    in
+        B.field "task" variables storyTask
+            |> B.extract
+            |> B.queryDocument
+
+
+fetchTaskRequest : String -> B.Request B.Query StoryTask
+fetchTaskRequest id =
+    fetchTaskQuery
+        |> B.request { id = id }
 
 
 

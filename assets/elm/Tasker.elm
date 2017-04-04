@@ -154,6 +154,16 @@ update msg model =
                 _ ->
                     createNewTask model
 
+        FetchTask (Ok task) ->
+            let
+                _ =
+                    Debug.log "FetchTask: " task
+            in
+                model ! []
+
+        FetchTask (Err error) ->
+            { model | message = MessageError <| graphQLErrorToMessage "Fetching task failed" error } ! []
+
         FetchTasks (Ok tasks) ->
             { model
                 | taskEditors = List.map (taskToEditor model.context) tasks
@@ -273,7 +283,8 @@ update msg model =
             { model
                 | orderingModalState =
                     Modal.visibleState
-                    -- , reOrdered = List.filter (.task >> .completed >> not) model.taskEditors
+
+                -- , reOrdered = List.filter (.task >> .completed >> not) model.taskEditors
                 , reOrdered = List.filter (not << .completed << .task) model.taskEditors
             }
                 ! []
@@ -282,7 +293,8 @@ update msg model =
             { model
                 | orderingModalState =
                     Modal.hiddenState
-                    -- replace re-ordered slice of updatedTasks within mocel.taskEditors
+
+                -- replace re-ordered slice of updatedTasks within mocel.taskEditors
                 , taskEditors = model.taskEditors
                 , reOrdered = []
             }

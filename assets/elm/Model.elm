@@ -117,6 +117,7 @@ type Msg
     | CreateTask (Result GraphQLClient.Error CreateTaskResponse)
     | UpdateTask (Result GraphQLClient.Error StoryTask)
     | DeleteTask (Result GraphQLClient.Error StoryTask)
+    | FetchTask (Result GraphQLClient.Error StoryTask)
     | ClearMessage
     | UpdateAppContext Time
     | SetTimeZone String
