@@ -9,8 +9,8 @@ defmodule Serge.GraphqlCase do
       use ExUnit.Case, unquote(opts)
       import ExUnit.Case
 
-      def run(document, schema, options \\ []) do
-        Absinthe.run(document, schema, options)
+      defp run(doc, user_id) do
+        Absinthe.run(doc, Serge.Web.Schema, context: %{current_user: %{id: user_id}})
       end
     end
   end

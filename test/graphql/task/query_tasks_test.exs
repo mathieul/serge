@@ -1,5 +1,5 @@
 defmodule Serge.Task.QueryTasksTest do
-  use ExUnit.Case, async: true
+  use Serge.GraphqlCase, async: true
   import Serge.Factory
   alias Serge.DateHelpers, as: DH
 
@@ -70,9 +70,5 @@ defmodule Serge.Task.QueryTasksTest do
 
   defp task_labels(result) do
     Enum.map(result["tasks"], fn %{"label" => label} -> label end)
-  end
-
-  defp run(doc, user_id) do
-    Absinthe.run(doc, Serge.Web.Schema, context: %{current_user: %{id: user_id}})
   end
 end

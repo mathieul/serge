@@ -1,5 +1,5 @@
 defmodule Serge.Task.QueryTaskTest do
-  use ExUnit.Case, async: true
+  use Serge.GraphqlCase, async: true
   import Serge.Factory
 
   setup do
@@ -36,9 +36,5 @@ defmodule Serge.Task.QueryTaskTest do
       assert result == %{"task" => nil}
       assert Enum.map(errors, &(&1.message)) == [~s{In field "task": Task id 42 not found}]
     end
-  end
-
-  defp run(doc, user_id) do
-    Absinthe.run(doc, Serge.Web.Schema, context: %{current_user: %{id: user_id}})
   end
 end
