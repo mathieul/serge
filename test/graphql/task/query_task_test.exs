@@ -23,8 +23,18 @@ defmodule Serge.Task.QueryTaskTest do
 
     test "it returns an error when it is theirs", ctx do
       doc = "query { task(id: #{ctx[:theirs].id}) { label } }"
-      {:ok, %{data: result}} = run(doc, ctx[:user].id)
+      {:ok, %{data: result, errors: errors}} = run(doc, ctx[:user].id)
       assert result == %{"task" => nil}
+      assert Enum.map(errors, &(&1.message)) == [~s{In field "task": Task id #{ctx[:theirs].id} not found}]
+    end
+  end
+
+  describe "when the task doesn't exist" do
+    test "it returns an error", ctx do
+      doc = "query { task(id: \"42\") { label } }"
+      {:ok, %{data: result, errors: errors}} = run(doc, ctx[:user].id)
+      assert result == %{"task" => nil}
+      assert Enum.map(errors, &(&1.message)) == [~s{In field "task": Task id 42 not found}]
     end
   end
 
