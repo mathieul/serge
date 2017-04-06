@@ -32,15 +32,15 @@ Serge is currently using the pre-release [`elm-graphql` package](https://github.
 
 ## Release ##
 
-Bump application version in `mix.exs` (i.e.: 0.0.5) and run as user `elixir`:
+Bump application version in `mix.exs` (i.e.: 0.4.0) and run as user `elixir`:
 
     $ cd dev/serge
     $ git pull
     $ mix deps.get && yarn && elm package install -y
     $ brunch build && mix do phoenix.digest, compile, release
-    $ cp -r rel/serge/releases/0.3.2/ /apps/serge/releases/
+    $ cp -r rel/serge/releases/0.4.0/ /apps/serge/releases/
     $ cd /apps/serge
-    $ ./bin/serge upgrade 0.3.2
+    $ ./bin/serge upgrade 0.4.0
 
 As user `root`:
 

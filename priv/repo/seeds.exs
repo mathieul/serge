@@ -10,79 +10,65 @@
 # We recommend using the bang functions (`insert!`, `update!`
 # and so on) as they will fail if something goes wrong.
 
-alias Serge.{Repo, Task, User, DateHelpers}
+alias Serge.{Tasking, Authentication, DateHelpers}
 
-user = Repo.one!(User.find_by_email("mathieu@caring.com"))
+user = Authentication.get_user_by_email!("mathieu@caring.com")
 
-Repo.delete_all(Task)
+Tasking.delete_all_tasks()
 
-%Task{}
-  |> Task.admin_changeset(%{
-        user_id: user.id,
-        label:   "scheduled 5 days ago completed 3 days ago",
-        position: 0,
-        scheduled_on: DateHelpers.days_ago(5),
-        completed_on: DateHelpers.days_ago(3)
-      })
-  |> Repo.insert!
+Tasking.seed_task(%{
+  user_id: user.id,
+  label:   "scheduled 5 days ago completed 3 days ago",
+  position: 0,
+  scheduled_on: DateHelpers.days_ago(5),
+  completed_on: DateHelpers.days_ago(3)
+})
 
-%Task{}
-  |> Task.admin_changeset(%{
-        user_id: user.id,
-        label:   "scheduled today completed 2 days ago",
-        position: 1,
-        scheduled_on: DateHelpers.today,
-        completed_on: DateHelpers.days_ago(2)
-      })
-  |> Repo.insert!
+Tasking.seed_task(%{
+  user_id: user.id,
+  label:   "scheduled today completed 2 days ago",
+  position: 1,
+  scheduled_on: DateHelpers.today,
+  completed_on: DateHelpers.days_ago(2)
+})
 
-%Task{}
-  |> Task.admin_changeset(%{
-        user_id: user.id,
-        label:   "scheduled 2 days ago",
-        position: 2,
-        scheduled_on: DateHelpers.days_ago(2),
-        completed_on: nil
-      })
-  |> Repo.insert!
+Tasking.seed_task(%{
+  user_id: user.id,
+  label:   "scheduled 2 days ago",
+  position: 2,
+  scheduled_on: DateHelpers.days_ago(2),
+  completed_on: nil
+})
 
-%Task{}
-  |> Task.admin_changeset(%{
-        user_id: user.id,
-        label:   "scheduled 1 day ago completed today",
-        position: 3,
-        scheduled_on: DateHelpers.days_ago(1),
-        completed_on: DateHelpers.today
-      })
-  |> Repo.insert!
+Tasking.seed_task(%{
+  user_id: user.id,
+  label:   "scheduled 1 day ago completed today",
+  position: 3,
+  scheduled_on: DateHelpers.days_ago(1),
+  completed_on: DateHelpers.today
+})
 
-%Task{}
-  |> Task.admin_changeset(%{
-        user_id: user.id,
-        label:   "scheduled today",
-        position: 4,
-        scheduled_on: DateHelpers.today,
-        completed_on: nil
-      })
-  |> Repo.insert!
+Tasking.seed_task(%{
+  user_id: user.id,
+  label:   "scheduled today",
+  position: 4,
+  scheduled_on: DateHelpers.today,
+  completed_on: nil
+})
 
 
-%Task{}
-  |> Task.admin_changeset(%{
-        user_id: user.id,
-        label:   "scheduled tomorrow",
-        position: 5,
-        scheduled_on: DateHelpers.days_from_now(1),
-        completed_on: nil
-      })
-  |> Repo.insert!
+Tasking.seed_task(%{
+  user_id: user.id,
+  label:   "scheduled tomorrow",
+  position: 5,
+  scheduled_on: DateHelpers.days_from_now(1),
+  completed_on: nil
+})
 
-%Task{}
-  |> Task.admin_changeset(%{
-        user_id: user.id,
-        label:   "scheduled 7 days from now",
-        position: 6,
-        scheduled_on: DateHelpers.days_from_now(7),
-        completed_on: nil
-      })
-  |> Repo.insert!
+Tasking.seed_task(%{
+  user_id: user.id,
+  label:   "scheduled 7 days from now",
+  position: 6,
+  scheduled_on: DateHelpers.days_from_now(7),
+  completed_on: nil
+})

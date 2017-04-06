@@ -1,4 +1,4 @@
-defmodule Serge do
+defmodule Serge.Application do
   use Application
 
   # See http://elixir-lang.org/docs/stable/elixir/Application.html
