@@ -51,7 +51,7 @@ menu model =
         |> Navbar.customItems
             [ Navbar.textItem
                 [ class "pull-right mr-3" ]
-                [ text model.context.today ]
+                [ text <| formatShortDate model.context.today ]
             , Navbar.customItem
                 (H.span
                     [ class "pull-right " ]
@@ -129,6 +129,9 @@ summaryModal model =
 
         summaryTaskView editor =
             H.li [] [ text editor.task.label ]
+
+        shortYesterday =
+            formatShortDate <| earliestYesterday completedTasks
     in
         Modal.config SummaryModalMsg
             |> Modal.h4 [ class "w-100 text-center" ] [ text "Scrum Summary" ]
@@ -137,7 +140,7 @@ summaryModal model =
                     [ H.h6 [ class "text-center mb-3" ]
                         [ text "Yesterday"
                         , H.small [ class "ml-1 text-muted" ]
-                            [ text <| "(" ++ (earliestYesterday completedTasks) ++ ")" ]
+                            [ text <| "(" ++ shortYesterday ++ ")" ]
                         ]
                     , H.ul [] (List.map summaryTaskView completedTasks)
                     ]
@@ -288,19 +291,21 @@ taskSelectionTabs model =
         theTabs =
             tabPeriods
                 |> List.map aTab
-                |> (::)
-                    (H.li
-                        [ class "nav-item SortButton" ]
-                        [ Button.button
-                            [ Button.secondary
-                            , Button.small
-                            , Button.onClick ShowOrdering
-                            ]
-                            [ H.i [ class "fa fa-sort" ] []
-                            , text " Sort"
-                            ]
-                        ]
-                    )
+
+        -- VVVcommented out below to not show sort button VVV
+        -- |> (::)
+        --     (H.li
+        --         [ class "nav-item SortButton" ]
+        --         [ Button.button
+        --             [ Button.secondary
+        --             , Button.small
+        --             , Button.onClick ShowOrdering
+        --             ]
+        --             [ H.i [ class "fa fa-sort" ] []
+        --             , text " Sort"
+        --             ]
+        --         ]
+        --     )
     in
         H.ul [ class "nav nav-tabs card-header-tabs" ] theTabs
 
