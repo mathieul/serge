@@ -1,3 +1,5 @@
+import Elm from '../elm/Tasker'
+
 export default class TaskerInterface {
   constructor(config) {
     this.node = document.getElementById('elm-tasker')
