@@ -7,7 +7,13 @@ console.log( 'WEBPACK GO!');
 
 module.exports = {
   devtool: 'source-map',
-  entry: ['./elm/Stylesheets.elm', 'bootstrap-loader', './elm/Tasker.elm', './js/app.js'],
+  entry: [
+    './elm/Stylesheets.elm',
+    'font-awesome-webpack!./font-awesome.config.js',
+    'bootstrap-loader',
+    './elm/Tasker.elm',
+    './js/app.js'
+  ],
   output: {
     path: path.resolve(__dirname, '../priv/static'),
     filename: 'js/app.js',
@@ -54,8 +60,8 @@ module.exports = {
         loader:   'babel-loader',
       },
       { test: /bootstrap-loader\/dist\/js\/umd\//, loader: 'imports-loader' },
-      { test: /\.(woff2?|svg)$/, loader: 'url-loader?limit=10000' },
-      { test: /\.(ttf|eot)$/, loader: 'file-loader' },
+      { test: /\.woff(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/, loader: "url-loader?limit=10000&mimetype=application/font-woff" },
+      { test: /\.(ttf|eot|svg)(\?v=[0-9]\.[0-9]\.[0-9])?$/, loader: "file-loader" }
     ],
   }
 }
