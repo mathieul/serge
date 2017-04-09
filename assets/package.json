@@ -3,7 +3,7 @@
   "license": "MIT",
   "scripts": {
     "deploy": "webpack -p",
-    "watch": "webpack --watch-stdin --progress --color"
+    "watch": "webpack --watch-stdin"
   },
   "dependencies": {
     "phoenix": "file:../deps/phoenix",
@@ -19,6 +19,8 @@
     "copy-webpack-plugin": "^4.0.1",
     "css-loader": "^0.28.0",
     "elm": "^0.18.0",
+    "elm-css": "^0.6.0",
+    "elm-css-webpack-loader": "^3.1.0",
     "elm-hot-loader": "^0.5.4",
     "elm-webpack-loader": "^4.3.0",
     "exports-loader": "^0.6.4",
