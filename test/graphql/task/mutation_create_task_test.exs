@@ -6,13 +6,11 @@ defmodule Serge.Task.MutationCreateTaskTest do
       mutation (
         $tid: String!,
         $label: String!,
-        $position: Int!,
         $scheduledOn: String!
       ) {
         createTask(
           tid: $tid,
           label: $label,
-          position: $position,
           scheduledOn: $scheduledOn
           ) {
           tid
@@ -21,7 +19,6 @@ defmodule Serge.Task.MutationCreateTaskTest do
             label
             rank
             scheduledOn
-            completed
             completedOn
           }
         }
@@ -35,7 +32,6 @@ defmodule Serge.Task.MutationCreateTaskTest do
       variables: %{
         "tid" => "tmp42",
         "label" => "that thing to do",
-        "position" => 1,
         "scheduledOn" => "2017-03-09"
       }
     ]
@@ -47,7 +43,6 @@ defmodule Serge.Task.MutationCreateTaskTest do
       assert get_in(result, ["createTask", "tid"]) == "tmp42"
       assert get_in(result, ["createTask", "task", "label"]) == "that thing to do"
       assert get_in(result, ["createTask", "task", "scheduledOn"]) == "2017-03-09"
-      assert get_in(result, ["createTask", "task", "completed"]) == false
       assert get_in(result, ["createTask", "task", "completedOn"]) == nil
     end
   end
@@ -65,20 +60,6 @@ defmodule Serge.Task.MutationCreateTaskTest do
 
       {:ok, %{errors: errors}} = run(@document, ctx[:user].id, variables)
       assert Enum.all?(errors, &(Regex.match?(~r/^In argument "label"/, &1.message)))
-    end
-
-    test "it returns an error if position is missing", ctx do
-      variables = Map.drop(ctx[:variables], ["position"])
-
-      {:ok, %{errors: errors}} = run(@document, ctx[:user].id, variables)
-      assert Enum.all?(errors, &(Regex.match?(~r/^In argument "position"/, &1.message)))
-    end
-
-    test "it returns an error if scheduledOn is missing", ctx do
-      variables = Map.drop(ctx[:variables], ["scheduledOn"])
-
-      {:ok, %{errors: errors}} = run(@document, ctx[:user].id, variables)
-      assert Enum.all?(errors, &(Regex.match?(~r/^In argument "scheduledOn"/, &1.message)))
     end
   end
 end

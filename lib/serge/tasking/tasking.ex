@@ -21,19 +21,13 @@ defmodule Serge.Tasking do
   """
   def get_task!(id) do
     Repo.get!(Task, id)
-    |> Task.infer_completed
   end
 
   @doc """
   Gets a single task.
   """
   def get_task(id) do
-    case Repo.get(Task, id) do
-      nil ->
-        nil
-      task ->
-        Task.infer_completed(task)
-    end
+    Repo.get(Task, id)
   end
 
   @doc """
@@ -41,12 +35,7 @@ defmodule Serge.Tasking do
   """
   def get_task(id, user_id: user_id)  do
     scope = Task.for_user_id(Task, user_id)
-    case Repo.get(scope, id) do
-      nil ->
-        nil
-      task ->
-        Task.infer_completed(task)
-    end
+    Repo.get(scope, id)
   end
 
   @doc """
@@ -65,7 +54,6 @@ defmodule Serge.Tasking do
     |> Task.ordered_by_schedule_and_rank()
     |> Repo.all()
     |> Repo.preload(:user)
-    |> Enum.map(&Task.infer_completed/1)
   end
 
   @doc """
@@ -83,7 +71,6 @@ defmodule Serge.Tasking do
     %Task{}
     |> task_changeset(attrs)
     |> Repo.insert()
-    |> infer_task_if_ok
   end
 
   @doc """
@@ -102,7 +89,6 @@ defmodule Serge.Tasking do
     task
     |> task_changeset(attrs)
     |> Repo.update()
-    |> infer_task_if_ok
   end
 
   @doc """
@@ -118,7 +104,6 @@ defmodule Serge.Tasking do
   """
   def delete_task(%Task{} = task) do
     Repo.delete(task)
-    |> infer_task_if_ok
   end
 
   @doc """
@@ -142,23 +127,16 @@ defmodule Serge.Tasking do
     task_changeset(task, %{})
   end
 
-  defp infer_task_if_ok(result) do
-    with {:ok, task} <- result, do: {:ok, Task.infer_completed(task)}
-  end
-
   defp task_changeset(%Task{} = task, attrs) do
     task
-    |> cast(attrs, [:label, :completed, :scheduled_on, :position, :user_id])
-    |> Task.ordered
-    |> Task.update_completed_on
-    |> validate_required([:label, :scheduled_on, :user_id])
+    |> cast(attrs, [:label, :rank, :scheduled_on, :user_id])
+    |> validate_required([:label, :rank, :user_id])
     |> assoc_constraint(:user)
   end
 
   defp task_seed_changeset(%Task{} = task, attrs) do
     task
-    |> cast(attrs, [:label, :completed_on, :scheduled_on, :position, :user_id])
-    |> Task.ordered
-    |> validate_required([:label, :scheduled_on, :user_id])
+    |> cast(attrs, [:label, :rank, :completed_on, :scheduled_on, :user_id])
+    |> validate_required([:label, :rank, :user_id])
   end
 end

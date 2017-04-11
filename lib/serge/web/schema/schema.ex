@@ -25,8 +25,7 @@ defmodule Serge.Web.Schema do
     field :create_task, :create_task_response do
       arg :tid, non_null(:string)
       arg :label, non_null(:string)
-      arg :position, non_null(:integer)
-      arg :scheduled_on, non_null(:string)
+      arg :scheduled_on, :string
 
       resolve &Resolvers.Task.create/3
     end
@@ -34,7 +33,7 @@ defmodule Serge.Web.Schema do
     field :update_task, :task do
       arg :id, non_null(:id)
       arg :scheduled_on, :string
-      arg :completed, :boolean
+      arg :completed_on, :string
       arg :label, :string
 
       resolve &Resolvers.Task.update/3

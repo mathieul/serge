@@ -2,53 +2,18 @@ defmodule Serge.Tasking.Task do
   use Ecto.Schema
 
   import Ecto.Query
-  import Ecto.Changeset
-  import EctoOrdered
 
   alias Serge.DateHelpers
 
   schema "tasks" do
     field :label,         :string
-    field :position,      :integer, virtual: true
-    field :rank,          :integer
-    field :completed,     :boolean, virtual: true
+    field :rank,          :integer, default: 0
     field :completed_on,  Ecto.Date
     field :scheduled_on,  Ecto.Date
 
     belongs_to :user, Serge.Authentication.User
 
     timestamps()
-  end
-
-  def ordered(changeset) do
-    set_order(changeset, :position, :rank, :user_id)
-  end
-
-  def update_completed_on(changeset) do
-    completed_on = get_field(changeset, :completed_on)
-    case get_field(changeset, :completed) do
-      true ->
-        if completed_on == nil do
-           put_change(changeset, :completed_on, DateHelpers.today())
-         else
-           changeset
-        end
-
-      false ->
-        if completed_on do
-          put_change(changeset, :completed_on, nil)
-        else
-          changeset
-        end
-
-      _ ->
-        changeset
-    end
-  end
-
-  def infer_completed(task) do
-    task
-    |> Map.put(:completed, !!task.completed_on)
   end
 
   ###
