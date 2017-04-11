@@ -9,8 +9,6 @@ module.exports = {
   devtool: 'source-map',
   entry: [
     './elm/Stylesheets.elm',
-    'font-awesome-webpack!./font-awesome.config.js',
-    'bootstrap-loader',
     './elm/Tasker.elm',
     './js/app.js'
   ],
@@ -31,13 +29,12 @@ module.exports = {
   },
   plugins: [
     new CopyWebpackPlugin([{ from: './static/', to: '../static/' }]),
-    new ExtractTextPlugin({ filename: 'css/app.css', allChunks: true }),
+    new ExtractTextPlugin({ filename: 'app.css', allChunks: true }),
   ],
   module: {
-    // noParse: [/.elm$/],
-    loaders: [
+    rules: [
       {
-        test:    /\.elm$/,
+        test: /\.elm$/,
         exclude: [/elm-stuff/, /node_modules/, /Stylesheets\.elm$/],
         use: [
           'elm-hot-loader',
@@ -55,13 +52,33 @@ module.exports = {
         })
       },
       {
-        test:     /\.js$/,
-        exclude:  [/node_modules/],
-        loader:   'babel-loader',
+        test:    /\.js$/,
+        exclude: [/node_modules/],
+        loader:  'babel-loader',
       },
-      { test: /bootstrap-loader\/dist\/js\/umd\//, loader: 'imports-loader' },
-      { test: /\.woff(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/, loader: "url-loader?limit=10000&mimetype=application/font-woff" },
-      { test: /\.(ttf|eot|svg)(\?v=[0-9]\.[0-9]\.[0-9])?$/, loader: "file-loader" }
+      {
+        test: /\.css$/,
+        use: ExtractTextPlugin.extract({ use: 'css-loader' }),
+      },
+      {
+        test: /\.(png|jpg|gif)$/,
+        loader: 'url-loader',
+        options: {
+          limit: 10000
+        },
+      },
+      {
+        test: /\.woff(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/,
+        loader: 'url-loader',
+        options: {
+          limit: 10000,
+          mimetype: 'application/font-woff'
+        },
+      },
+      {
+        test: /\.(ttf|eot|svg)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
+        use: "file-loader"
+      },
     ],
   }
 }
