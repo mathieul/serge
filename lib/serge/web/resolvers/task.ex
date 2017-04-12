@@ -32,8 +32,8 @@ defmodule Serge.Web.Resolvers.Task do
     end
   end
 
-  def update(_parent, attributes, _info) do
-    case Tasking.update_task_by_id(attributes) do
+  def update(_parent, attributes, %{context: ctx}) do
+    case Tasking.update_task_by_id(attributes, user_id: ctx.current_user.id) do
       { :error, changeset } ->
         { :error, format_changeset_errors(changeset) }
       ok ->
@@ -41,8 +41,8 @@ defmodule Serge.Web.Resolvers.Task do
     end
   end
 
-  def delete(_parent, %{id: id}, _context) do
-    case Tasking.delete_task(id) do
+  def delete(_parent, %{id: id}, %{context: ctx}) do
+    case Tasking.delete_task(id, user_id: ctx.current_user.id) do
       { :error, message } ->
         { :error, [message] }
       ok ->

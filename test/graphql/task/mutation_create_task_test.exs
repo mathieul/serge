@@ -79,4 +79,9 @@ defmodule Serge.Task.MutationCreateTaskTest do
       assert Enum.all?(errors, &(Regex.match?(~r/scheduled_on is invalid/, &1.message)))
     end
   end
+
+  describe "task order" do
+    test "it sets the rank to 0 when no other task scheduled for the name day"
+    test "it sets the rank as following the last task scheduled for the name day"
+  end
 end

@@ -94,9 +94,14 @@ defmodule Serge.Tasking do
   @doc """
   Updates a task from a task id.
   """
-  def update_task_by_id(%{id: id} = attrs) do
-    task = get_task!(id)
-    update_task(task, attrs)
+  def update_task_by_id(%{id: id} = attrs, user_id: user_id) do
+    case get_task(id, user_id: user_id) do
+      nil ->
+        changeset = change_task(%Task{})
+        { :error, add_error(changeset, :task, "doesn't exist") }
+      task ->
+        update_task(task, attrs)
+    end
   end
 
   @doc """
@@ -109,8 +114,8 @@ defmodule Serge.Tasking do
   @doc """
   Deletes a Task from its id.
   """
-  def delete_task(id) when is_binary(id) or is_integer(id)  do
-    case get_task(id) do
+  def delete_task(id, user_id: user_id) when is_binary(id) or is_integer(id)  do
+    case get_task(id, user_id: user_id) do
       nil ->
         { :error, "Task doesn't exist" }
       task ->

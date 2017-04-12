@@ -83,4 +83,23 @@ defmodule Serge.Task.MutationUpdateTaskTest do
       assert Enum.all?(errors, &(Regex.match?(~r/completed_on is invalid/, &1.message)))
     end
   end
+
+  describe "when the task is not found" do
+    test "it returns an error if the task doesn't exist", ctx do
+      {:ok, %{errors: errors}} = run(@document, ctx[:user].id, %{"id" => "0", "label" => "Trying"})
+      assert Enum.any?(errors, &(Regex.match?(~r/task doesn't exist/, &1.message)))
+    end
+
+    test "it returns an error if the task belongs to another user", ctx do
+      other_task = insert(:task, user: insert(:user))
+      {:ok, %{errors: errors}} = run(@document, ctx[:user].id, %{"id" => other_task.id, "label" => "Trying"})
+      assert Enum.any?(errors, &(Regex.match?(~r/task doesn't exist/, &1.message)))
+    end
+  end
+
+  describe "changing task order" do
+    test "it can order a task before another task scheduled for the same day"
+    test "it can order a task after another task scheduled for the same day"
+    test "it sets the rank as following the last task scheduled for day scheduled_on is changed to"
+  end
 end

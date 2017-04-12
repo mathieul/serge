@@ -34,4 +34,10 @@ defmodule Serge.Task.MutationDeleteTaskTest do
     {:ok, %{errors: errors}} = run(@document, ctx[:user].id, %{"id" => "0"})
     assert Enum.all?(errors, &(Regex.match?(~r/Task doesn't exist/, &1.message)))
   end
+
+  test "it returns an error if the task doesn't belong to the user", ctx do
+    other_task = insert(:task, user: insert(:user))
+    {:ok, %{errors: errors}} = run(@document, ctx[:user].id, %{"id" => other_task.id})
+    assert Enum.all?(errors, &(Regex.match?(~r/Task doesn't exist/, &1.message)))
+  end
 end
