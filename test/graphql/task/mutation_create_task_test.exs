@@ -81,7 +81,15 @@ defmodule Serge.Task.MutationCreateTaskTest do
   end
 
   describe "task order" do
-    test "it sets the rank to 0 when no other task scheduled for the name day"
-    test "it sets the rank as following the last task scheduled for the name day"
+    test "it sets the rank to 0 when no other task scheduled for the name day", ctx do
+      {:ok, %{data: result}} = run(@document, ctx[:user].id, ctx[:variables])
+      assert get_in(result, ["createTask", "task", "rank"]) == 0
+    end
+
+    test "it sets the rank as following the last task scheduled for the name day", ctx do
+      insert(:task, user: ctx[:user], rank: 0, scheduled_on: ctx[:variables]["scheduledOn"])
+      {:ok, %{data: result}} = run(@document, ctx[:user].id, ctx[:variables])
+      assert get_in(result, ["createTask", "task", "rank"]) == 1073741824
+    end
   end
 end

@@ -33,7 +33,7 @@ defmodule Serge.Task.MutationUpdateTaskTest do
     user = insert(:user)
     [
       user: user,
-      task: insert(:task, user: user, label: "Old label", rank: 3, scheduled_on: "2017-01-11")
+      task: insert(:task, user: user, label: "Old label", scheduled_on: "2017-01-11")
     ]
   end
 
@@ -54,7 +54,7 @@ defmodule Serge.Task.MutationUpdateTaskTest do
 
     test "it can update the completed date", ctx do
       {:ok, %{data: result}} = run(@document, ctx[:user].id, %{"id" => ctx[:task].id, "completedOn" => "2017-12-31"})
-      assert get_in(result, ["updateTask", "rank"]) == 3
+      assert get_in(result, ["updateTask", "label"]) == "Old label"
       assert get_in(result, ["updateTask", "completedOn"]) == "2017-12-31"
       {:ok, %{data: result}} = run(@document, ctx[:user].id, %{"id" => ctx[:task].id, "uncomplete" => true})
       assert get_in(result, ["updateTask", "completedOn"]) == nil

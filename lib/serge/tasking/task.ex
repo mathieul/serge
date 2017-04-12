@@ -1,13 +1,11 @@
 defmodule Serge.Tasking.Task do
   use Ecto.Schema
-
   import Ecto.Query
-
   alias Serge.DateHelpers
 
   schema "tasks" do
     field :label,         :string
-    field :rank,          :integer, default: 0
+    field :rank,          :integer
     field :scheduled_on,  Ecto.Date
     field :unschedule,    :boolean, virtual: true
     field :completed_on,  Ecto.Date
@@ -39,5 +37,17 @@ defmodule Serge.Tasking.Task do
     from(t in scope,
       where: t.completed_on >= ^date,
       or_where: is_nil(t.completed_on) and t.scheduled_on >= ^date)
+  end
+
+  def last_for_user_and_scheduled_on(scope \\ __MODULE__, user_id, scheduled_on) do
+    selection = from(t in scope,
+      where: t.user_id == ^user_id,
+      order_by: [desc: :rank],
+      limit: 1)
+    if is_nil(scheduled_on) do
+      from(t in selection, where: is_nil(t.scheduled_on))
+    else
+      selection |> where(scheduled_on: ^scheduled_on)
+    end
   end
 end

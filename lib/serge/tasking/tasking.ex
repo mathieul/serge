@@ -1,4 +1,8 @@
 defmodule Serge.Tasking do
+  @min_rank (:math.pow(-2, 31) |> round) - 1
+  @default_rank 0
+  @max_rank :math.pow(2, 31) |> round
+
   @moduledoc """
   The boundary for the Tasking system.
   """
@@ -141,7 +145,6 @@ defmodule Serge.Tasking do
     task
     |> cast(attrs, [
       :label,
-      :rank,
       :scheduled_on,
       :unschedule,
       :completed_on,
@@ -150,6 +153,7 @@ defmodule Serge.Tasking do
     ])
     |> nillify_action(:unschedule, :scheduled_on)
     |> nillify_action(:uncomplete, :completed_on)
+    |> set_rank_if_not_set
     |> validate_required([:label, :rank, :user_id])
     |> assoc_constraint(:user)
   end
@@ -159,6 +163,35 @@ defmodule Serge.Tasking do
       put_change(changeset, field, nil)
     else
       changeset
+    end
+  end
+
+  defp set_rank_if_not_set(changeset) do
+    if is_nil(get_field(changeset, :user_id)) do
+      changeset
+    else
+      case get_field(changeset, :rank) do
+        nil ->
+          rank = rank_compared_to_last_task(changeset)
+          put_change(changeset, :rank, rank)
+        _ ->
+          changeset
+      end
+    end
+  end
+
+  defp rank_compared_to_last_task(changeset) do
+    scheduled_on = get_field(changeset, :scheduled_on)
+    user_id = get_field(changeset, :user_id)
+    result =
+      Task.last_for_user_and_scheduled_on(user_id, scheduled_on)
+      |> select([:rank])
+      |> Repo.one
+    case result do
+      task = %Task{} ->
+        (@max_rank - task.rank) / 2 |> round
+      _ ->
+        @default_rank
     end
   end
 
