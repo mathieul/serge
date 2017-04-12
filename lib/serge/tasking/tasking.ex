@@ -5,7 +5,7 @@ defmodule Serge.Tasking do
 
   import Ecto.{Query, Changeset}, warn: false
   alias Serge.Repo
-  alias Serge.DateHelpers
+  alias Serge.DateHelpers, as: DH
 
   alias Serge.Tasking.Task
 
@@ -42,7 +42,7 @@ defmodule Serge.Tasking do
   Guess what the previous day of work was.
   """
   def previous_work_day do
-    Repo.one(Task.previous_work_day) || DateHelpers.yesterday()
+    Repo.one(Task.previous_work_day) || DH.yesterday()
   end
 
   @doc """
@@ -129,9 +129,27 @@ defmodule Serge.Tasking do
 
   defp task_changeset(%Task{} = task, attrs) do
     task
-    |> cast(attrs, [:label, :rank, :scheduled_on, :completed_on, :user_id])
+    |> cast(attrs, [
+      :label,
+      :rank,
+      :scheduled_on,
+      :unschedule,
+      :completed_on,
+      :uncomplete,
+      :user_id
+    ])
+    |> nillify_action(:unschedule, :scheduled_on)
+    |> nillify_action(:uncomplete, :completed_on)
     |> validate_required([:label, :rank, :user_id])
     |> assoc_constraint(:user)
+  end
+
+  defp nillify_action(changeset, action, field) do
+    if get_change(changeset, action, false) do
+      put_change(changeset, field, nil)
+    else
+      changeset
+    end
   end
 
   defp task_seed_changeset(%Task{} = task, attrs) do

@@ -6,14 +6,18 @@ defmodule Serge.Task.MutationUpdateTaskTest do
       mutation (
         $id: ID!,
         $label: String,
-        $scheduledOn: String
-        $completedOn: String
+        $scheduledOn: String,
+        $unschedule: Boolean,
+        $completedOn: String,
+        $uncomplete: Boolean
       ) {
         updateTask(
           id: $id,
           label: $label,
-          scheduledOn: $scheduledOn
-          completedOn: $completedOn
+          scheduledOn: $scheduledOn,
+          unschedule: $unschedule,
+          completedOn: $completedOn,
+          uncomplete: $uncomplete
         ) {
           id
           label
@@ -44,7 +48,7 @@ defmodule Serge.Task.MutationUpdateTaskTest do
       {:ok, %{data: result}} = run(@document, ctx[:user].id, %{"id" => ctx[:task].id, "scheduledOn" => "2017-01-01"})
       assert get_in(result, ["updateTask", "label"]) == "Old label"
       assert get_in(result, ["updateTask", "scheduledOn"]) == "2017-01-01"
-      {:ok, %{data: result}} = run(@document, ctx[:user].id, %{"id" => ctx[:task].id, "scheduled" => false})
+      {:ok, %{data: result}} = run(@document, ctx[:user].id, %{"id" => ctx[:task].id, "unschedule" => true})
       assert get_in(result, ["updateTask", "scheduledOn"]) == nil
     end
 
@@ -52,7 +56,7 @@ defmodule Serge.Task.MutationUpdateTaskTest do
       {:ok, %{data: result}} = run(@document, ctx[:user].id, %{"id" => ctx[:task].id, "completedOn" => "2017-12-31"})
       assert get_in(result, ["updateTask", "rank"]) == 3
       assert get_in(result, ["updateTask", "completedOn"]) == "2017-12-31"
-      {:ok, %{data: result}} = run(@document, ctx[:user].id, %{"id" => ctx[:task].id, "completed" => false})
+      {:ok, %{data: result}} = run(@document, ctx[:user].id, %{"id" => ctx[:task].id, "uncomplete" => true})
       assert get_in(result, ["updateTask", "completedOn"]) == nil
     end
   end
@@ -66,17 +70,17 @@ defmodule Serge.Task.MutationUpdateTaskTest do
     test "it returns an error if scheduled date is invalid", ctx do
       {:ok, %{errors: errors}} = run(@document, ctx[:user].id, %{
         "id" => ctx[:task].id,
-        "scheduled_on" => "not-a-valid-date"
+        "scheduledOn" => "not-a-valid-date"
       })
-      assert Enum.all?(errors, &(Regex.match?(~r/^In argument "scheduled_on"/, &1.message)))
+      assert Enum.all?(errors, &(Regex.match?(~r/scheduled_on is invalid/, &1.message)))
     end
 
     test "it returns an error if completed date is invalid", ctx do
       {:ok, %{errors: errors}} = run(@document, ctx[:user].id, %{
         "id" => ctx[:task].id,
-        "completed_on" => "not-a-valid-date"
+        "completedOn" => "not-a-valid-date"
       })
-      assert Enum.all?(errors, &(Regex.match?(~r/^In argument "completed_on"/, &1.message)))
+      assert Enum.all?(errors, &(Regex.match?(~r/completed_on is invalid/, &1.message)))
     end
   end
 end

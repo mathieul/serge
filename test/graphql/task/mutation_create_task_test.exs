@@ -73,10 +73,10 @@ defmodule Serge.Task.MutationCreateTaskTest do
     end
 
     test "it returns an error if scheduled date is invalid", ctx do
-      variables = Map.put(ctx[:variables], "scheduled_on", "not-a-valid-date")
+      variables = Map.put(ctx[:variables], "scheduledOn", "not-a-valid-date")
 
       {:ok, %{errors: errors}} = run(@document, ctx[:user].id, variables)
-      assert Enum.all?(errors, &(Regex.match?(~r/^In argument "scheduled_on"/, &1.message)))
+      assert Enum.all?(errors, &(Regex.match?(~r/scheduled_on is invalid/, &1.message)))
     end
   end
 end

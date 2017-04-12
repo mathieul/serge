@@ -8,8 +8,10 @@ defmodule Serge.Tasking.Task do
   schema "tasks" do
     field :label,         :string
     field :rank,          :integer, default: 0
-    field :completed_on,  Ecto.Date
     field :scheduled_on,  Ecto.Date
+    field :unschedule,    :boolean, virtual: true
+    field :completed_on,  Ecto.Date
+    field :uncomplete,    :boolean, virtual: true
 
     belongs_to :user, Serge.Authentication.User
 

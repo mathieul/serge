@@ -34,7 +34,9 @@ defmodule Serge.Web.Schema do
       arg :id, non_null(:id)
       arg :label, :string
       arg :scheduled_on, :string
+      arg :unschedule, :boolean
       arg :completed_on, :string
+      arg :uncomplete, :boolean
 
       resolve &Resolvers.Task.update/3
     end
