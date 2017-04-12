@@ -110,7 +110,12 @@ defmodule Serge.Tasking do
   Deletes a Task from its id.
   """
   def delete_task(id) when is_binary(id) or is_integer(id)  do
-    get_task!(id) |> delete_task
+    case get_task(id) do
+      nil ->
+        { :error, "Task doesn't exist" }
+      task ->
+        delete_task(task)
+    end
   end
 
   @doc """

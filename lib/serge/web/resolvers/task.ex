@@ -43,8 +43,8 @@ defmodule Serge.Web.Resolvers.Task do
 
   def delete(_parent, %{id: id}, _context) do
     case Tasking.delete_task(id) do
-      { :error, changeset } ->
-        { :error, format_changeset_errors(changeset) }
+      { :error, message } ->
+        { :error, [message] }
       ok ->
         ok
     end
