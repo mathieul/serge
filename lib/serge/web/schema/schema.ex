@@ -32,9 +32,9 @@ defmodule Serge.Web.Schema do
 
     field :update_task, :task do
       arg :id, non_null(:id)
+      arg :label, :string
       arg :scheduled_on, :string
       arg :completed_on, :string
-      arg :label, :string
 
       resolve &Resolvers.Task.update/3
     end

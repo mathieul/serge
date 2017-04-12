@@ -12,7 +12,7 @@ defmodule Serge.Task.MutationCreateTaskTest do
           tid: $tid,
           label: $label,
           scheduledOn: $scheduledOn
-          ) {
+        ) {
           tid
           task {
             id
@@ -45,6 +45,16 @@ defmodule Serge.Task.MutationCreateTaskTest do
       assert get_in(result, ["createTask", "task", "scheduledOn"]) == "2017-03-09"
       assert get_in(result, ["createTask", "task", "completedOn"]) == nil
     end
+
+    test "it can create a task without a schedule date", ctx do
+      variables = Map.drop(ctx[:variables], ["scheduledOn"])
+
+      {:ok, %{data: result}} = run(@document, ctx[:user].id, variables)
+      assert get_in(result, ["createTask", "tid"]) == "tmp42"
+      assert get_in(result, ["createTask", "task", "label"]) == "that thing to do"
+      assert get_in(result, ["createTask", "task", "scheduledOn"]) == nil
+      assert get_in(result, ["createTask", "task", "completedOn"]) == nil
+    end
   end
 
   describe "with invalid attributes" do
@@ -60,6 +70,13 @@ defmodule Serge.Task.MutationCreateTaskTest do
 
       {:ok, %{errors: errors}} = run(@document, ctx[:user].id, variables)
       assert Enum.all?(errors, &(Regex.match?(~r/^In argument "label"/, &1.message)))
+    end
+
+    test "it returns an error if scheduled date is invalid", ctx do
+      variables = Map.put(ctx[:variables], "scheduled_on", "not-a-valid-date")
+
+      {:ok, %{errors: errors}} = run(@document, ctx[:user].id, variables)
+      assert Enum.all?(errors, &(Regex.match?(~r/^In argument "scheduled_on"/, &1.message)))
     end
   end
 end

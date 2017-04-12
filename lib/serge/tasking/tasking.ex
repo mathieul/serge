@@ -129,7 +129,7 @@ defmodule Serge.Tasking do
 
   defp task_changeset(%Task{} = task, attrs) do
     task
-    |> cast(attrs, [:label, :rank, :scheduled_on, :user_id])
+    |> cast(attrs, [:label, :rank, :scheduled_on, :completed_on, :user_id])
     |> validate_required([:label, :rank, :user_id])
     |> assoc_constraint(:user)
   end
