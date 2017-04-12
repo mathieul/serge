@@ -10,6 +10,8 @@ defmodule Serge.Task.MutationUpdateTaskTest do
         $unschedule: Boolean,
         $completedOn: String,
         $uncomplete: Boolean
+        $afterTaskId: ID,
+        $beforeTaskId: ID
       ) {
         updateTask(
           id: $id,
@@ -17,7 +19,9 @@ defmodule Serge.Task.MutationUpdateTaskTest do
           scheduledOn: $scheduledOn,
           unschedule: $unschedule,
           completedOn: $completedOn,
-          uncomplete: $uncomplete
+          uncomplete: $uncomplete,
+          afterTaskId: $afterTaskId,
+          beforeTaskId: $beforeTaskId
         ) {
           id
           label
@@ -44,12 +48,19 @@ defmodule Serge.Task.MutationUpdateTaskTest do
       assert get_in(result, ["updateTask", "label"]) == "New label"
     end
 
-    test "it can update the scheduled date", ctx do
+    test "it can update the scheduled date (no other task for that date)", ctx do
       {:ok, %{data: result}} = run(@document, ctx[:user].id, %{"id" => ctx[:task].id, "scheduledOn" => "2017-01-01"})
       assert get_in(result, ["updateTask", "label"]) == "Old label"
       assert get_in(result, ["updateTask", "scheduledOn"]) == "2017-01-01"
       {:ok, %{data: result}} = run(@document, ctx[:user].id, %{"id" => ctx[:task].id, "unschedule" => true})
       assert get_in(result, ["updateTask", "scheduledOn"]) == nil
+    end
+
+    test "it can update the scheduled date (at least one other task for that date)", ctx do
+      insert(:task, user: ctx[:user], rank: 0, scheduled_on: "2017-01-01")
+      {:ok, %{data: result}} = run(@document, ctx[:user].id, %{"id" => ctx[:task].id, "scheduledOn" => "2017-01-01"})
+      assert get_in(result, ["updateTask", "scheduledOn"]) == "2017-01-01"
+      assert get_in(result, ["updateTask", "rank"]) == 1073741824
     end
 
     test "it can update the completed date", ctx do
@@ -98,8 +109,46 @@ defmodule Serge.Task.MutationUpdateTaskTest do
   end
 
   describe "changing task order" do
-    test "it can order a task before another task scheduled for the same day"
-    test "it can order a task after another task scheduled for the same day"
-    test "it sets the rank as following the last task scheduled for day scheduled_on is changed to"
+    test "it can order a task before another task scheduled for the same day (other is first)", ctx do
+      other = insert(:task, user: ctx[:user], rank: 0, scheduled_on: "2017-01-01")
+      {:ok, %{data: result}} = run(@document, ctx[:user].id, %{
+        "id" => ctx[:task].id,
+        "scheduledOn" => "2017-01-01",
+        "beforeTaskId" => other.id
+      })
+      assert get_in(result, ["updateTask", "rank"]) == -1073741824
+    end
+
+    test "it can order a task before another task scheduled for the same day (other has more before)", ctx do
+      insert(:task, user: ctx[:user], rank: 0, scheduled_on: "2017-01-01")
+      other = insert(:task, user: ctx[:user], rank: 1073741824, scheduled_on: "2017-01-01")
+      {:ok, %{data: result}} = run(@document, ctx[:user].id, %{
+        "id" => ctx[:task].id,
+        "scheduledOn" => "2017-01-01",
+        "beforeTaskId" => other.id
+      })
+      assert get_in(result, ["updateTask", "rank"]) == 536870912
+    end
+
+    test "it can order a task after another task scheduled for the same day (other is last)", ctx do
+      other = insert(:task, user: ctx[:user], rank: 0, scheduled_on: "2017-01-01")
+      {:ok, %{data: result}} = run(@document, ctx[:user].id, %{
+        "id" => ctx[:task].id,
+        "scheduledOn" => "2017-01-01",
+        "afterTaskId" => other.id
+      })
+      assert get_in(result, ["updateTask", "rank"]) == 1073741824
+    end
+
+    test "it can order a task after another task scheduled for the same day (other has more after)", ctx do
+      other = insert(:task, user: ctx[:user], rank: 1073741824, scheduled_on: "2017-01-01")
+      insert(:task, user: ctx[:user], rank: 1610612736, scheduled_on: "2017-01-01")
+      {:ok, %{data: result}} = run(@document, ctx[:user].id, %{
+        "id" => ctx[:task].id,
+        "scheduledOn" => "2017-01-01",
+        "afterTaskId" => other.id
+      })
+      assert get_in(result, ["updateTask", "rank"]) == 1342177280
+    end
   end
 end
