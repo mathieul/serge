@@ -53,6 +53,16 @@ defmodule Serge.Tasking.Task do
     end
   end
 
+  def before_task(scope \\ __MODULE__, task) do
+    from(t in scope,
+      where: t.user_id == ^task.user_id,
+      where: t.scheduled_on == ^task.scheduled_on,
+      where: t.rank < ^task.rank,
+      order_by: [desc: :rank],
+      limit: 1
+    )
+  end
+
   def after_task(scope \\ __MODULE__, task) do
     from(t in scope,
       where: t.user_id == ^task.user_id,

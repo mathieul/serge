@@ -3,7 +3,7 @@ defmodule Serge.Tasking do
   The boundary for the Tasking system.
   """
 
-  import Ecto.{Query, Changeset, Multi}, warn: false
+  import Ecto.{Query, Changeset}, warn: false
   alias Serge.Repo
   alias Serge.DateHelpers, as: DH
 
@@ -149,7 +149,9 @@ defmodule Serge.Tasking do
       :unschedule,
       :completed_on,
       :uncomplete,
-      :user_id
+      :user_id,
+      :before_task_id,
+      :after_task_id
     ])
     |> nillify_action(:unschedule, :scheduled_on)
     |> nillify_action(:uncomplete, :completed_on)
@@ -211,7 +213,34 @@ defmodule Serge.Tasking do
       task_id ->
         # get rank for task and the previous one
         # set rank as half-way between those 2
+        case get_previous_task(task_id) do
+          {:ok, result} ->
+            rank = result.task.rank + case result.previous do
+              nil ->
+                round((result.task.rank - @min_rank) / 2)
+              previous ->
+                round((result.task.rank - previous.rank) / 2)
+            end
+            put_change(changeset, :rank, rank)
+          {:error, message} ->
+            changeset = change_task(%Task{})
+            {:error, add_error(changeset, :before_task_id, message)}
+        end
     end
+  end
+
+  defp get_previous_task(task_id) do
+    Ecto.Multi.new
+    |> Ecto.Multi.run(:task, fn _ -> {:ok, get_task(task_id)} end)
+    |> Ecto.Multi.run(:previous, fn %{task: task} ->
+      case task do
+        nil ->
+          {:error, nil}
+        _ ->
+          {:ok, Repo.one(Task.before_task(task))}
+      end
+    end)
+    |> Repo.transaction
   end
 
   defp process_after_task_id(changeset) do
@@ -226,7 +255,7 @@ defmodule Serge.Tasking do
               nil ->
                 round((@max_rank - result.task.rank) / 2)
               next ->
-                round((result.next.rank - result.task.rank) / 2)
+                round((next.rank - result.task.rank) / 2)
             end
             put_change(changeset, :rank, rank)
           {:error, message} ->
@@ -237,9 +266,9 @@ defmodule Serge.Tasking do
   end
 
   defp get_next_task(task_id) do
-    Multi.new
-    |> Multi.run(:task, fn _ -> {:ok, get_task(task_id)} end)
-    |> Multi.run(:next, fn %{task: task} ->
+    Ecto.Multi.new
+    |> Ecto.Multi.run(:task, fn _ -> {:ok, get_task(task_id)} end)
+    |> Ecto.Multi.run(:next, fn %{task: task} ->
       case task do
         nil ->
           {:error, nil}
