@@ -4,12 +4,14 @@ defmodule Serge.Tasking.Task do
   alias Serge.DateHelpers
 
   schema "tasks" do
-    field :label,         :string
-    field :rank,          :integer
-    field :scheduled_on,  Ecto.Date
-    field :unschedule,    :boolean, virtual: true
-    field :completed_on,  Ecto.Date
-    field :uncomplete,    :boolean, virtual: true
+    field :label,           :string
+    field :rank,            :integer
+    field :scheduled_on,    Ecto.Date
+    field :unschedule,      :boolean, virtual: true
+    field :completed_on,    Ecto.Date
+    field :uncomplete,      :boolean, virtual: true
+    field :before_task_id,  :string, virtual: true
+    field :after_task_id,   :string, virtual: true
 
     belongs_to :user, Serge.Authentication.User
 
@@ -49,5 +51,15 @@ defmodule Serge.Tasking.Task do
     else
       selection |> where(scheduled_on: ^scheduled_on)
     end
+  end
+
+  def after_task(scope \\ __MODULE__, task) do
+    from(t in scope,
+      where: t.user_id == ^task.user_id,
+      where: t.scheduled_on == ^task.scheduled_on,
+      where: t.rank > ^task.rank,
+      order_by: [asc: :rank],
+      limit: 1
+    )
   end
 end

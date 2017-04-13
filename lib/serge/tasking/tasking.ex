@@ -1,17 +1,17 @@
 defmodule Serge.Tasking do
-  @min_rank (:math.pow(-2, 31) |> round) - 1
-  @default_rank 0
-  @max_rank :math.pow(2, 31) |> round
-
   @moduledoc """
   The boundary for the Tasking system.
   """
 
-  import Ecto.{Query, Changeset}, warn: false
+  import Ecto.{Query, Changeset, Multi}, warn: false
   alias Serge.Repo
   alias Serge.DateHelpers, as: DH
 
   alias Serge.Tasking.Task
+
+  @min_rank (:math.pow(-2, 31) |> round) - 1
+  @default_rank 0
+  @max_rank :math.pow(2, 31) |> round
 
   @doc """
   Returns the list of Tasks.
@@ -154,8 +154,16 @@ defmodule Serge.Tasking do
     |> nillify_action(:unschedule, :scheduled_on)
     |> nillify_action(:uncomplete, :completed_on)
     |> set_rank_if_not_set
+    |> process_before_task_id
+    |> process_after_task_id
     |> validate_required([:label, :rank, :user_id])
     |> assoc_constraint(:user)
+  end
+
+  defp task_seed_changeset(%Task{} = task, attrs) do
+    task
+    |> cast(attrs, [:label, :rank, :completed_on, :scheduled_on, :user_id])
+    |> validate_required([:label, :rank, :user_id])
   end
 
   defp nillify_action(changeset, action, field) do
@@ -195,9 +203,50 @@ defmodule Serge.Tasking do
     end
   end
 
-  defp task_seed_changeset(%Task{} = task, attrs) do
-    task
-    |> cast(attrs, [:label, :rank, :completed_on, :scheduled_on, :user_id])
-    |> validate_required([:label, :rank, :user_id])
+  defp process_before_task_id(changeset) do
+    case get_change(changeset, :before_task_id) do
+      nil ->
+        changeset
+
+      task_id ->
+        # get rank for task and the previous one
+        # set rank as half-way between those 2
+    end
+  end
+
+  defp process_after_task_id(changeset) do
+    case get_change(changeset, :after_task_id) do
+      nil ->
+        changeset
+
+      task_id ->
+        case get_next_task(task_id) do
+          {:ok, result} ->
+            rank = result.task.rank + case result.next do
+              nil ->
+                round((@max_rank - result.task.rank) / 2)
+              next ->
+                round((result.next.rank - result.task.rank) / 2)
+            end
+            put_change(changeset, :rank, rank)
+          {:error, message} ->
+            changeset = change_task(%Task{})
+            {:error, add_error(changeset, :after_task_id, message)}
+        end
+    end
+  end
+
+  defp get_next_task(task_id) do
+    Multi.new
+    |> Multi.run(:task, fn _ -> {:ok, get_task(task_id)} end)
+    |> Multi.run(:next, fn %{task: task} ->
+      case task do
+        nil ->
+          {:error, nil}
+        _ ->
+          {:ok, Repo.one(Task.after_task(task))}
+      end
+    end)
+    |> Repo.transaction
   end
 end
