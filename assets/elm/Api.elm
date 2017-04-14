@@ -49,9 +49,8 @@ storyTask =
         |> B.with (B.field "id" [] B.id)
         |> B.with (B.field "label" [] B.string)
         |> B.with (B.field "rank" [] B.int)
-        |> B.with (B.field "completed" [] B.bool)
+        |> B.with (B.field "scheduledOn" [] (B.nullable B.string))
         |> B.with (B.field "completedOn" [] (B.nullable B.string))
-        |> B.with (B.field "scheduledOn" [] B.string)
 
 
 
@@ -113,7 +112,7 @@ createTaskQuery :
             | id : String
             , label : String
             , rank : Int
-            , scheduledOn : String
+            , scheduledOn : Maybe String
         }
 createTaskQuery =
     let
@@ -126,7 +125,7 @@ createTaskQuery =
             [ ( "tid", Arg.variable (Var.required "tmpId" .id Var.id) )
             , ( "label", Arg.variable (Var.required "label" .label Var.string) )
             , ( "position", Arg.variable (Var.required "position" .rank Var.int) )
-            , ( "scheduledOn", Arg.variable (Var.required "scheduledOn" .scheduledOn Var.string) )
+            , ( "scheduledOn", Arg.variable (Var.required "scheduledOn" .scheduledOn (Var.nullable Var.string)) )
             ]
     in
         response
@@ -151,16 +150,14 @@ updateTaskQuery :
         { vars
             | id : String
             , label : String
-            , completed : Bool
-            , scheduledOn : String
+            , scheduledOn : Maybe String
         }
 updateTaskQuery =
     let
         variables =
             [ ( "id", Arg.variable (Var.required "taskID" .id Var.id) )
             , ( "label", Arg.variable (Var.required "label" .label Var.string) )
-            , ( "completed", Arg.variable (Var.required "completed" .completed Var.bool) )
-            , ( "scheduledOn", Arg.variable (Var.required "scheduledOn" .scheduledOn Var.string) )
+            , ( "scheduledOn", Arg.variable (Var.required "scheduledOn" .scheduledOn (Var.nullable Var.string)) )
             ]
     in
         storyTask

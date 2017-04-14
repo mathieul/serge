@@ -285,7 +285,7 @@ update msg model =
                     Modal.visibleState
 
                 -- , reOrdered = List.filter (.task >> .completed >> not) model.taskEditors
-                , reOrdered = List.filter (not << .completed << .task) model.taskEditors
+                , reOrdered = List.filter (not << .completed) model.taskEditors
             }
                 ! []
 
@@ -349,16 +349,16 @@ createNewTask model =
         scheduledOn =
             case model.datePeriod of
                 Yesterday ->
-                    model.context.yesterday
+                    Just model.context.yesterday
 
                 Today ->
-                    model.context.today
+                    Just model.context.today
 
                 Tomorrow ->
-                    model.context.tomorrow
+                    Just model.context.tomorrow
 
                 Later ->
-                    model.context.later
+                    Nothing
 
         newTask =
             makeNewTaskEditor model scheduledOn

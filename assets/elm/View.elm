@@ -122,10 +122,14 @@ summaryModal : Model -> Html Msg
 summaryModal model =
     let
         completedTasks =
-            List.filter (\editor -> editor.task.completed) model.taskEditors
+            List.filter .completed model.taskEditors
+
+        isScheduled editor =
+            not editor.completed
+                && (Maybe.map (\date -> date <= model.context.today) editor.task.scheduledOn |> Maybe.withDefault False)
 
         scheduledTasks =
-            List.filter (\editor -> not editor.task.completed && editor.task.scheduledOn <= model.context.today) model.taskEditors
+            List.filter isScheduled model.taskEditors
 
         summaryTaskView editor =
             H.li [] [ text editor.task.label ]
@@ -338,7 +342,7 @@ taskList model taskEditors =
             if model.showCompleted then
                 taskEditors
             else
-                List.filter (\editor -> not editor.task.completed) taskEditors
+                List.filter (not << .completed) taskEditors
 
         view editor =
             if editor.editing then
@@ -362,7 +366,7 @@ taskCompletionInfo editors model =
         countCompleted =
             List.foldl
                 (\editor count ->
-                    if editor.task.completed then
+                    if editor.completed then
                         count + 1
                     else
                         count
@@ -422,7 +426,7 @@ taskViewerView model editor =
                     H.span [] []
 
         label =
-            if editor.task.completed then
+            if editor.completed then
                 div []
                     [ H.span []
                         [ H.s [ class "text-muted" ] [ text editor.task.label ]
@@ -445,13 +449,13 @@ taskViewerView model editor =
                 , div
                     [ class "d-flex justify-content-end" ]
                     [ div [ class "btn-group" ]
-                        [ taskControl model editor.period editor.task ]
+                        [ taskControl model editor ]
                     ]
                 ]
             ]
 
 
-actionButton : String -> String -> String -> StoryTask -> Dropdown.DropdownItem Msg
+actionButton : Maybe String -> String -> String -> StoryTask -> Dropdown.DropdownItem Msg
 actionButton date label taskLabel task =
     if label == taskLabel then
         Dropdown.buttonItem
@@ -471,18 +475,17 @@ actionButton date label taskLabel task =
             ]
 
 
-taskControl : Model -> DatePeriod -> StoryTask -> Html Msg
-taskControl model scheduled task =
+taskControl : Model -> TaskEditor -> Html Msg
+taskControl model editor =
     let
         state =
-            Dict.get task.id model.dropdownStates
+            Dict.get editor.task.id model.dropdownStates
                 |> Maybe.withDefault Dropdown.initialState
 
-        setSchedule date =
-            StoryTask.changeSchedule RequestTaskUpdate date task
-
+        -- setSchedule date =
+        --     StoryTask.changeSchedule RequestTaskUpdate date task
         ( completionDisplay, buttonKind ) =
-            if task.completed then
+            if editor.completed then
                 ( [ H.i [ class "fa fa-square-o" ] []
                   , text " Uncomplete"
                   ]
@@ -496,28 +499,28 @@ taskControl model scheduled task =
                 )
 
         actionLabel =
-            datePeriodLabel scheduled
+            datePeriodLabel editor.period
 
         actions =
             [ Dropdown.buttonItem
-                [ onClick <| StoryTask.toggleCompleted RequestTaskUpdate model.context.today task ]
+                [ onClick <| StoryTask.toggleCompleted RequestTaskUpdate model.context.today editor.task ]
                 completionDisplay
             , Dropdown.divider
-            , actionButton model.context.yesterday "Yesterday" actionLabel task
-            , actionButton model.context.today "Today" actionLabel task
-            , actionButton model.context.tomorrow "Tomorrow" actionLabel task
-            , actionButton model.context.later "Later" actionLabel task
+            , actionButton (Just model.context.yesterday) "Yesterday" actionLabel editor.task
+            , actionButton (Just model.context.today) "Today" actionLabel editor.task
+            , actionButton (Just model.context.tomorrow) "Tomorrow" actionLabel editor.task
+            , actionButton Nothing "Later" actionLabel editor.task
             , Dropdown.divider
             , Dropdown.buttonItem
                 [ class "text-danger"
-                , onClick <| ConfirmTaskDeletion task.id task.label
+                , onClick <| ConfirmTaskDeletion editor.task.id editor.task.label
                 ]
                 [ text "Delete" ]
             ]
     in
         Dropdown.dropdown state
             { options = [ Dropdown.alignMenuRight ]
-            , toggleMsg = DropdownMsg task.id
+            , toggleMsg = DropdownMsg editor.task.id
             , toggleButton =
                 Dropdown.toggle
                     [ buttonKind

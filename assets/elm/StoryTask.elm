@@ -13,9 +13,8 @@ type alias StoryTask =
     { id : String
     , label : String
     , rank : Int
-    , completed : Bool
+    , scheduledOn : Maybe String
     , completedOn : Maybe String
-    , scheduledOn : String
     }
 
 
@@ -23,18 +22,17 @@ type alias StoryTask =
 -- FUNCTIONS
 
 
-makeNewTask : Int -> String -> Int -> String -> StoryTask
+makeNewTask : Int -> String -> Int -> Maybe String -> StoryTask
 makeNewTask sequence label count scheduledOn =
     { id = "TMP:" ++ (toString sequence)
     , label = label
     , rank = count + 1
-    , completed = False
-    , completedOn = Nothing
     , scheduledOn = scheduledOn
+    , completedOn = Nothing
     }
 
 
-changeSchedule : (StoryTask -> msg) -> String -> StoryTask -> msg
+changeSchedule : (StoryTask -> msg) -> Maybe String -> StoryTask -> msg
 changeSchedule msg scheduledOn task =
     msg { task | scheduledOn = scheduledOn }
 
@@ -43,10 +41,11 @@ toggleCompleted : (StoryTask -> msg) -> String -> StoryTask -> msg
 toggleCompleted msg today task =
     msg
         { task
-            | completed = not task.completed
-            , completedOn =
-                if task.completed then
-                    Nothing
-                else
-                    Just today
+            | completedOn =
+                case task.completedOn of
+                    Just _ ->
+                        Nothing
+
+                    Nothing ->
+                        Just today
         }
