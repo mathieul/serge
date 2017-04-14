@@ -116,7 +116,7 @@ defmodule Serge.Task.MutationUpdateTaskTest do
         "scheduledOn" => "2017-01-01",
         "beforeTaskId" => other.id
       })
-      assert get_in(result, ["updateTask", "rank"]) == -1073741824
+      assert get_in(result, ["updateTask", "rank"]) == -1073741825
     end
 
     test "it can order a task before another task scheduled for the same day (other has more before)", ctx do

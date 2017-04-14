@@ -155,7 +155,7 @@ defmodule Serge.Tasking do
     ])
     |> nillify_action(:unschedule, :scheduled_on)
     |> nillify_action(:uncomplete, :completed_on)
-    |> set_rank_if_not_set
+    |> set_rank_if_needed
     |> process_before_task_id
     |> process_after_task_id
     |> validate_required([:label, :rank, :user_id])
@@ -176,18 +176,18 @@ defmodule Serge.Tasking do
     end
   end
 
-  defp set_rank_if_not_set(changeset) do
-    if is_nil(get_field(changeset, :user_id)) do
+  defp set_rank_if_needed(changeset) do
+    if is_nil(get_field(changeset, :user_id)) || rank_set_and_scheduled_on_unchanged(changeset) do
       changeset
     else
-      case get_field(changeset, :rank) do
-        nil ->
-          rank = rank_compared_to_last_task(changeset)
-          put_change(changeset, :rank, rank)
-        _ ->
-          changeset
-      end
+      rank = rank_compared_to_last_task(changeset)
+      put_change(changeset, :rank, rank)
     end
+  end
+
+  defp rank_set_and_scheduled_on_unchanged(changeset) do
+    !is_nil(get_field(changeset, :rank)) &&
+      get_change(changeset, :scheduled_on, :no_change) == :no_change
   end
 
   defp rank_compared_to_last_task(changeset) do
@@ -215,9 +215,9 @@ defmodule Serge.Tasking do
         # set rank as half-way between those 2
         case get_previous_task(task_id) do
           {:ok, result} ->
-            rank = result.task.rank + case result.previous do
+            rank = case result.previous do
               nil ->
-                round((result.task.rank - @min_rank) / 2)
+                result.task.rank + round((@min_rank - result.task.rank) / 2)
               previous ->
                 round((result.task.rank - previous.rank) / 2)
             end
