@@ -165,6 +165,7 @@ defmodule Serge.Tasking do
   defp task_seed_changeset(%Task{} = task, attrs) do
     task
     |> cast(attrs, [:label, :rank, :completed_on, :scheduled_on, :user_id])
+    |> set_rank_if_needed
     |> validate_required([:label, :rank, :user_id])
   end
 

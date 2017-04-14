@@ -27,7 +27,7 @@ defmodule Serge.Tasking.Task do
   end
 
   def ordered_by_schedule_and_rank(scope \\ __MODULE__) do
-    from(t in scope, order_by: [t.scheduled_on, t.rank])
+    from(t in scope, order_by: [asc: :scheduled_on, asc: :rank])
   end
 
   def previous_work_day(scope \\ __MODULE__) do
@@ -38,7 +38,8 @@ defmodule Serge.Tasking.Task do
   def starting_from(scope \\ __MODULE__, date) do
     from(t in scope,
       where: t.completed_on >= ^date,
-      or_where: is_nil(t.completed_on) and t.scheduled_on >= ^date)
+      or_where: is_nil(t.completed_on) and t.scheduled_on >= ^date,
+      or_where: is_nil(t.completed_on) and is_nil(t.scheduled_on))
   end
 
   def last_for_user_and_scheduled_on(scope \\ __MODULE__, user_id, scheduled_on) do
