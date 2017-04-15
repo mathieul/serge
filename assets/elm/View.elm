@@ -194,12 +194,13 @@ orderingModal model =
                     [ H.span
                         [ class <| "PeriodBadge badge mr-3 " ++ periodBadge ]
                         [ text periodLabel ]
-                    , text <| editor.task.label ++ "(" ++ (toString editor.task.completedOn) ++ ")"
+                    , text editor.task.label
                     , Badge.pill [ class "ml-auto" ] [ H.i [ class "fa fa-arrows SortHandle" ] [] ]
                     ]
 
         taskList =
-            List.map taskItem model.reOrdered
+            List.filter (not << .completed) model.taskEditors
+                |> List.map taskItem
     in
         Modal.config OrderingModalMsg
             |> Modal.large

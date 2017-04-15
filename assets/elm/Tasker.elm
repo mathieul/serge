@@ -280,23 +280,10 @@ update msg model =
                 )
 
         ShowOrdering ->
-            { model
-                | orderingModalState =
-                    Modal.visibleState
-                , reOrdered = List.filter (not << .completed) model.taskEditors
-            }
-                ! []
+            { model | orderingModalState = Modal.visibleState } ! []
 
         HideOrdering ->
-            { model
-                | orderingModalState =
-                    Modal.hiddenState
-
-                -- replace re-ordered slice of updatedTasks within model.taskEditors
-                , taskEditors = model.taskEditors
-                , reOrdered = []
-            }
-                ! []
+            { model | orderingModalState = Modal.hiddenState } ! []
 
         DragDropMsg msg_ ->
             let

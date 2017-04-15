@@ -65,7 +65,6 @@ type alias Model =
     , showYesterday : Bool
     , confirmation : Confirmation
     , dragDrop : DragDrop.Model TaskEditor TaskEditor
-    , reOrdered : List TaskEditor
     }
 
 
@@ -88,7 +87,6 @@ initialModel config navState =
     , showYesterday = False
     , confirmation = emptyConfirmation
     , dragDrop = DragDrop.init
-    , reOrdered = []
     }
 
 
