@@ -7,6 +7,7 @@ module Model
         , DatePeriod(..)
         , Id
         , Model
+          -- , MoveTaskRequest
         , Msg(..)
         , TaskEditor
         , discardOldTasks

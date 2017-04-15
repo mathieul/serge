@@ -20,7 +20,7 @@ import Html5.DragDrop as DragDrop
 import Model exposing (..)
 import View exposing (..)
 import StoryTask exposing (StoryTask)
-import Api
+import Api exposing (MoveTaskRequest(..))
 
 
 -- MAIN
@@ -185,18 +185,11 @@ update msg model =
             { model | message = MessageError <| graphQLErrorToMessage "Creating the task failed" error } ! []
 
         RequestTaskUpdate task ->
-            let
-                updateVars =
-                    { task = task
-                    , uncomplete = task.completedOn == Nothing
-                    , unschedule = task.scheduledOn == Nothing
-                    }
-            in
-                model
-                    ! [ Api.updateTaskRequest updateVars
-                            |> Api.sendMutationRequest
-                            |> Task.attempt UpdateTask
-                      ]
+            model
+                ! [ Api.updateTaskRequest task
+                        |> Api.sendMutationRequest
+                        |> Task.attempt UpdateTask
+                  ]
 
         UpdateTask (Ok task) ->
             { model
@@ -290,8 +283,6 @@ update msg model =
             { model
                 | orderingModalState =
                     Modal.visibleState
-
-                -- , reOrdered = List.filter (.task >> .completed >> not) model.taskEditors
                 , reOrdered = List.filter (not << .completed) model.taskEditors
             }
                 ! []
@@ -301,7 +292,7 @@ update msg model =
                 | orderingModalState =
                     Modal.hiddenState
 
-                -- replace re-ordered slice of updatedTasks within mocel.taskEditors
+                -- replace re-ordered slice of updatedTasks within model.taskEditors
                 , taskEditors = model.taskEditors
                 , reOrdered = []
             }
@@ -312,16 +303,17 @@ update msg model =
                 ( dragDropModel, result ) =
                     DragDrop.update msg_ model.dragDrop
 
-                newModel =
+                command =
                     case result of
                         Just ( dragged, dropped ) ->
-                            -- re-order the task dropped
-                            { model | reOrdered = model.reOrdered }
+                            Api.moveTaskRequest dragged.task (MoveTaskBefore dropped.task)
+                                |> Api.sendMutationRequest
+                                |> Task.attempt UpdateTask
 
                         Nothing ->
-                            model
+                            Cmd.none
             in
-                { newModel | dragDrop = dragDropModel } ! []
+                ( { model | dragDrop = dragDropModel }, command )
 
 
 updateModelForTime : Time -> Model -> Model

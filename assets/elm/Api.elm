@@ -6,7 +6,9 @@ module Api
         , fetchTasksRequest
         , createTaskRequest
         , updateTaskRequest
+        , moveTaskRequest
         , deleteTaskRequest
+        , MoveTaskRequest(..)
         )
 
 import GraphQL.Request.Builder as B
@@ -148,19 +150,47 @@ type alias StoryTaskUpdateVars =
     { task : StoryTask
     , uncomplete : Bool
     , unschedule : Bool
+    , beforeTaskId : Maybe String
+    , afterTaskId : Maybe String
     }
 
 
 updateTaskQuery : B.Document B.Mutation StoryTask StoryTaskUpdateVars
 updateTaskQuery =
     let
+        id =
+            Var.required "taskID" (.task >> .id) Var.id
+
+        label =
+            Var.required "label" (.task >> .label) Var.string
+
+        scheduledOn =
+            Var.required "scheduledOn" (.task >> .scheduledOn) (Var.nullable Var.string)
+
+        completedOn =
+            Var.required "completedOn" (.task >> .completedOn) (Var.nullable Var.string)
+
+        uncomplete =
+            Var.required "uncomplete" .uncomplete Var.bool
+
+        unschedule =
+            Var.required "unschedule" .unschedule Var.bool
+
+        beforeTaskId =
+            Var.required "beforeTaskId" .beforeTaskId (Var.nullable Var.id)
+
+        afterTaskId =
+            Var.required "afterTaskId" .afterTaskId (Var.nullable Var.id)
+
         variables =
-            [ ( "id", Arg.variable (Var.required "taskID" (.task >> .id) Var.id) )
-            , ( "label", Arg.variable (Var.required "label" (.task >> .label) Var.string) )
-            , ( "scheduledOn", Arg.variable (Var.required "scheduledOn" (.task >> .scheduledOn) (Var.nullable Var.string)) )
-            , ( "completedOn", Arg.variable (Var.required "completedOn" (.task >> .completedOn) (Var.nullable Var.string)) )
-            , ( "uncomplete", Arg.variable (Var.required "uncomplete" .uncomplete Var.bool) )
-            , ( "unschedule", Arg.variable (Var.required "unschedule" .unschedule Var.bool) )
+            [ ( "id", Arg.variable id )
+            , ( "label", Arg.variable label )
+            , ( "scheduledOn", Arg.variable scheduledOn )
+            , ( "completedOn", Arg.variable completedOn )
+            , ( "uncomplete", Arg.variable uncomplete )
+            , ( "unschedule", Arg.variable unschedule )
+            , ( "beforeTaskId", Arg.variable beforeTaskId )
+            , ( "afterTaskId", Arg.variable afterTaskId )
             ]
     in
         storyTask
@@ -169,10 +199,49 @@ updateTaskQuery =
             |> B.mutationDocument
 
 
-updateTaskRequest : StoryTaskUpdateVars -> B.Request B.Mutation StoryTask
-updateTaskRequest taskVars =
+updateTaskRequest : StoryTask -> B.Request B.Mutation StoryTask
+updateTaskRequest task =
     updateTaskQuery
-        |> B.request taskVars
+        |> B.request (makeUpdateTaskVars task)
+
+
+type MoveTaskRequest
+    = MoveTaskBefore StoryTask
+    | MoveTaskAfter StoryTask
+
+
+moveTaskRequest : StoryTask -> MoveTaskRequest -> B.Request B.Mutation StoryTask
+moveTaskRequest task moveRequest =
+    let
+        ( beforeTaskId, afterTaskId ) =
+            case moveRequest of
+                MoveTaskBefore other ->
+                    ( Just other.id, Nothing )
+
+                MoveTaskAfter other ->
+                    ( Nothing, Just other.id )
+
+        taskVars =
+            makeUpdateTaskVars task
+
+        moveTaskVars =
+            { taskVars
+                | beforeTaskId = beforeTaskId
+                , afterTaskId = afterTaskId
+            }
+    in
+        updateTaskQuery
+            |> B.request moveTaskVars
+
+
+makeUpdateTaskVars : StoryTask -> StoryTaskUpdateVars
+makeUpdateTaskVars task =
+    { task = task
+    , uncomplete = task.completedOn == Nothing
+    , unschedule = task.scheduledOn == Nothing
+    , beforeTaskId = Nothing
+    , afterTaskId = Nothing
+    }
 
 
 

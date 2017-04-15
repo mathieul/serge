@@ -205,14 +205,13 @@ orderingModal model =
             |> Modal.large
             |> Modal.h4 [ class "w-100 text-center" ] [ text "Sort Tasks" ]
             |> Modal.body []
-                [ H.p [ class "mt-2 mb-4" ]
-                    [ text "Drag and drop tasks to re-order them and press 'Save' when done." ]
+                [ H.p [ class "mt-2 mb-4" ] [ text "Drag and drop tasks to re-order them." ]
                 , ListGroup.ul taskList
                 ]
             |> Modal.footer [ class "mt-3" ]
                 [ Button.button
                     [ Button.primary, Button.onClick HideOrdering ]
-                    [ text "Save" ]
+                    [ text "Done" ]
                 ]
             |> Modal.view model.orderingModalState
 
@@ -295,21 +294,19 @@ taskSelectionTabs model =
         theTabs =
             tabPeriods
                 |> List.map aTab
-
-        -- VVVcommented out below to not show sort button VVV
-        -- |> (::)
-        --     (H.li
-        --         [ class "nav-item SortButton" ]
-        --         [ Button.button
-        --             [ Button.secondary
-        --             , Button.small
-        --             , Button.onClick ShowOrdering
-        --             ]
-        --             [ H.i [ class "fa fa-sort" ] []
-        --             , text " Sort"
-        --             ]
-        --         ]
-        --     )
+                |> (::)
+                    (H.li
+                        [ class "nav-item SortButton" ]
+                        [ Button.button
+                            [ Button.secondary
+                            , Button.small
+                            , Button.onClick ShowOrdering
+                            ]
+                            [ H.i [ class "fa fa-sort" ] []
+                            , text " Sort"
+                            ]
+                        ]
+                    )
     in
         H.ul [ class "nav nav-tabs card-header-tabs" ] theTabs
 

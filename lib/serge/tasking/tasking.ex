@@ -212,16 +212,18 @@ defmodule Serge.Tasking do
         changeset
 
       task_id ->
-        # get rank for task and the previous one
-        # set rank as half-way between those 2
+        IO.puts "DEBUG>>> BEFORE: rank = #{get_field(changeset, :rank)}"
         case get_previous_task(task_id) do
           {:ok, result} ->
             rank = case result.previous do
               nil ->
+                IO.puts "DEBUG>>> no previous task found"
                 result.task.rank + round((@min_rank - result.task.rank) / 2)
               previous ->
+                IO.puts "DEBUG>>> previous task found ##{previous.id} (rank=#{previous.rank})"
                 round((result.task.rank - previous.rank) / 2)
             end
+            IO.puts "DEBUG>>> AFTER: rank = #{rank}"
             put_change(changeset, :rank, rank)
           {:error, message} ->
             changeset = change_task(%Task{})
