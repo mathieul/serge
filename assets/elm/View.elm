@@ -482,29 +482,31 @@ taskControl model editor =
             Dict.get editor.task.id model.dropdownStates
                 |> Maybe.withDefault Dropdown.initialState
 
-        -- setSchedule date =
-        --     StoryTask.changeSchedule RequestTaskUpdate date task
-        ( completionDisplay, buttonKind ) =
+        completionButton =
             if editor.completed then
-                ( [ H.i [ class "fa fa-square-o" ] []
-                  , text " Uncomplete"
-                  ]
-                , Button.secondary
-                )
+                Dropdown.buttonItem
+                    [ onClick <| StoryTask.toggleCompleted RequestTaskUpdate model.context.today editor.task ]
+                    [ H.i [ class "fa fa-square-o" ] []
+                    , text " Uncomplete"
+                    ]
             else
-                ( [ H.i [ class "fa fa-check-square-o" ] []
-                  , text " Complete"
-                  ]
-                , Button.outlineInfo
-                )
+                Dropdown.buttonItem
+                    [ onClick <| StoryTask.toggleCompleted RequestTaskUpdate model.context.today editor.task ]
+                    [ H.i [ class "fa fa-check-square-o" ] []
+                    , text " Complete"
+                    ]
+
+        buttonKind =
+            if editor.completed then
+                Button.secondary
+            else
+                Button.outlineInfo
 
         actionLabel =
             datePeriodLabel editor.period
 
         actions =
-            [ Dropdown.buttonItem
-                [ onClick <| StoryTask.toggleCompleted RequestTaskUpdate model.context.today editor.task ]
-                completionDisplay
+            [ completionButton
             , Dropdown.divider
             , actionButton (Just model.context.yesterday) "Yesterday" actionLabel editor.task
             , actionButton (Just model.context.today) "Today" actionLabel editor.task

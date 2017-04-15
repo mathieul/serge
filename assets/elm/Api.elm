@@ -144,20 +144,21 @@ createTaskRequest task =
 -- UPDATE TASK
 
 
-updateTaskQuery :
-    B.Document B.Mutation
-        StoryTask
-        { vars
-            | id : String
-            , label : String
-            , scheduledOn : Maybe String
-        }
+type alias StoryTaskUpdateVars =
+    { task : StoryTask
+    , uncomplete : Bool
+    }
+
+
+updateTaskQuery : B.Document B.Mutation StoryTask StoryTaskUpdateVars
 updateTaskQuery =
     let
         variables =
-            [ ( "id", Arg.variable (Var.required "taskID" .id Var.id) )
-            , ( "label", Arg.variable (Var.required "label" .label Var.string) )
-            , ( "scheduledOn", Arg.variable (Var.required "scheduledOn" .scheduledOn (Var.nullable Var.string)) )
+            [ ( "id", Arg.variable (Var.required "taskID" (.task >> .id) Var.id) )
+            , ( "label", Arg.variable (Var.required "label" (.task >> .label) Var.string) )
+            , ( "scheduledOn", Arg.variable (Var.required "scheduledOn" (.task >> .scheduledOn) (Var.nullable Var.string)) )
+            , ( "completedOn", Arg.variable (Var.required "completedOn" (.task >> .completedOn) (Var.nullable Var.string)) )
+            , ( "uncomplete", Arg.variable (Var.required "uncomplete" .uncomplete Var.bool) )
             ]
     in
         storyTask
@@ -166,10 +167,10 @@ updateTaskQuery =
             |> B.mutationDocument
 
 
-updateTaskRequest : StoryTask -> B.Request B.Mutation StoryTask
-updateTaskRequest task =
+updateTaskRequest : StoryTaskUpdateVars -> B.Request B.Mutation StoryTask
+updateTaskRequest taskVars =
     updateTaskQuery
-        |> B.request task
+        |> B.request taskVars
 
 
 

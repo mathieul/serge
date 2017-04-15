@@ -185,11 +185,17 @@ update msg model =
             { model | message = MessageError <| graphQLErrorToMessage "Creating the task failed" error } ! []
 
         RequestTaskUpdate task ->
-            model
-                ! [ Api.updateTaskRequest task
-                        |> Api.sendMutationRequest
-                        |> Task.attempt UpdateTask
-                  ]
+            let
+                updateVars =
+                    { task = task
+                    , uncomplete = task.completedOn == Nothing
+                    }
+            in
+                model
+                    ! [ Api.updateTaskRequest updateVars
+                            |> Api.sendMutationRequest
+                            |> Task.attempt UpdateTask
+                      ]
 
         UpdateTask (Ok task) ->
             { model
