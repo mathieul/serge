@@ -113,7 +113,6 @@ createTaskQuery :
         { vars
             | id : String
             , label : String
-            , rank : Int
             , scheduledOn : Maybe String
         }
 createTaskQuery =
@@ -126,7 +125,6 @@ createTaskQuery =
         variables =
             [ ( "tid", Arg.variable (Var.required "tmpId" .id Var.id) )
             , ( "label", Arg.variable (Var.required "label" .label Var.string) )
-            , ( "position", Arg.variable (Var.required "position" .rank Var.int) )
             , ( "scheduledOn", Arg.variable (Var.required "scheduledOn" .scheduledOn (Var.nullable Var.string)) )
             ]
     in
