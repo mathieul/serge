@@ -6,22 +6,19 @@ defmodule Serge.Task.MutationCreateTaskTest do
       mutation (
         $tid: String!,
         $label: String!,
-        $position: Int!,
         $scheduledOn: String!
       ) {
         createTask(
           tid: $tid,
           label: $label,
-          position: $position,
           scheduledOn: $scheduledOn
-          ) {
+        ) {
           tid
           task {
             id
             label
             rank
             scheduledOn
-            completed
             completedOn
           }
         }
@@ -35,7 +32,6 @@ defmodule Serge.Task.MutationCreateTaskTest do
       variables: %{
         "tid" => "tmp42",
         "label" => "that thing to do",
-        "position" => 1,
         "scheduledOn" => "2017-03-09"
       }
     ]
@@ -47,7 +43,16 @@ defmodule Serge.Task.MutationCreateTaskTest do
       assert get_in(result, ["createTask", "tid"]) == "tmp42"
       assert get_in(result, ["createTask", "task", "label"]) == "that thing to do"
       assert get_in(result, ["createTask", "task", "scheduledOn"]) == "2017-03-09"
-      assert get_in(result, ["createTask", "task", "completed"]) == false
+      assert get_in(result, ["createTask", "task", "completedOn"]) == nil
+    end
+
+    test "it can create a task without a schedule date", ctx do
+      variables = Map.drop(ctx[:variables], ["scheduledOn"])
+
+      {:ok, %{data: result}} = run(@document, ctx[:user].id, variables)
+      assert get_in(result, ["createTask", "tid"]) == "tmp42"
+      assert get_in(result, ["createTask", "task", "label"]) == "that thing to do"
+      assert get_in(result, ["createTask", "task", "scheduledOn"]) == nil
       assert get_in(result, ["createTask", "task", "completedOn"]) == nil
     end
   end
@@ -67,18 +72,24 @@ defmodule Serge.Task.MutationCreateTaskTest do
       assert Enum.all?(errors, &(Regex.match?(~r/^In argument "label"/, &1.message)))
     end
 
-    test "it returns an error if position is missing", ctx do
-      variables = Map.drop(ctx[:variables], ["position"])
+    test "it returns an error if scheduled date is invalid", ctx do
+      variables = Map.put(ctx[:variables], "scheduledOn", "not-a-valid-date")
 
       {:ok, %{errors: errors}} = run(@document, ctx[:user].id, variables)
-      assert Enum.all?(errors, &(Regex.match?(~r/^In argument "position"/, &1.message)))
+      assert Enum.all?(errors, &(Regex.match?(~r/scheduled_on is invalid/, &1.message)))
+    end
+  end
+
+  describe "task order" do
+    test "it sets the rank to 0 when no other task scheduled for the name day", ctx do
+      {:ok, %{data: result}} = run(@document, ctx[:user].id, ctx[:variables])
+      assert get_in(result, ["createTask", "task", "rank"]) == 0
     end
 
-    test "it returns an error if scheduledOn is missing", ctx do
-      variables = Map.drop(ctx[:variables], ["scheduledOn"])
-
-      {:ok, %{errors: errors}} = run(@document, ctx[:user].id, variables)
-      assert Enum.all?(errors, &(Regex.match?(~r/^In argument "scheduledOn"/, &1.message)))
+    test "it sets the rank as following the last task scheduled for the name day", ctx do
+      insert(:task, user: ctx[:user], rank: 0, scheduled_on: ctx[:variables]["scheduledOn"])
+      {:ok, %{data: result}} = run(@document, ctx[:user].id, ctx[:variables])
+      assert get_in(result, ["createTask", "task", "rank"]) == 1073741824
     end
   end
 end

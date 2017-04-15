@@ -49,9 +49,8 @@ storyTask =
         |> B.with (B.field "id" [] B.id)
         |> B.with (B.field "label" [] B.string)
         |> B.with (B.field "rank" [] B.int)
-        |> B.with (B.field "completed" [] B.bool)
+        |> B.with (B.field "scheduledOn" [] (B.nullable B.string))
         |> B.with (B.field "completedOn" [] (B.nullable B.string))
-        |> B.with (B.field "scheduledOn" [] B.string)
 
 
 
@@ -113,7 +112,7 @@ createTaskQuery :
             | id : String
             , label : String
             , rank : Int
-            , scheduledOn : String
+            , scheduledOn : Maybe String
         }
 createTaskQuery =
     let
@@ -126,7 +125,7 @@ createTaskQuery =
             [ ( "tid", Arg.variable (Var.required "tmpId" .id Var.id) )
             , ( "label", Arg.variable (Var.required "label" .label Var.string) )
             , ( "position", Arg.variable (Var.required "position" .rank Var.int) )
-            , ( "scheduledOn", Arg.variable (Var.required "scheduledOn" .scheduledOn Var.string) )
+            , ( "scheduledOn", Arg.variable (Var.required "scheduledOn" .scheduledOn (Var.nullable Var.string)) )
             ]
     in
         response
@@ -145,22 +144,23 @@ createTaskRequest task =
 -- UPDATE TASK
 
 
-updateTaskQuery :
-    B.Document B.Mutation
-        StoryTask
-        { vars
-            | id : String
-            , label : String
-            , completed : Bool
-            , scheduledOn : String
-        }
+type alias StoryTaskUpdateVars =
+    { task : StoryTask
+    , uncomplete : Bool
+    , unschedule : Bool
+    }
+
+
+updateTaskQuery : B.Document B.Mutation StoryTask StoryTaskUpdateVars
 updateTaskQuery =
     let
         variables =
-            [ ( "id", Arg.variable (Var.required "taskID" .id Var.id) )
-            , ( "label", Arg.variable (Var.required "label" .label Var.string) )
-            , ( "completed", Arg.variable (Var.required "completed" .completed Var.bool) )
-            , ( "scheduledOn", Arg.variable (Var.required "scheduledOn" .scheduledOn Var.string) )
+            [ ( "id", Arg.variable (Var.required "taskID" (.task >> .id) Var.id) )
+            , ( "label", Arg.variable (Var.required "label" (.task >> .label) Var.string) )
+            , ( "scheduledOn", Arg.variable (Var.required "scheduledOn" (.task >> .scheduledOn) (Var.nullable Var.string)) )
+            , ( "completedOn", Arg.variable (Var.required "completedOn" (.task >> .completedOn) (Var.nullable Var.string)) )
+            , ( "uncomplete", Arg.variable (Var.required "uncomplete" .uncomplete Var.bool) )
+            , ( "unschedule", Arg.variable (Var.required "unschedule" .unschedule Var.bool) )
             ]
     in
         storyTask
@@ -169,10 +169,10 @@ updateTaskQuery =
             |> B.mutationDocument
 
 
-updateTaskRequest : StoryTask -> B.Request B.Mutation StoryTask
-updateTaskRequest task =
+updateTaskRequest : StoryTaskUpdateVars -> B.Request B.Mutation StoryTask
+updateTaskRequest taskVars =
     updateTaskQuery
-        |> B.request task
+        |> B.request taskVars
 
 
 

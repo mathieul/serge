@@ -16,59 +16,52 @@ user = Authentication.get_user_by_email!("mathieu@caring.com")
 
 Tasking.delete_all_tasks()
 
-Tasking.seed_task(%{
+{:ok, _ } = Tasking.seed_task(%{
   user_id: user.id,
   label:   "scheduled 5 days ago completed 3 days ago",
-  position: 0,
   scheduled_on: DateHelpers.days_ago(5),
   completed_on: DateHelpers.days_ago(3)
 })
 
-Tasking.seed_task(%{
+{:ok, _ } = Tasking.seed_task(%{
   user_id: user.id,
   label:   "scheduled today completed 2 days ago",
-  position: 1,
   scheduled_on: DateHelpers.today,
   completed_on: DateHelpers.days_ago(2)
 })
 
-Tasking.seed_task(%{
+{:ok, _ } = Tasking.seed_task(%{
   user_id: user.id,
   label:   "scheduled 2 days ago",
-  position: 2,
   scheduled_on: DateHelpers.days_ago(2),
   completed_on: nil
 })
 
-Tasking.seed_task(%{
+{:ok, _ } = Tasking.seed_task(%{
   user_id: user.id,
   label:   "scheduled 1 day ago completed today",
-  position: 3,
   scheduled_on: DateHelpers.days_ago(1),
   completed_on: DateHelpers.today
 })
 
-Tasking.seed_task(%{
+{:ok, _ } = Tasking.seed_task(%{
   user_id: user.id,
   label:   "scheduled today",
-  position: 4,
   scheduled_on: DateHelpers.today,
   completed_on: nil
 })
 
 
-Tasking.seed_task(%{
+{:ok, _ } = Tasking.seed_task(%{
   user_id: user.id,
   label:   "scheduled tomorrow",
-  position: 5,
   scheduled_on: DateHelpers.days_from_now(1),
   completed_on: nil
 })
 
-Tasking.seed_task(%{
+{:ok, _ } = Tasking.seed_task(%{
   user_id: user.id,
-  label:   "scheduled 7 days from now",
-  position: 6,
-  scheduled_on: DateHelpers.days_from_now(7),
+  label:   "scheduled later",
+  scheduled_on: nil,
   completed_on: nil
 })

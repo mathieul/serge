@@ -185,11 +185,18 @@ update msg model =
             { model | message = MessageError <| graphQLErrorToMessage "Creating the task failed" error } ! []
 
         RequestTaskUpdate task ->
-            model
-                ! [ Api.updateTaskRequest task
-                        |> Api.sendMutationRequest
-                        |> Task.attempt UpdateTask
-                  ]
+            let
+                updateVars =
+                    { task = task
+                    , uncomplete = task.completedOn == Nothing
+                    , unschedule = task.scheduledOn == Nothing
+                    }
+            in
+                model
+                    ! [ Api.updateTaskRequest updateVars
+                            |> Api.sendMutationRequest
+                            |> Task.attempt UpdateTask
+                      ]
 
         UpdateTask (Ok task) ->
             { model
@@ -285,7 +292,7 @@ update msg model =
                     Modal.visibleState
 
                 -- , reOrdered = List.filter (.task >> .completed >> not) model.taskEditors
-                , reOrdered = List.filter (not << .completed << .task) model.taskEditors
+                , reOrdered = List.filter (not << .completed) model.taskEditors
             }
                 ! []
 
@@ -349,16 +356,16 @@ createNewTask model =
         scheduledOn =
             case model.datePeriod of
                 Yesterday ->
-                    model.context.yesterday
+                    Just model.context.yesterday
 
                 Today ->
-                    model.context.today
+                    Just model.context.today
 
                 Tomorrow ->
-                    model.context.tomorrow
+                    Just model.context.tomorrow
 
                 Later ->
-                    model.context.later
+                    Nothing
 
         newTask =
             makeNewTaskEditor model scheduledOn

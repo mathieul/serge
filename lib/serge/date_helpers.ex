@@ -1,5 +1,6 @@
 defmodule Serge.DateHelpers do
-  import Ecto.Date, only: [cast!: 1]
+  import Ecto.Date, only: [cast!: 1, cast: 1]
+  import Ecto.Changeset, only: [validate_change: 3]
 
   def days_from_now(days) when is_integer(days) do
     Timex.local
@@ -16,5 +17,16 @@ defmodule Serge.DateHelpers do
 
   defp yyyymmdd(time) do
     Timex.format!(time, "%Y-%m-%d", :strftime)
+  end
+
+  def validate_date(changeset, field, options \\ []) do
+    validate_change(changeset, field, fn _, value ->
+      case cast(value) do
+        {:ok, _} ->
+          []
+        :error ->
+          [{field, options[:message] || "is not a valid date"}]
+      end
+    end)
   end
 end

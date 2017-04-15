@@ -10,7 +10,7 @@ config :serge, Serge.Web.Endpoint,
   debug_errors: true,
   code_reloader: true,
   check_origin: false,
-  watchers: [node: ["node_modules/webpack/bin/webpack.js", "--watch-stdin", "--color",
+  watchers: [node: ["node_modules/webpack/bin/webpack.js", "-w", "--stdin", "--color",
                     cd: Path.expand("../assets", __DIR__)]]
 
 # Watch static and templates for browser reloading.

@@ -136,13 +136,12 @@ type alias AppContext =
     { yesterday : String
     , today : String
     , tomorrow : String
-    , later : String
     }
 
 
 makeEmptyAppContext : AppContext
 makeEmptyAppContext =
-    AppContext "" "" "" ""
+    AppContext "" "" ""
 
 
 timeToAppContext : TimeZone -> Time -> AppContext
@@ -158,7 +157,6 @@ timeToAppContext timeZone time =
         { yesterday = Date.toISO8601 <| Date.addDays -1 today
         , today = Date.toISO8601 today
         , tomorrow = Date.toISO8601 <| Date.addDays 1 today
-        , later = Date.toISO8601 <| Date.addDays 30 today
         }
 
 
@@ -174,14 +172,19 @@ taskSchedule context task =
                 Tomorrow
 
         Nothing ->
-            if task.scheduledOn < context.today then
-                Yesterday
-            else if task.scheduledOn == context.today then
-                Today
-            else if task.scheduledOn == context.tomorrow then
-                Tomorrow
-            else
-                Later
+            case task.scheduledOn of
+                Just date ->
+                    if date < context.today then
+                        Yesterday
+                    else if date == context.today then
+                        Today
+                    else if date == context.tomorrow then
+                        Tomorrow
+                    else
+                        Later
+
+                Nothing ->
+                    Later
 
 
 formatShortDate : String -> String
@@ -225,10 +228,11 @@ type alias TaskEditor =
     , editing : Bool
     , editingLabel : String
     , period : DatePeriod
+    , completed : Bool
     }
 
 
-makeNewTaskEditor : Model -> String -> TaskEditor
+makeNewTaskEditor : Model -> Maybe String -> TaskEditor
 makeNewTaskEditor model scheduledOn =
     StoryTask.makeNewTask
         model.currentTaskSeq
@@ -244,13 +248,14 @@ taskToEditor context task =
     , editing = False
     , editingLabel = task.label
     , period = taskSchedule context task
+    , completed = task.completedOn /= Nothing
     }
 
 
 earliestYesterday : List TaskEditor -> String
 earliestYesterday editors =
     editors
-        |> List.filter (\editor -> editor.task.completed)
+        |> List.filter .completed
         |> List.map (\editor -> Maybe.withDefault "" editor.task.completedOn)
         |> List.minimum
         |> Maybe.withDefault ""
