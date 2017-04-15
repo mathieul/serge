@@ -36,6 +36,7 @@ Bump application version in `mix.exs` (i.e.: 0.5.1) and run as user `elixir`:
 
     $ cd dev/serge
     $ git pull
+    $ rm -rf \_build priv/static
     $ mix deps.get
     $ cd assets
     $ yarn && elm package install -y
