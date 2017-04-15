@@ -189,6 +189,7 @@ update msg model =
                 updateVars =
                     { task = task
                     , uncomplete = task.completedOn == Nothing
+                    , unschedule = task.scheduledOn == Nothing
                     }
             in
                 model

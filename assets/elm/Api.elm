@@ -147,6 +147,7 @@ createTaskRequest task =
 type alias StoryTaskUpdateVars =
     { task : StoryTask
     , uncomplete : Bool
+    , unschedule : Bool
     }
 
 
@@ -159,6 +160,7 @@ updateTaskQuery =
             , ( "scheduledOn", Arg.variable (Var.required "scheduledOn" (.task >> .scheduledOn) (Var.nullable Var.string)) )
             , ( "completedOn", Arg.variable (Var.required "completedOn" (.task >> .completedOn) (Var.nullable Var.string)) )
             , ( "uncomplete", Arg.variable (Var.required "uncomplete" .uncomplete Var.bool) )
+            , ( "unschedule", Arg.variable (Var.required "unschedule" .unschedule Var.bool) )
             ]
     in
         storyTask
