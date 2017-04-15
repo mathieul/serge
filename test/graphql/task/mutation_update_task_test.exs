@@ -109,43 +109,40 @@ defmodule Serge.Task.MutationUpdateTaskTest do
   end
 
   describe "changing task order" do
-    test "it can order a task before another task scheduled for the same day (other is first)", ctx do
+    test "it can order a task before another task (other is first)", ctx do
       other = insert(:task, user: ctx[:user], rank: 0, scheduled_on: "2017-01-01")
       {:ok, %{data: result}} = run(@document, ctx[:user].id, %{
         "id" => ctx[:task].id,
-        "scheduledOn" => "2017-01-01",
         "beforeTaskId" => other.id
       })
       assert get_in(result, ["updateTask", "rank"]) == -1073741825
+      assert get_in(result, ["updateTask", "scheduledOn"]) == "2017-01-01"
     end
 
-    test "it can order a task before another task scheduled for the same day (other has more before)", ctx do
+    test "it can order a task before another task (other has more before)", ctx do
       insert(:task, user: ctx[:user], rank: 0, scheduled_on: "2017-01-01")
       other = insert(:task, user: ctx[:user], rank: 1073741824, scheduled_on: "2017-01-01")
       {:ok, %{data: result}} = run(@document, ctx[:user].id, %{
         "id" => ctx[:task].id,
-        "scheduledOn" => "2017-01-01",
         "beforeTaskId" => other.id
       })
       assert get_in(result, ["updateTask", "rank"]) == 536870912
     end
 
-    test "it can order a task after another task scheduled for the same day (other is last)", ctx do
+    test "it can order a task after another task (other is last)", ctx do
       other = insert(:task, user: ctx[:user], rank: 0, scheduled_on: "2017-01-01")
       {:ok, %{data: result}} = run(@document, ctx[:user].id, %{
         "id" => ctx[:task].id,
-        "scheduledOn" => "2017-01-01",
         "afterTaskId" => other.id
       })
       assert get_in(result, ["updateTask", "rank"]) == 1073741824
     end
 
-    test "it can order a task after another task scheduled for the same day (other has more after)", ctx do
+    test "it can order a task after another task (other has more after)", ctx do
       other = insert(:task, user: ctx[:user], rank: 1073741824, scheduled_on: "2017-01-01")
       insert(:task, user: ctx[:user], rank: 1610612736, scheduled_on: "2017-01-01")
       {:ok, %{data: result}} = run(@document, ctx[:user].id, %{
         "id" => ctx[:task].id,
-        "scheduledOn" => "2017-01-01",
         "afterTaskId" => other.id
       })
       assert get_in(result, ["updateTask", "rank"]) == 1342177280

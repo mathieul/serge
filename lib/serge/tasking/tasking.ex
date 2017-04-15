@@ -212,19 +212,18 @@ defmodule Serge.Tasking do
         changeset
 
       task_id ->
-        IO.puts "DEBUG>>> BEFORE: rank = #{get_field(changeset, :rank)}"
         case get_previous_task(task_id) do
           {:ok, result} ->
-            rank = case result.previous do
+            {scheduled_on, rank} = case result.previous do
               nil ->
-                IO.puts "DEBUG>>> no previous task found"
-                result.task.rank + round((@min_rank - result.task.rank) / 2)
+                {result.task.scheduled_on, result.task.rank + round((@min_rank - result.task.rank) / 2)}
               previous ->
-                IO.puts "DEBUG>>> previous task found ##{previous.id} (rank=#{previous.rank})"
-                round((result.task.rank - previous.rank) / 2)
+                {result.task.scheduled_on, round((result.task.rank - previous.rank) / 2)}
             end
-            IO.puts "DEBUG>>> AFTER: rank = #{rank}"
-            put_change(changeset, :rank, rank)
+            changeset
+            |> put_change(:rank, rank)
+            |> put_change(:scheduled_on, scheduled_on)
+
           {:error, message} ->
             changeset = change_task(%Task{})
             {:error, add_error(changeset, :before_task_id, message)}
@@ -254,13 +253,16 @@ defmodule Serge.Tasking do
       task_id ->
         case get_next_task(task_id) do
           {:ok, result} ->
-            rank = result.task.rank + case result.next do
+            {scheduled_on, rank} = case result.next do
               nil ->
-                round((@max_rank - result.task.rank) / 2)
+                {result.task.scheduled_on, result.task.rank + round((@max_rank - result.task.rank) / 2)}
               next ->
-                round((next.rank - result.task.rank) / 2)
+                {result.task.scheduled_on, result.task.rank + round((next.rank - result.task.rank) / 2)}
             end
-            put_change(changeset, :rank, rank)
+            changeset
+            |> put_change(:rank, rank)
+            |> put_change(:scheduled_on, scheduled_on)
+
           {:error, message} ->
             changeset = change_task(%Task{})
             {:error, add_error(changeset, :after_task_id, message)}
