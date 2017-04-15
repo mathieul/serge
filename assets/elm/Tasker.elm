@@ -20,7 +20,7 @@ import Html5.DragDrop as DragDrop
 import Model exposing (..)
 import View exposing (..)
 import StoryTask exposing (StoryTask)
-import Api
+import Api exposing (MoveTaskRequest(..))
 
 
 -- MAIN
@@ -166,7 +166,10 @@ update msg model =
 
         FetchTasks (Ok tasks) ->
             { model
-                | taskEditors = List.map (taskToEditor model.context) tasks
+                | taskEditors =
+                    tasks
+                        |> List.map (taskToEditor model.context)
+                        |> orderTaskEditors
                 , dropdownStates = dropdownStatesForTasks tasks
             }
                 ! []
@@ -185,18 +188,11 @@ update msg model =
             { model | message = MessageError <| graphQLErrorToMessage "Creating the task failed" error } ! []
 
         RequestTaskUpdate task ->
-            let
-                updateVars =
-                    { task = task
-                    , uncomplete = task.completedOn == Nothing
-                    , unschedule = task.scheduledOn == Nothing
-                    }
-            in
-                model
-                    ! [ Api.updateTaskRequest updateVars
-                            |> Api.sendMutationRequest
-                            |> Task.attempt UpdateTask
-                      ]
+            model
+                ! [ Api.updateTaskRequest task
+                        |> Api.sendMutationRequest
+                        |> Task.attempt UpdateTask
+                  ]
 
         UpdateTask (Ok task) ->
             { model
@@ -287,41 +283,27 @@ update msg model =
                 )
 
         ShowOrdering ->
-            { model
-                | orderingModalState =
-                    Modal.visibleState
-
-                -- , reOrdered = List.filter (.task >> .completed >> not) model.taskEditors
-                , reOrdered = List.filter (not << .completed) model.taskEditors
-            }
-                ! []
+            { model | orderingModalState = Modal.visibleState } ! []
 
         HideOrdering ->
-            { model
-                | orderingModalState =
-                    Modal.hiddenState
-
-                -- replace re-ordered slice of updatedTasks within mocel.taskEditors
-                , taskEditors = model.taskEditors
-                , reOrdered = []
-            }
-                ! []
+            { model | orderingModalState = Modal.hiddenState } ! []
 
         DragDropMsg msg_ ->
             let
                 ( dragDropModel, result ) =
                     DragDrop.update msg_ model.dragDrop
 
-                newModel =
+                command =
                     case result of
                         Just ( dragged, dropped ) ->
-                            -- re-order the task dropped
-                            { model | reOrdered = model.reOrdered }
+                            Api.moveTaskRequest dragged.task (MoveTaskBefore dropped.task)
+                                |> Api.sendMutationRequest
+                                |> Task.attempt UpdateTask
 
                         Nothing ->
-                            model
+                            Cmd.none
             in
-                { newModel | dragDrop = dragDropModel } ! []
+                ( { model | dragDrop = dragDropModel }, command )
 
 
 updateModelForTime : Time -> Model -> Model
@@ -399,6 +381,29 @@ replaceTask id task model =
                 editor
         )
         model.taskEditors
+        |> orderTaskEditors
+
+
+orderTaskEditors : List TaskEditor -> List TaskEditor
+orderTaskEditors editors =
+    List.sortWith
+        (\a b ->
+            if a.task.scheduledOn == b.task.scheduledOn then
+                compare a.task.rank b.task.rank
+            else
+                case a.task.scheduledOn of
+                    Just scheduleA ->
+                        case b.task.scheduledOn of
+                            Just scheduleB ->
+                                compare scheduleA scheduleB
+
+                            Nothing ->
+                                LT
+
+                    Nothing ->
+                        GT
+        )
+        editors
 
 
 httpErrorToMessage : Http.Error -> String
