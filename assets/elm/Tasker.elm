@@ -166,7 +166,10 @@ update msg model =
 
         FetchTasks (Ok tasks) ->
             { model
-                | taskEditors = List.map (taskToEditor model.context) tasks
+                | taskEditors =
+                    tasks
+                        |> List.map (taskToEditor model.context)
+                        |> orderTaskEditors
                 , dropdownStates = dropdownStatesForTasks tasks
             }
                 ! []
@@ -378,6 +381,29 @@ replaceTask id task model =
                 editor
         )
         model.taskEditors
+        |> orderTaskEditors
+
+
+orderTaskEditors : List TaskEditor -> List TaskEditor
+orderTaskEditors editors =
+    List.sortWith
+        (\a b ->
+            if a.task.scheduledOn == b.task.scheduledOn then
+                compare a.task.rank b.task.rank
+            else
+                case a.task.scheduledOn of
+                    Just scheduleA ->
+                        case b.task.scheduledOn of
+                            Just scheduleB ->
+                                compare scheduleA scheduleB
+
+                            Nothing ->
+                                LT
+
+                    Nothing ->
+                        GT
+        )
+        editors
 
 
 httpErrorToMessage : Http.Error -> String
