@@ -8,7 +8,6 @@ module Api
         , updateTaskRequest
         , moveTaskRequest
         , deleteTaskRequest
-        , MoveTaskRequest(..)
         )
 
 import GraphQL.Request.Builder as B
@@ -20,7 +19,7 @@ import GraphQL.Client.Http as GraphQLClient
 -- LOCAL IMPORTS
 
 import StoryTask exposing (StoryTask)
-import Model exposing (Id, CreateTaskResponse)
+import Model exposing (Id, CreateTaskResponse, MoveTaskRequest(..))
 
 
 -- CONSTANTS
@@ -201,11 +200,6 @@ updateTaskRequest : StoryTask -> B.Request B.Mutation StoryTask
 updateTaskRequest task =
     updateTaskQuery
         |> B.request (makeUpdateTaskVars task)
-
-
-type MoveTaskRequest
-    = MoveTaskBefore StoryTask
-    | MoveTaskAfter StoryTask
 
 
 moveTaskRequest : StoryTask -> MoveTaskRequest -> B.Request B.Mutation StoryTask

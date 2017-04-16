@@ -7,7 +7,7 @@ module Model
         , DatePeriod(..)
         , Id
         , Model
-          -- , MoveTaskRequest
+        , MoveTaskRequest(..)
         , Msg(..)
         , TaskEditor
         , discardOldTasks
@@ -64,7 +64,7 @@ type alias Model =
     , showCompleted : Bool
     , showYesterday : Bool
     , confirmation : Confirmation
-    , dragDrop : DragDrop.Model TaskEditor TaskEditor
+    , dragDrop : DragDrop.Model TaskEditor MoveTaskRequest
     }
 
 
@@ -74,7 +74,7 @@ initialModel config navState =
     , navState = navState
     , summaryModalState = Modal.hiddenState
     , confirmModalState = Modal.hiddenState
-    , orderingModalState = Modal.hiddenState
+    , orderingModalState = Modal.visibleState --Modal.hiddenState
     , dropdownStates = Dict.empty
     , message = MessageNone
     , context = makeEmptyAppContext
@@ -124,7 +124,7 @@ type Msg
     | ChangeDatePeriod DatePeriod
     | ToggleShowCompleted
     | ToggleShowYesterday
-    | DragDropMsg (DragDrop.Msg TaskEditor TaskEditor)
+    | DragDropMsg (DragDrop.Msg TaskEditor MoveTaskRequest)
 
 
 
@@ -341,3 +341,8 @@ type alias CreateTaskResponse =
     { tid : String
     , task : StoryTask
     }
+
+
+type MoveTaskRequest
+    = MoveTaskBefore StoryTask
+    | MoveTaskAfter StoryTask

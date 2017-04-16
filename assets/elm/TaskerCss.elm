@@ -1,6 +1,7 @@
 module TaskerCss exposing (..)
 
 import Css exposing (..)
+import Css.Elements exposing (li)
 
 
 type CssClasses
@@ -15,6 +16,7 @@ type CssClasses
     | HoveredUnselectableTask
     | HoveredTask
     | PeriodBadge
+    | DropTarget
 
 
 css : Stylesheet
@@ -60,5 +62,17 @@ css =
         , class PeriodBadge
             [ display inlineBlock
             , width (px 75)
+            ]
+        , li
+            [ withClass DropTarget
+                [ backgroundColor (hex "e4e9fe")
+                , borderRadius (px 10)
+                , marginBottom (px 3)
+                , marginLeft (pct 25)
+                , marginTop (px 3)
+                , paddingBottom (px 0)
+                , paddingTop (px 0)
+                , width (pct 75)
+                ]
             ]
         ]

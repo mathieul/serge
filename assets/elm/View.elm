@@ -1,6 +1,6 @@
 module View exposing (..)
 
-import Dict
+import Dict exposing (Dict)
 import String.Extra
 import Html as H exposing (Html, div, text)
 import Html.Attributes as A exposing (class, classList)
@@ -162,33 +162,68 @@ summaryModal model =
             |> Modal.view model.summaryModalState
 
 
+
+--
+-- ORDERING MODAL
+--
+
+
+taskEditorsByDay : List TaskEditor -> Dict String (List TaskEditor)
+taskEditorsByDay taskList =
+    let
+        addOrAppend editor found =
+            case found of
+                Just list ->
+                    Just (editor :: list)
+
+                Nothing ->
+                    Just [ editor ]
+    in
+        List.foldl
+            (\editor dict ->
+                case editor.task.scheduledOn of
+                    Just scheduledOn ->
+                        Dict.update scheduledOn (addOrAppend editor) dict
+
+                    Nothing ->
+                        Dict.update "Later" (addOrAppend editor) dict
+            )
+            Dict.empty
+            taskList
+
+
 orderingModal : Model -> Html Msg
 orderingModal model =
     let
         dragged =
             DragDrop.getDragId model.dragDrop
 
-        hovered =
-            DragDrop.getDropId model.dragDrop
-
-        taskItem editor =
+        taskItem isDropTarget editor =
             let
-                attrs =
-                    List.concat
-                        [ DragDrop.draggable DragDropMsg editor
-                        , if Just editor == dragged && dragged == hovered then
-                            [ class "HoveredUnselectableTask" ]
-                          else if Just editor == dragged then
-                            [ class "UnselectableTask" ]
-                          else if Just editor == hovered then
-                            class "HoveredTask" :: (DragDrop.droppable DragDropMsg editor)
-                          else
-                            DragDrop.droppable DragDropMsg editor
-                        , [ class "justify-content-start" ]
-                        ]
-
+                -- attrs =
+                --     List.concat
+                --         [ DragDrop.draggable DragDropMsg editor
+                --         , if Just editor == dragged && dragged == hovered then
+                --             [ class "HoveredUnselectableTask" ]
+                --           else if Just editor == dragged then
+                --             [ class "UnselectableTask" ]
+                --           else if Just editor == hovered then
+                --             class "HoveredTask" :: (DragDrop.droppable DragDropMsg editor)
+                --           else
+                --             DragDrop.droppable DragDropMsg editor
+                --         , [ class "justify-content-start" ]
+                --         ]
                 ( periodLabel, periodBadge ) =
                     datePeriodConfig editor.period
+
+                attrs =
+                    List.concat
+                        [ if isDropTarget then
+                            DragDrop.draggable DragDropMsg editor
+                          else
+                            [ class "UnselectableTask" ]
+                        , [ class "justify-content-start" ]
+                        ]
             in
                 ListGroup.li [ ListGroup.attrs attrs ]
                     [ H.span
@@ -198,16 +233,57 @@ orderingModal model =
                     , Badge.pill [ class "ml-auto" ] [ H.i [ class "fa fa-arrows SortHandle" ] [] ]
                     ]
 
-        taskList =
+        taskEditorList =
             List.filter (not << .completed) model.taskEditors
-                |> List.map taskItem
+
+        dropTargetListForDay ( day, editors ) =
+            let
+                dropTarget request editor =
+                    let
+                        dropAttrs =
+                            if Just editor == dragged then
+                                [ class "UnselectableTask" ]
+                            else
+                                (class "DropTarget") :: (DragDrop.droppable DragDropMsg request)
+                    in
+                        ListGroup.li
+                            [ ListGroup.attrs dropAttrs ]
+                            [ text ">>>" ]
+
+                makeDropTargets before editors =
+                    dropTarget (MoveTaskBefore before.task) before
+                        :: List.concatMap
+                            (\editor ->
+                                [ taskItem False editor
+                                , dropTarget (MoveTaskAfter editor.task) editor
+                                ]
+                            )
+                            editors
+            in
+                case editors of
+                    first :: _ ->
+                        makeDropTargets first editors
+
+                    [] ->
+                        []
+
+        dropTargetList =
+            taskEditorsByDay taskEditorList
+                |> Dict.toList
+                |> List.concatMap dropTargetListForDay
     in
         Modal.config OrderingModalMsg
             |> Modal.large
             |> Modal.h4 [ class "w-100 text-center" ] [ text "Sort Tasks" ]
             |> Modal.body []
                 [ H.p [ class "mt-2 mb-4" ] [ text "Drag and drop tasks to re-order them." ]
-                , ListGroup.ul taskList
+                , ListGroup.ul <|
+                    case dragged of
+                        Just _ ->
+                            dropTargetList
+
+                        Nothing ->
+                            taskEditorList |> List.map (taskItem True)
                 ]
             |> Modal.footer [ class "mt-3" ]
                 [ Button.button
@@ -215,6 +291,12 @@ orderingModal model =
                     [ text "Done" ]
                 ]
             |> Modal.view model.orderingModalState
+
+
+
+--
+-- TASK LIST CARD
+--
 
 
 newTaskForm : Model -> Html Msg

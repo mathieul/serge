@@ -20,7 +20,7 @@ import Html5.DragDrop as DragDrop
 import Model exposing (..)
 import View exposing (..)
 import StoryTask exposing (StoryTask)
-import Api exposing (MoveTaskRequest(..))
+import Api
 
 
 -- MAIN
@@ -293,10 +293,13 @@ update msg model =
                 ( dragDropModel, result ) =
                     DragDrop.update msg_ model.dragDrop
 
+                _ =
+                    Debug.log "result" result
+
                 command =
                     case result of
-                        Just ( dragged, dropped ) ->
-                            Api.moveTaskRequest dragged.task (MoveTaskBefore dropped.task)
+                        Just ( editorDragged, moveRequest ) ->
+                            Api.moveTaskRequest editorDragged.task moveRequest
                                 |> Api.sendMutationRequest
                                 |> Task.attempt UpdateTask
 
