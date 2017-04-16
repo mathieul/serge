@@ -291,25 +291,10 @@ taskSelectionTabs model =
                 [ Yesterday, Today, Tomorrow, Later ]
             else
                 [ Today, Tomorrow, Later ]
-
-        theTabs =
-            tabPeriods
-                |> List.map aTab
-                |> (::)
-                    (H.li
-                        [ class "nav-item SortButton" ]
-                        [ Button.button
-                            [ Button.secondary
-                            , Button.small
-                            , Button.onClick ShowOrdering
-                            ]
-                            [ H.i [ class "fa fa-sort" ] []
-                            , text " Sort"
-                            ]
-                        ]
-                    )
     in
-        H.ul [ class "nav nav-tabs card-header-tabs" ] theTabs
+        H.ul
+            [ class "nav nav-tabs card-header-tabs" ]
+            (List.map aTab tabPeriods)
 
 
 datePeriodConfig : DatePeriod -> ( String, String )
@@ -385,25 +370,37 @@ taskCompletionInfo editors model =
             [ div [ class "col pl-3" ]
                 [ text label ]
             , div [ class "col pr-3 text-right" ]
-                [ H.label [ A.for "show-yesterday" ] [ text "show yesterday" ]
-                , text " "
-                , H.input
-                    [ A.type_ "checkbox"
-                    , A.id "show-yesterday"
-                    , A.checked model.showYesterday
-                    , class "mr-4"
-                    , onClick ToggleShowYesterday
+                [ H.span []
+                    [ H.label [ A.for "show-yesterday" ] [ text "show yesterday" ]
+                    , text " "
+                    , H.input
+                        [ A.type_ "checkbox"
+                        , A.id "show-yesterday"
+                        , A.checked model.showYesterday
+                        , class "mr-4"
+                        , onClick ToggleShowYesterday
+                        ]
+                        []
                     ]
-                    []
-                , H.label [ A.for "show-completed" ] [ text "show completed" ]
-                , text " "
-                , H.input
-                    [ A.type_ "checkbox"
-                    , A.id "show-completed"
-                    , A.checked model.showCompleted
-                    , onClick ToggleShowCompleted
+                , H.span [ class "mr-4" ]
+                    [ H.label [ A.for "show-completed" ] [ text "show completed" ]
+                    , text " "
+                    , H.input
+                        [ A.type_ "checkbox"
+                        , A.id "show-completed"
+                        , A.checked model.showCompleted
+                        , onClick ToggleShowCompleted
+                        ]
+                        []
                     ]
-                    []
+                , Button.button
+                    [ Button.primary
+                    , Button.small
+                    , Button.onClick ShowOrdering
+                    ]
+                    [ H.i [ class "fa fa-sort" ] []
+                    , text " Sort"
+                    ]
                 ]
             ]
 
