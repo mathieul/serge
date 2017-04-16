@@ -239,16 +239,13 @@ orderingModal model =
         dropTargetListForDay ( day, editors ) =
             let
                 dropTarget request editor =
-                    let
-                        dropAttrs =
-                            if Just editor == dragged then
-                                [ class "UnselectableTask" ]
-                            else
-                                (class "DropTarget") :: (DragDrop.droppable DragDropMsg request)
-                    in
-                        ListGroup.li
-                            [ ListGroup.attrs dropAttrs ]
-                            [ text ">>>" ]
+                    ListGroup.li
+                        [ ListGroup.attrs <| (class "DropTarget") :: (DragDrop.droppable DragDropMsg request) ]
+                        [ H.i [ class "fa fa-chevron-right" ] []
+                        , H.i [ class "fa fa-chevron-right" ] []
+                        , H.i [ class "fa fa-chevron-right" ] []
+                        , H.span [ class "text-muted" ] [ text editor.task.label ]
+                        ]
 
                 makeDropTargets before editors =
                     dropTarget (MoveTaskBefore before.task) before
