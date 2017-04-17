@@ -52,8 +52,8 @@ type alias Model =
     , navState : Navbar.State
     , summaryModalState : Modal.State
     , confirmModalState : Modal.State
-    , orderingModalState : Modal.State
     , dropdownStates : Dict String Dropdown.State
+    , orderingMode : Bool
     , message : AppMessage
     , context : AppContext
     , timeZone : TimeZone
@@ -74,8 +74,8 @@ initialModel config navState =
     , navState = navState
     , summaryModalState = Modal.hiddenState
     , confirmModalState = Modal.hiddenState
-    , orderingModalState = Modal.hiddenState
     , dropdownStates = Dict.empty
+    , orderingMode = False
     , message = MessageNone
     , context = makeEmptyAppContext
     , timeZone = TimeZones.utc ()
@@ -99,7 +99,6 @@ type Msg
     | NavMsg Navbar.State
     | SummaryModalMsg Modal.State
     | ConfirmModalMsg Modal.State
-    | OrderingModalMsg Modal.State
     | DropdownMsg String Dropdown.State
     | ShowSummary
     | HideSummary

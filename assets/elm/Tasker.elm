@@ -107,9 +107,6 @@ update msg model =
         ConfirmModalMsg state ->
             { model | confirmModalState = state } ! []
 
-        OrderingModalMsg state ->
-            { model | orderingModalState = state } ! []
-
         DropdownMsg name state ->
             { model | dropdownStates = Dict.insert name state model.dropdownStates } ! []
 
@@ -283,10 +280,10 @@ update msg model =
                 )
 
         ShowOrdering ->
-            { model | orderingModalState = Modal.visibleState } ! []
+            { model | orderingMode = True } ! []
 
         HideOrdering ->
-            { model | orderingModalState = Modal.hiddenState } ! []
+            { model | orderingMode = False } ! []
 
         DragDropMsg msg_ ->
             let

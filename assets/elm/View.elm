@@ -35,7 +35,6 @@ view model =
         , mainContent model
         , summaryModal model
         , confirmModal model
-        , orderingModal model
         ]
 
 
@@ -84,116 +83,26 @@ mainContent model =
                         ]
                     ]
                 ]
-            , Card.config [ Card.attrs [ class "mt-3" ] ]
-                |> Card.block []
-                    [ Card.custom <| newTaskForm model
-                    , Card.custom <| tasksCardView model
-                    ]
-                |> Card.view
+            , if model.orderingMode then
+                orderingCard model
+              else
+                taskCard model
             ]
         ]
 
 
-confirmModal : Model -> Html Msg
-confirmModal model =
-    let
-        cfg =
-            model.confirmation
-    in
-        Modal.config ConfirmModalMsg
-            |> Modal.h4 [ class "w-100 -text-center" ] [ text cfg.title ]
-            |> Modal.body []
-                [ H.p [ class "lead" ] [ text cfg.text ] ]
-            |> Modal.footer []
-                [ Button.button
-                    [ Button.secondary, Button.onClick cfg.msgCancel ]
-                    [ text cfg.labelCancel ]
-                , Button.button
-                    [ cfg.btnOk
-                    , Button.onClick cfg.msgOk
-                    , Button.attrs [ A.style [ ( "min-width", "100px" ) ] ]
-                    ]
-                    [ text cfg.labelOk ]
-                ]
-            |> Modal.view model.confirmModalState
+taskCard : Model -> Html Msg
+taskCard model =
+    Card.config [ Card.attrs [ class "mt-3" ] ]
+        |> Card.block []
+            [ Card.custom <| newTaskForm model
+            , Card.custom <| tasksCardView model
+            ]
+        |> Card.view
 
 
-summaryModal : Model -> Html Msg
-summaryModal model =
-    let
-        completedTasks =
-            List.filter .completed model.taskEditors
-
-        isScheduled editor =
-            not editor.completed
-                && (Maybe.map (\date -> date <= model.context.today) editor.task.scheduledOn |> Maybe.withDefault False)
-
-        scheduledTasks =
-            List.filter isScheduled model.taskEditors
-
-        summaryTaskView editor =
-            H.li [] [ text editor.task.label ]
-
-        shortYesterday =
-            formatShortDate <| earliestYesterday completedTasks
-    in
-        Modal.config SummaryModalMsg
-            |> Modal.h4 [ class "w-100 text-center" ] [ text "Scrum Summary" ]
-            |> Modal.body []
-                [ div [ class "mt-3 mb-4" ]
-                    [ H.h6 [ class "text-center mb-3" ]
-                        [ text "Yesterday"
-                        , H.small [ class "ml-1 text-muted" ]
-                            [ text <| "(" ++ shortYesterday ++ ")" ]
-                        ]
-                    , H.ul [] (List.map summaryTaskView completedTasks)
-                    ]
-                , div [ class "mt-3 mb-4" ]
-                    [ H.h6 [ class "text-center mb-3" ]
-                        [ text "Today" ]
-                    , H.ul [] (List.map summaryTaskView scheduledTasks)
-                    ]
-                ]
-            |> Modal.footer []
-                [ Button.button
-                    [ Button.primary, Button.onClick HideSummary ]
-                    [ text "Done" ]
-                ]
-            |> Modal.view model.summaryModalState
-
-
-
---
--- ORDERING MODAL
---
-
-
-taskEditorsByDay : List TaskEditor -> Dict String (List TaskEditor)
-taskEditorsByDay taskList =
-    let
-        addOrAppend editor found =
-            case found of
-                Just list ->
-                    Just (editor :: list)
-
-                Nothing ->
-                    Just [ editor ]
-    in
-        List.foldl
-            (\editor dict ->
-                case editor.task.scheduledOn of
-                    Just scheduledOn ->
-                        Dict.update scheduledOn (addOrAppend editor) dict
-
-                    Nothing ->
-                        Dict.update "Later" (addOrAppend editor) dict
-            )
-            Dict.empty
-            taskList
-
-
-orderingModal : Model -> Html Msg
-orderingModal model =
+orderingCard : Model -> Html Msg
+orderingCard model =
     let
         dragged =
             DragDrop.getDragId model.dragDrop
@@ -292,26 +201,132 @@ orderingModal model =
                 |> List.map dropTargetListForDay
                 |> div []
     in
-        Modal.config OrderingModalMsg
-            |> Modal.large
-            |> Modal.h4 [ class "w-100 text-center" ] [ text "Sort Tasks" ]
-            |> Modal.body []
-                [ H.p [ class "mt-2 mb-4" ] [ text "Drag and drop tasks to re-order them." ]
-                , case dragged of
-                    Just _ ->
-                        dropTargetList
+        Card.config [ Card.attrs [ class "mt-3" ] ]
+            |> Card.block []
+                [ Card.custom <|
+                    div []
+                        [ H.h3 [] [ text "Order Tasks" ]
+                        , H.p [ class "mt-2 mb-4" ]
+                            [ text "Drag and drop tasks to re-order them." ]
+                        , case dragged of
+                            Just _ ->
+                                dropTargetList
 
-                    Nothing ->
-                        taskEditorList
-                            |> List.map (taskItem True)
-                            |> ListGroup.ul
+                            Nothing ->
+                                taskEditorList
+                                    |> List.map (taskItem True)
+                                    |> ListGroup.ul
+                        ]
                 ]
-            |> Modal.footer [ class "mt-3" ]
+            |> Card.footer []
+                [ div [ class "col pr-3 text-right" ]
+                    [ Button.button
+                        [ Button.primary
+                        , Button.small
+                        , Button.onClick HideOrdering
+                        ]
+                        [ text "Done" ]
+                    ]
+                ]
+            |> Card.view
+
+
+confirmModal : Model -> Html Msg
+confirmModal model =
+    let
+        cfg =
+            model.confirmation
+    in
+        Modal.config ConfirmModalMsg
+            |> Modal.h4 [ class "w-100 -text-center" ] [ text cfg.title ]
+            |> Modal.body []
+                [ H.p [ class "lead" ] [ text cfg.text ] ]
+            |> Modal.footer []
                 [ Button.button
-                    [ Button.primary, Button.onClick HideOrdering ]
+                    [ Button.secondary, Button.onClick cfg.msgCancel ]
+                    [ text cfg.labelCancel ]
+                , Button.button
+                    [ cfg.btnOk
+                    , Button.onClick cfg.msgOk
+                    , Button.attrs [ A.style [ ( "min-width", "100px" ) ] ]
+                    ]
+                    [ text cfg.labelOk ]
+                ]
+            |> Modal.view model.confirmModalState
+
+
+summaryModal : Model -> Html Msg
+summaryModal model =
+    let
+        completedTasks =
+            List.filter .completed model.taskEditors
+
+        isScheduled editor =
+            not editor.completed
+                && (Maybe.map (\date -> date <= model.context.today) editor.task.scheduledOn |> Maybe.withDefault False)
+
+        scheduledTasks =
+            List.filter isScheduled model.taskEditors
+
+        summaryTaskView editor =
+            H.li [] [ text editor.task.label ]
+
+        shortYesterday =
+            formatShortDate <| earliestYesterday completedTasks
+    in
+        Modal.config SummaryModalMsg
+            |> Modal.h4 [ class "w-100 text-center" ] [ text "Scrum Summary" ]
+            |> Modal.body []
+                [ div [ class "mt-3 mb-4" ]
+                    [ H.h6 [ class "text-center mb-3" ]
+                        [ text "Yesterday"
+                        , H.small [ class "ml-1 text-muted" ]
+                            [ text <| "(" ++ shortYesterday ++ ")" ]
+                        ]
+                    , H.ul [] (List.map summaryTaskView completedTasks)
+                    ]
+                , div [ class "mt-3 mb-4" ]
+                    [ H.h6 [ class "text-center mb-3" ]
+                        [ text "Today" ]
+                    , H.ul [] (List.map summaryTaskView scheduledTasks)
+                    ]
+                ]
+            |> Modal.footer []
+                [ Button.button
+                    [ Button.primary, Button.onClick HideSummary ]
                     [ text "Done" ]
                 ]
-            |> Modal.view model.orderingModalState
+            |> Modal.view model.summaryModalState
+
+
+
+--
+-- ORDERING MODAL
+--
+
+
+taskEditorsByDay : List TaskEditor -> Dict String (List TaskEditor)
+taskEditorsByDay taskList =
+    let
+        addOrAppend editor found =
+            case found of
+                Just list ->
+                    Just (editor :: list)
+
+                Nothing ->
+                    Just [ editor ]
+    in
+        List.foldl
+            (\editor dict ->
+                case editor.task.scheduledOn of
+                    Just scheduledOn ->
+                        Dict.update scheduledOn (addOrAppend editor) dict
+
+                    Nothing ->
+                        Dict.update "Later" (addOrAppend editor) dict
+            )
+            Dict.empty
+            taskList
 
 
 
