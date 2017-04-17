@@ -13,8 +13,6 @@ type CssClasses
     | SortButton
     | SortHandle
     | UnselectableTask
-    | HoveredUnselectableTask
-    | HoveredTask
     | PeriodBadge
     | DropTarget
 
@@ -50,15 +48,6 @@ css =
             [ fontSize (px 16) ]
         , class UnselectableTask
             [ opacity (num 0.4) ]
-        , class HoveredUnselectableTask
-            [ backgroundColor (hex "f2dede")
-            , color (hex "a94442")
-            , opacity (num 0.4)
-            ]
-        , class HoveredTask
-            [ backgroundColor (hex "dff0d8")
-            , color (hex "3c763d")
-            ]
         , class PeriodBadge
             [ display inlineBlock
             , width (px 75)
@@ -70,11 +59,11 @@ css =
                 , borderRadius (px 10) |> important
                 , color (hex "959")
                 , marginBottom (px 3)
-                , marginLeft (pct 25)
+                , marginLeft (pct 50)
                 , marginTop (px 3)
                 , paddingBottom (px 5)
                 , paddingTop (px 5)
-                , width (pct 75)
+                , width (pct 50)
                 ]
             ]
         ]

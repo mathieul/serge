@@ -200,19 +200,6 @@ orderingModal model =
 
         taskItem isDropTarget editor =
             let
-                -- attrs =
-                --     List.concat
-                --         [ DragDrop.draggable DragDropMsg editor
-                --         , if Just editor == dragged && dragged == hovered then
-                --             [ class "HoveredUnselectableTask" ]
-                --           else if Just editor == dragged then
-                --             [ class "UnselectableTask" ]
-                --           else if Just editor == hovered then
-                --             class "HoveredTask" :: (DragDrop.droppable DragDropMsg editor)
-                --           else
-                --             DragDrop.droppable DragDropMsg editor
-                --         , [ class "justify-content-start" ]
-                --         ]
                 ( periodLabel, periodBadge ) =
                     datePeriodConfig editor.period
 
@@ -240,11 +227,10 @@ orderingModal model =
             let
                 dropTarget request editor =
                     ListGroup.li
-                        [ ListGroup.attrs <| (class "DropTarget") :: (DragDrop.droppable DragDropMsg request) ]
+                        [ ListGroup.attrs <| (class "DropTarget align-items-end") :: (DragDrop.droppable DragDropMsg request) ]
                         [ H.i [ class "fa fa-chevron-right" ] []
                         , H.i [ class "fa fa-chevron-right" ] []
                         , H.i [ class "fa fa-chevron-right" ] []
-                        , H.span [ class "text-muted" ] [ text editor.task.label ]
                         ]
 
                 makeDropTargets before editors =
@@ -255,32 +241,38 @@ orderingModal model =
                                 , dropTarget (MoveTaskAfter editor.task) editor
                                 ]
                             )
-                            editors
+                            (List.reverse editors)
             in
-                case editors of
-                    first :: _ ->
-                        makeDropTargets first editors
+                div []
+                    [ H.h6 [ class "text-muted" ] [ text day ]
+                    , ListGroup.ul <|
+                        case editors of
+                            first :: _ ->
+                                makeDropTargets first editors
 
-                    [] ->
-                        []
+                            [] ->
+                                []
+                    ]
 
         dropTargetList =
             taskEditorsByDay taskEditorList
                 |> Dict.toList
-                |> List.concatMap dropTargetListForDay
+                |> List.map dropTargetListForDay
+                |> div []
     in
         Modal.config OrderingModalMsg
             |> Modal.large
             |> Modal.h4 [ class "w-100 text-center" ] [ text "Sort Tasks" ]
             |> Modal.body []
                 [ H.p [ class "mt-2 mb-4" ] [ text "Drag and drop tasks to re-order them." ]
-                , ListGroup.ul <|
-                    case dragged of
-                        Just _ ->
-                            dropTargetList
+                , case dragged of
+                    Just _ ->
+                        dropTargetList
 
-                        Nothing ->
-                            taskEditorList |> List.map (taskItem True)
+                    Nothing ->
+                        taskEditorList
+                            |> List.map (taskItem True)
+                            |> ListGroup.ul
                 ]
             |> Modal.footer [ class "mt-3" ]
                 [ Button.button
