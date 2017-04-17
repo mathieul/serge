@@ -15,6 +15,7 @@ type CssClasses
     | UnselectableTask
     | PeriodBadge
     | DropTarget
+    | DropTargetHighlight
 
 
 css : Stylesheet
@@ -55,7 +56,7 @@ css =
         , li
             [ withClass DropTarget
                 [ backgroundColor (hex "c7e6c7")
-                , borderColor (hex "5cb85c")
+                , borderColor (hex "a3d7a3")
                 , borderRadius (px 5) |> important
                 , color (hex "959")
                 , fontSize (px 10)
@@ -65,6 +66,12 @@ css =
                 , paddingBottom (px 5)
                 , paddingTop (px 5)
                 , width (pct 50)
+                , withClass DropTargetHighlight
+                    [ hover
+                        [ backgroundColor (hex "a8d6fe")
+                        , borderColor (hex "75bffe")
+                        ]
+                    ]
                 ]
             ]
         ]

@@ -223,14 +223,22 @@ orderingModal model =
         taskEditorList =
             List.filter (not << .completed) model.taskEditors
 
+        dropTargetAttrs request editor =
+            if Just editor == dragged then
+                [ class "hidden-xs-up" ]
+            else
+                List.concat
+                    [ [ class "DropTarget align-items-center justify-content-between"
+                      , classList [ ( "DropTargetHighlight", dragged /= Nothing ) ]
+                      ]
+                    , DragDrop.droppable DragDropMsg request
+                    ]
+
         dropTargetListForDay ( day, editors ) =
             let
                 dropTarget request editor =
                     ListGroup.li
-                        [ ListGroup.attrs <|
-                            (class "DropTarget align-items-center justify-content-between")
-                                :: (DragDrop.droppable DragDropMsg request)
-                        ]
+                        [ ListGroup.attrs <| dropTargetAttrs request editor ]
                         [ div []
                             [ H.i [ class "fa fa-chevron-right" ] []
                             , H.i [ class "fa fa-chevron-right" ] []
