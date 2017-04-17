@@ -55,9 +55,10 @@ css =
         , li
             [ withClass DropTarget
                 [ backgroundColor (hex "c7e6c7")
-                , borderStyle none
-                , borderRadius (px 10) |> important
+                , borderColor (hex "5cb85c")
+                , borderRadius (px 5) |> important
                 , color (hex "959")
+                , fontSize (px 10)
                 , marginBottom (px 3)
                 , marginLeft (pct 50)
                 , marginTop (px 3)

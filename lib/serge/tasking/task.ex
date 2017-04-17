@@ -47,30 +47,34 @@ defmodule Serge.Tasking.Task do
       where: t.user_id == ^user_id,
       order_by: [desc: :rank],
       limit: 1)
-    if is_nil(scheduled_on) do
-      from(t in selection, where: is_nil(t.scheduled_on))
-    else
-      selection |> where(scheduled_on: ^scheduled_on)
-    end
+    with_same_scheduled_on(selection, scheduled_on)
   end
 
   def before_task(scope \\ __MODULE__, task) do
-    from(t in scope,
+    selection = from(t in scope,
       where: t.user_id == ^task.user_id,
-      where: t.scheduled_on == ^task.scheduled_on,
       where: t.rank < ^task.rank,
       order_by: [desc: :rank],
       limit: 1
     )
+    with_same_scheduled_on(selection, task.scheduled_on)
   end
 
   def after_task(scope \\ __MODULE__, task) do
-    from(t in scope,
+    selection = from(t in scope,
       where: t.user_id == ^task.user_id,
-      where: t.scheduled_on == ^task.scheduled_on,
       where: t.rank > ^task.rank,
       order_by: [asc: :rank],
       limit: 1
     )
+    with_same_scheduled_on(selection, task.scheduled_on)
+  end
+
+  defp with_same_scheduled_on(scope \\ __MODULE__, scheduled_on) do
+    if is_nil(scheduled_on) do
+      from(t in scope, where: is_nil(t.scheduled_on))
+    else
+      scope |> where(scheduled_on: ^scheduled_on)
+    end
   end
 end

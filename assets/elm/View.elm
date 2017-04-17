@@ -227,11 +227,24 @@ orderingModal model =
             let
                 dropTarget request editor =
                     ListGroup.li
-                        [ ListGroup.attrs <| (class "DropTarget align-items-end") :: (DragDrop.droppable DragDropMsg request) ]
-                        [ H.i [ class "fa fa-chevron-right" ] []
-                        , H.i [ class "fa fa-chevron-right" ] []
-                        , H.i [ class "fa fa-chevron-right" ] []
+                        [ ListGroup.attrs <|
+                            (class "DropTarget align-items-center justify-content-between")
+                                :: (DragDrop.droppable DragDropMsg request)
                         ]
+                        [ div []
+                            [ H.i [ class "fa fa-chevron-right" ] []
+                            , H.i [ class "fa fa-chevron-right" ] []
+                            , H.i [ class "fa fa-chevron-right" ] []
+                            ]
+                        , div []
+                            [ H.i [ class "fa fa-chevron-left" ] []
+                            , H.i [ class "fa fa-chevron-left" ] []
+                            , H.i [ class "fa fa-chevron-left" ] []
+                            ]
+                        ]
+
+                taskReference editor =
+                    ListGroup.li
 
                 makeDropTargets before editors =
                     dropTarget (MoveTaskBefore before.task) before
@@ -241,14 +254,14 @@ orderingModal model =
                                 , dropTarget (MoveTaskAfter editor.task) editor
                                 ]
                             )
-                            (List.reverse editors)
+                            editors
             in
                 div []
                     [ H.h6 [ class "text-muted" ] [ text day ]
                     , ListGroup.ul <|
-                        case editors of
-                            first :: _ ->
-                                makeDropTargets first editors
+                        case List.reverse editors of
+                            first :: remainder ->
+                                makeDropTargets first (first :: remainder)
 
                             [] ->
                                 []
