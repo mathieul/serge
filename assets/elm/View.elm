@@ -595,16 +595,24 @@ taskControl model editor =
             Dict.get editor.task.id model.dropdownStates
                 |> Maybe.withDefault Dropdown.initialState
 
+        completedOn =
+            case model.datePeriod of
+                Yesterday ->
+                    Just model.context.yesterday
+
+                _ ->
+                    Just model.context.today
+
         completionButton =
             if editor.completed then
                 Dropdown.buttonItem
-                    [ onClick <| StoryTask.toggleCompleted RequestTaskUpdate model.context.today editor.task ]
+                    [ onClick <| StoryTask.updateCompletedOn RequestTaskUpdate Nothing editor.task ]
                     [ H.i [ class "fa fa-square-o" ] []
                     , text " Uncomplete"
                     ]
             else
                 Dropdown.buttonItem
-                    [ onClick <| StoryTask.toggleCompleted RequestTaskUpdate model.context.today editor.task ]
+                    [ onClick <| StoryTask.updateCompletedOn RequestTaskUpdate completedOn editor.task ]
                     [ H.i [ class "fa fa-check-square-o" ] []
                     , text " Complete"
                     ]

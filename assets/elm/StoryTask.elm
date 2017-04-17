@@ -3,7 +3,7 @@ module StoryTask
         ( StoryTask
         , makeNewTask
         , changeSchedule
-        , toggleCompleted
+        , updateCompletedOn
         )
 
 -- MODEL
@@ -37,15 +37,6 @@ changeSchedule msg scheduledOn task =
     msg { task | scheduledOn = scheduledOn }
 
 
-toggleCompleted : (StoryTask -> msg) -> String -> StoryTask -> msg
-toggleCompleted msg today task =
-    msg
-        { task
-            | completedOn =
-                case task.completedOn of
-                    Just _ ->
-                        Nothing
-
-                    Nothing ->
-                        Just today
-        }
+updateCompletedOn : (StoryTask -> msg) -> Maybe String -> StoryTask -> msg
+updateCompletedOn msg completedOn task =
+    msg { task | completedOn = completedOn }
