@@ -67,10 +67,8 @@ css =
                 , paddingTop (px 5)
                 , width (pct 50)
                 , withClass DropTargetHighlight
-                    [ hover
-                        [ backgroundColor (hex "a8d6fe")
-                        , borderColor (hex "75bffe")
-                        ]
+                    [ backgroundColor (hex "a8d6fe")
+                    , borderColor (hex "75bffe")
                     ]
                 ]
             ]

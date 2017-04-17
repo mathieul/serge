@@ -198,6 +198,17 @@ orderingModal model =
         dragged =
             DragDrop.getDragId model.dragDrop
 
+        hovered =
+            case DragDrop.getDropId model.dragDrop of
+                Just (MoveTaskBefore task) ->
+                    Just task
+
+                Just (MoveTaskAfter task) ->
+                    Just task
+
+                Nothing ->
+                    Nothing
+
         taskItem isDropTarget editor =
             let
                 ( periodLabel, periodBadge ) =
@@ -229,7 +240,7 @@ orderingModal model =
             else
                 List.concat
                     [ [ class "DropTarget align-items-center justify-content-between"
-                      , classList [ ( "DropTargetHighlight", dragged /= Nothing ) ]
+                      , classList [ ( "DropTargetHighlight", hovered == Just editor.task ) ]
                       ]
                     , DragDrop.droppable DragDropMsg request
                     ]
