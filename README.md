@@ -43,9 +43,10 @@ Bump application version in `mix.exs` (i.e.: 0.5.1) and run as user `elixir`:
     $ ./node_modules/.bin/webpack -p
     $ cd ..
     $ mix do phx.digest, compile, release
-    $ cp -r rel/serge/releases/0.5.1/ /apps/serge/releases/
+    $ cp -r rel/serge/releases/0.7.0/ /apps/serge/releases/
     $ cd /apps/serge
-    $ ./bin/serge upgrade 0.5.1
+    $ ./bin/serge upgrade 0.7.0
+    $ ./bin/serge restart
 
 As user `root`:
 
