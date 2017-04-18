@@ -6,8 +6,8 @@
     "watch": "webpack -w --stdin"
   },
   "dependencies": {
-    "phoenix": "file:../deps/phoenix",
-    "phoenix_html": "file:../deps/phoenix_html"
+    "phoenix": "file:../../../deps/phoenix",
+    "phoenix_html": "file:../../../deps/phoenix_html"
   },
   "devDependencies": {
     "autoprefixer": "^6.7.7",

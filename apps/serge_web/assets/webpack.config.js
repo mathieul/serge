@@ -23,8 +23,8 @@ module.exports = {
     ],
     extensions: ['.js', '.elm'],
     // alias: {
-    //   phoenix: path.resolve(__dirname, '../deps/phoenix/assets/js/phoenix.js'),
-    //   phoenix_html: path.resolve(__dirname, '../deps/phoenix_html/web/static/js/phoenix_html.js'),
+    //   phoenix: path.resolve(__dirname, '../../../deps/phoenix/assets/js/phoenix.js'),
+    //   phoenix_html: path.resolve(__dirname, '../../../deps/phoenix_html/web/static/js/phoenix_html.js'),
     // }
   },
   plugins: [
