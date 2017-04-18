@@ -7,23 +7,12 @@
 # Generated on crash by the VM
 erl_crash.dump
 
-# Static artifacts
-/apps/serge_web/assets/node_modules
-/apps/serge_web/assets/elm-stuff
-.DS_Store
-
-# Since we are building assets from web/static,
-# we ignore priv/static. You may want to comment
-# this depending on your deployment strategy.
-/apps/serge_web/priv/static/
-/apps/serge_web/assets/vendor/*.js
-/apps/serge_web/assets/css/app.css
-
 # The config/prod.secret.exs file by default contains sensitive
 # data and you should not commit it into version control.
 #
 # Alternatively, you may comment the line below and commit the
 # secrets file as long as you replace its contents by environment
 # variables.
+/apps/activity/config/prod.secret.exs
 /apps/serge/config/prod.secret.exs
 /apps/serge_web/config/prod.secret.exs
