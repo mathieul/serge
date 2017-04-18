@@ -16,7 +16,7 @@ defmodule GitHub do
   # Public API
 
   def client do
-    Application.get_env(:serge, GitHub)
+    Application.get_env(:serge_web, GitHub)
     |> Keyword.merge(config())
     |> OAuth2.Client.new()
   end
