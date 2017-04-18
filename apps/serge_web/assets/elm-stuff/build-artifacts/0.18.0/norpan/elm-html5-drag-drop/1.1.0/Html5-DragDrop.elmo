@@ -1,0 +1,188 @@
+var _norpan$elm_html5_drag_drop$Html5_DragDrop$getDropId = function (model) {
+	var _p0 = model;
+	switch (_p0.ctor) {
+		case 'NotDragging':
+			return _elm_lang$core$Maybe$Nothing;
+		case 'Dragging':
+			return _elm_lang$core$Maybe$Nothing;
+		default:
+			return _elm_lang$core$Maybe$Just(_p0._1);
+	}
+};
+var _norpan$elm_html5_drag_drop$Html5_DragDrop$getDragId = function (model) {
+	var _p1 = model;
+	switch (_p1.ctor) {
+		case 'NotDragging':
+			return _elm_lang$core$Maybe$Nothing;
+		case 'Dragging':
+			return _elm_lang$core$Maybe$Just(_p1._0);
+		default:
+			return _elm_lang$core$Maybe$Just(_p1._0);
+	}
+};
+var _norpan$elm_html5_drag_drop$Html5_DragDrop$DraggedOver = F2(
+	function (a, b) {
+		return {ctor: 'DraggedOver', _0: a, _1: b};
+	});
+var _norpan$elm_html5_drag_drop$Html5_DragDrop$Dragging = function (a) {
+	return {ctor: 'Dragging', _0: a};
+};
+var _norpan$elm_html5_drag_drop$Html5_DragDrop$NotDragging = {ctor: 'NotDragging'};
+var _norpan$elm_html5_drag_drop$Html5_DragDrop$init = _norpan$elm_html5_drag_drop$Html5_DragDrop$NotDragging;
+var _norpan$elm_html5_drag_drop$Html5_DragDrop$updateCommon = F3(
+	function (sticky, msg, model) {
+		var _p2 = {ctor: '_Tuple3', _0: msg, _1: model, _2: sticky};
+		_v2_8:
+		do {
+			if (_p2.ctor === '_Tuple3') {
+				switch (_p2._0.ctor) {
+					case 'DragStart':
+						return {
+							ctor: '_Tuple2',
+							_0: _norpan$elm_html5_drag_drop$Html5_DragDrop$Dragging(_p2._0._0),
+							_1: _elm_lang$core$Maybe$Nothing
+						};
+					case 'DragEnd':
+						if ((_p2._1.ctor === 'DraggedOver') && (_p2._2 === true)) {
+							return {
+								ctor: '_Tuple2',
+								_0: _norpan$elm_html5_drag_drop$Html5_DragDrop$NotDragging,
+								_1: _elm_lang$core$Maybe$Just(
+									{ctor: '_Tuple2', _0: _p2._1._0, _1: _p2._1._1})
+							};
+						} else {
+							return {ctor: '_Tuple2', _0: _norpan$elm_html5_drag_drop$Html5_DragDrop$NotDragging, _1: _elm_lang$core$Maybe$Nothing};
+						}
+					case 'DragEnter':
+						switch (_p2._1.ctor) {
+							case 'Dragging':
+								return {
+									ctor: '_Tuple2',
+									_0: A2(_norpan$elm_html5_drag_drop$Html5_DragDrop$DraggedOver, _p2._1._0, _p2._0._0),
+									_1: _elm_lang$core$Maybe$Nothing
+								};
+							case 'DraggedOver':
+								return {
+									ctor: '_Tuple2',
+									_0: A2(_norpan$elm_html5_drag_drop$Html5_DragDrop$DraggedOver, _p2._1._0, _p2._0._0),
+									_1: _elm_lang$core$Maybe$Nothing
+								};
+							default:
+								break _v2_8;
+						}
+					case 'DragLeave':
+						if ((_p2._1.ctor === 'DraggedOver') && (_p2._2 === false)) {
+							return _elm_lang$core$Native_Utils.eq(_p2._0._0, _p2._1._1) ? {
+								ctor: '_Tuple2',
+								_0: _norpan$elm_html5_drag_drop$Html5_DragDrop$Dragging(_p2._1._0),
+								_1: _elm_lang$core$Maybe$Nothing
+							} : {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Maybe$Nothing};
+						} else {
+							break _v2_8;
+						}
+					default:
+						switch (_p2._1.ctor) {
+							case 'Dragging':
+								return {
+									ctor: '_Tuple2',
+									_0: _norpan$elm_html5_drag_drop$Html5_DragDrop$NotDragging,
+									_1: _elm_lang$core$Maybe$Just(
+										{ctor: '_Tuple2', _0: _p2._1._0, _1: _p2._0._0})
+								};
+							case 'DraggedOver':
+								return {
+									ctor: '_Tuple2',
+									_0: _norpan$elm_html5_drag_drop$Html5_DragDrop$NotDragging,
+									_1: _elm_lang$core$Maybe$Just(
+										{ctor: '_Tuple2', _0: _p2._1._0, _1: _p2._0._0})
+								};
+							default:
+								break _v2_8;
+						}
+				}
+			} else {
+				break _v2_8;
+			}
+		} while(false);
+		return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Maybe$Nothing};
+	});
+var _norpan$elm_html5_drag_drop$Html5_DragDrop$update = _norpan$elm_html5_drag_drop$Html5_DragDrop$updateCommon(false);
+var _norpan$elm_html5_drag_drop$Html5_DragDrop$updateSticky = _norpan$elm_html5_drag_drop$Html5_DragDrop$updateCommon(true);
+var _norpan$elm_html5_drag_drop$Html5_DragDrop$Drop = function (a) {
+	return {ctor: 'Drop', _0: a};
+};
+var _norpan$elm_html5_drag_drop$Html5_DragDrop$DragLeave = function (a) {
+	return {ctor: 'DragLeave', _0: a};
+};
+var _norpan$elm_html5_drag_drop$Html5_DragDrop$DragEnter = function (a) {
+	return {ctor: 'DragEnter', _0: a};
+};
+var _norpan$elm_html5_drag_drop$Html5_DragDrop$droppable = F2(
+	function (wrap, dropId) {
+		return {
+			ctor: '::',
+			_0: A2(
+				_elm_lang$html$Html_Events$on,
+				'dragenter',
+				_elm_lang$core$Json_Decode$succeed(
+					wrap(
+						_norpan$elm_html5_drag_drop$Html5_DragDrop$DragEnter(dropId)))),
+			_1: {
+				ctor: '::',
+				_0: A2(
+					_elm_lang$html$Html_Events$on,
+					'dragleave',
+					_elm_lang$core$Json_Decode$succeed(
+						wrap(
+							_norpan$elm_html5_drag_drop$Html5_DragDrop$DragLeave(dropId)))),
+				_1: {
+					ctor: '::',
+					_0: A3(
+						_elm_lang$html$Html_Events$onWithOptions,
+						'drop',
+						{stopPropagation: true, preventDefault: true},
+						_elm_lang$core$Json_Decode$succeed(
+							wrap(
+								_norpan$elm_html5_drag_drop$Html5_DragDrop$Drop(dropId)))),
+					_1: {
+						ctor: '::',
+						_0: A2(_elm_lang$html$Html_Attributes$attribute, 'ondragover', 'event.stopPropagation(); event.preventDefault();'),
+						_1: {ctor: '[]'}
+					}
+				}
+			}
+		};
+	});
+var _norpan$elm_html5_drag_drop$Html5_DragDrop$DragEnd = {ctor: 'DragEnd'};
+var _norpan$elm_html5_drag_drop$Html5_DragDrop$DragStart = function (a) {
+	return {ctor: 'DragStart', _0: a};
+};
+var _norpan$elm_html5_drag_drop$Html5_DragDrop$draggable = F2(
+	function (wrap, drag) {
+		return {
+			ctor: '::',
+			_0: A2(_elm_lang$html$Html_Attributes$attribute, 'draggable', 'true'),
+			_1: {
+				ctor: '::',
+				_0: A2(
+					_elm_lang$html$Html_Events$on,
+					'dragstart',
+					_elm_lang$core$Json_Decode$succeed(
+						wrap(
+							_norpan$elm_html5_drag_drop$Html5_DragDrop$DragStart(drag)))),
+				_1: {
+					ctor: '::',
+					_0: A2(
+						_elm_lang$html$Html_Events$on,
+						'dragend',
+						_elm_lang$core$Json_Decode$succeed(
+							wrap(_norpan$elm_html5_drag_drop$Html5_DragDrop$DragEnd))),
+					_1: {
+						ctor: '::',
+						_0: A2(_elm_lang$html$Html_Attributes$attribute, 'ondragstart', 'event.dataTransfer.setData(\'text/plain\', \'\');'),
+						_1: {ctor: '[]'}
+					}
+				}
+			}
+		};
+	});
