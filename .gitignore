@@ -18,7 +18,6 @@ erl_crash.dump
 /apps/serge_web/priv/static/
 /apps/serge_web/assets/vendor/*.js
 /apps/serge_web/assets/css/app.css
-/rel/
 
 # The config/prod.secret.exs file by default contains sensitive
 # data and you should not commit it into version control.

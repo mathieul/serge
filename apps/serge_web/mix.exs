@@ -22,8 +22,10 @@ defmodule Serge.Web.Mixfile do
   #
   # Type `mix help compile.app` for more information.
   def application do
-    [mod: {Serge.Web.Application, []},
-     extra_applications: [:logger, :runtime_tools]]
+    [
+      mod: {Serge.Web.Application, []},
+      extra_applications: [:logger, :runtime_tools, :elixir_make]
+    ]
   end
 
   # Specifies which paths to compile per environment.
