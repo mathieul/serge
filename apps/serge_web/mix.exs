@@ -37,6 +37,7 @@ defmodule Serge.Web.Mixfile do
     [
       {:absinthe_plug, "~> 1.2.2"},
       {:absinthe, "~> 1.2.1"},
+      {:activity, in_umbrella: true},
       {:comeonin, "~> 3.0"},
       {:cowboy, "~> 1.1.2"},
       {:gettext, "~> 0.13.1"},
