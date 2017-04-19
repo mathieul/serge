@@ -200,7 +200,7 @@ defmodule Serge.Tasking do
       |> Repo.one
     case result do
       task = %Task{} ->
-        (@max_rank - task.rank) / 2 |> round
+        task.rank + ((@max_rank - task.rank) / 2) |> round
       _ ->
         @default_rank
     end
