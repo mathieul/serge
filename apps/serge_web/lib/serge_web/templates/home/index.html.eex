@@ -6,23 +6,34 @@
                                elm_module:     assigns[:elm_module],
                                elm_app_config: assigns[:elm_app_config] %>
 <% else %>
-  <div class="container">
-    <%= if get_flash(@conn, :info) do %>
-      <p class="alert alert-info" role="alert"><%= get_flash(@conn, :info) %></p>
-    <% end %>
-    <%= if get_flash(@conn, :error) do %>
-      <p class="alert alert-danger" role="alert"><%= get_flash(@conn, :error) %></p>
-    <% end %>
-    <div class="card mx-auto my-5 w-50">
-      <div class="card-header">
-        Featured
+  <nav class="navbar navbar-toggleable navbar-inverse bg-inverse">
+    <a class="navbar-brand" href="/">Tasker</a>
+  </nav>
+  <div class="container-fluid">
+    <div class="row d-flex align-items-stretch" style="height: 100vh;">
+      <div class="col-sm-4 bg-faded">
+        <div class="card mx-3 my-4">
+          <div class="card-header">
+            Featured
+          </div>
+          <div class="card-block">
+            <h4 class="card-title">Authentication</h4>
+            <p class="card-text">Please authenticate to access the application.</p>
+            <a class="btn btn-primary btn-lg" href="<%= auth_path @conn, :index, "github" %>">
+              Sign in with GitHub
+            </a>
+          </div>
+        </div>
       </div>
-      <div class="card-block">
-        <h4 class="card-title">Authentication</h4>
-        <p class="card-text">Please authenticate to access the application.</p>
-        <a class="btn btn-primary btn-lg" href="<%= auth_path @conn, :index, "github" %>">
-          Sign in with GitHub
-        </a>
+      <div class="col-sm-8 p-3">
+        <%= if get_flash(@conn, :info) do %>
+          <p class="alert alert-info" role="alert"><%= get_flash(@conn, :info) %></p>
+        <% end %>
+        <%= if get_flash(@conn, :error) do %>
+          <p class="alert alert-danger" role="alert"><%= get_flash(@conn, :error) %></p>
+        <% end %>
+        <h2>Activity</h2>
+        <p class="lead">To do...</p>
       </div>
     </div>
   </div>
