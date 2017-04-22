@@ -3,7 +3,8 @@ defmodule Serge.Web.HomeController do
 
   def index(conn, _params) do
     config = elm_app_config(conn.assigns.current_user, conn.assigns.access_token)
-    render(conn, "index.html", elm_module: "Tasker", elm_app_config: config)
+    activities = [:one, :two, :three]
+    render(conn, "index.html", elm_module: "Tasker", elm_app_config: config, activities: activities)
   end
 
   defp elm_app_config(nil, _), do: %{}

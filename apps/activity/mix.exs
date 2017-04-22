@@ -24,6 +24,9 @@ defmodule Activity.Mixfile do
   end
 
   defp deps do
-    []
+    [
+      {:ecto, "~> 2.1", only: :test},
+      {:timex, "~> 3.0", only: :test}
+    ]
   end
 end

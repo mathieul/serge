@@ -3,16 +3,10 @@ defmodule Activity do
   Documentation for Activity.
   """
 
-  @doc """
-  Hello world.
+  def task_created(task) do
+  end
 
-  ## Examples
-
-      iex> Activity.hello
-      :world
-
-  """
-  def hello do
-    :world
+  def recent_activity() do
+    []
   end
 end

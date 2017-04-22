@@ -45,7 +45,7 @@ Bump application version in `mix.exs` (i.e.: 0.8.1) and run as user `elixir`:
     $ cd ../../..
     $ mix do phx.digest, compile
     $ mix release --env=prod --upgrade
-    $ cp -r _build/prod/rel/combined/releases/0.8.1/ /apps/serge/releases/
+    $ cp -r _build/prod/rel/combined/releases/0.8.1 /apps/serge/releases/0.8.1
     $ cd /apps/serge
     $ ./bin/combined upgrade 0.8.1
     $ ./bin/combined restart

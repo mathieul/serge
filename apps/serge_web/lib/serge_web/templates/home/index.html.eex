@@ -33,7 +33,13 @@
           <p class="alert alert-danger" role="alert"><%= get_flash(@conn, :error) %></p>
         <% end %>
         <h2>Activity</h2>
-        <p class="lead">To do...</p>
+        <div class="card">
+          <div class="card-block">
+            <%= for activity <- @activities do %>
+              <%= render "activity.html", activity: activity %>
+            <% end %>
+          </div>
+        </div>
       </div>
     </div>
   </div>
