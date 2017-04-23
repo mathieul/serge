@@ -25,8 +25,8 @@ defmodule Activity.Mixfile do
 
   defp deps do
     [
-      {:ecto, "~> 2.1", only: :test},
-      {:timex, "~> 3.0", only: :test}
+      {:ecto_mnesia, "~> 0.9.0"},
+      {:timex, "~> 3.0"}
     ]
   end
 end

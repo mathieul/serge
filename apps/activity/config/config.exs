@@ -28,3 +28,33 @@ use Mix.Config
 # here (which is why it is important to import them last).
 #
 #     import_config "#{Mix.env}.exs"
+
+# config :activity, Activity.Repo, adapter: EctoMnesia.Adapter
+#
+# config :ecto_mnesia,
+#   host: {:system, :atom, "MNESIA_HOST", Kernel.node()},
+#   storage_type: {:system, :atom, "MNESIA_STORAGE_TYPE", :disc_copies}
+#
+# config :activity, ecto_repos: [Activity.Repo]
+#
+# config :mnesia, dir: 'priv/data/mnesia'
+
+# alias Activity.{Event, Repo}; import Ecto.Query, only: [from: 2]; cs = Activity.event_changeset(%Activity.Event{}, %{user_name: "johnzorn", message: "ok then"})
+
+mnesia_priv_path = "priv/data/mnesia"
+mnesia_path = Path.join(File.cwd!(), mnesia_priv_path)
+
+unless File.exists?(mnesia_path), do: File.mkdir_p!(mnesia_path)
+
+config :mnesia,
+  dir: to_charlist(mnesia_path)
+
+config :activity, Activity.Repo,
+  adapter: EctoMnesia.Adapter
+
+config :ecto_mnesia,
+  host: {:system, :atom, "MNESIA_HOST", Kernel.node()},
+  storage_type: {:system, :atom, "MNESIA_STORAGE_TYPE", :disc_copies}
+
+config :activity,
+  ecto_repos: [Activity.Repo]
