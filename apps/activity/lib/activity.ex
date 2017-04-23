@@ -12,7 +12,7 @@ defmodule Activity do
   def task_created(task) do
     user = task.user
     attrs = %{
-      operation: :task_created,
+      operation: "task_created",
       user_name: user.name,
       avatar_url: user.avatar_url,
       message:  "Task #{inspect task.label} scheduled #{humanize_schedule(task)} by #{user.name}."
@@ -45,7 +45,7 @@ defmodule Activity do
 
   defp event_changeset(%Event{} = event, attrs) do
     event
-    |> cast(attrs, [:user_name, :avatar_url, :message])
-    |> validate_required([:user_name, :message])
+    |> cast(attrs, [:operation, :user_name, :avatar_url, :message])
+    |> validate_required([:operation, :user_name, :message])
   end
 end
