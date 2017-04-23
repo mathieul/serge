@@ -3,7 +3,7 @@ defmodule Activity.Repo.Migrations.CreateEvent do
 
   def change do
     create_if_not_exists table(:events, engine: :set) do
-      add :id,          :integer
+      add :operation,   :string
       add :user_name,   :string
       add :avatar_url,  :string
       add :message,     :string

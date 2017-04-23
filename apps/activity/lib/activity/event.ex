@@ -10,4 +10,8 @@ defmodule Activity.Event do
 
     timestamps()
   end
+
+  def recent(scope \\ __MODULE__) do
+    from(e in scope, order_by: [desc: :inserted_at])
+  end
 end
