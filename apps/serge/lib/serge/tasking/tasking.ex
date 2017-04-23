@@ -72,9 +72,9 @@ defmodule Serge.Tasking do
   Creates a task.
   """
   def create_task(attrs \\ %{}) do
-    %Task{}
-    |> task_changeset(attrs)
-    |> Repo.insert()
+    with {:ok, created}   <- task_changeset(%Task{}, attrs) |> Repo.insert(),
+         {:ok, with_user} <- {:ok, Repo.preload(created, :user)},
+         do: {:ok, Activity.task_created(with_user)}
   end
 
   @doc """
