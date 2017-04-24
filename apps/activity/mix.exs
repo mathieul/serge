@@ -18,7 +18,11 @@ defmodule Activity.Mixfile do
 
   def application do
     [
-      extra_applications: [:logger],
+      extra_applications: [
+        :logger,
+        :ecto_mnesia,
+        :phoenix_html_simplified_helpers
+      ],
       mod: {Activity.Application, []}
     ]
   end
