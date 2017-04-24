@@ -1,16 +1,16 @@
-<div class="media">
+<div class="media mb-3">
   <img class="d-flex align-self-start mr-3"
-       src="https://avatars.githubusercontent.com/u/5443?v=3"
+       src="<%= @activity.avatar_url %>"
        width="32"
        height="32"
-       alt="User avatar">
+       alt="<%= @activity.user_name %>">
   <div class="media-body">
     <p class="lead">
-      User created a new task
-    </p>
-    <p>
-      <small class="text-muted">3 hours ago</small>
-      <%= @activity %>
+      <%= @activity.message %>
+      <br>
+      <small class="text-muted">
+        <%= distance_of_time_in_words_to_now(@activity.inserted_at) %> ago
+      </small>
     </p>
   </div>
 </div>

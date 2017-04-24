@@ -29,7 +29,7 @@ defmodule Activity do
   """
   def recent_activity() do
     Event.recent
-    |> limit(20)
+    |> limit(10)
     |> Repo.all
   end
 
