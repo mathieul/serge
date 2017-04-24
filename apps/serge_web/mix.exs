@@ -39,6 +39,7 @@ defmodule Serge.Web.Mixfile do
       {:oauth2, "~> 0.9"},
       {:phoenix_ecto, "~> 3.0"},
       {:phoenix_html, "~> 2.9.3"},
+      {:phoenix_html_simplified_helpers, "~> 1.1"},
       {:phoenix_live_reload, "~> 1.0", only: :dev},
       {:phoenix_pubsub, "~> 1.0"},
       {:phoenix, "~> 1.3-rc.1"},

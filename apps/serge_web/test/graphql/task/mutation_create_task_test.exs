@@ -28,7 +28,7 @@ defmodule Serge.Task.MutationCreateTaskTest do
   setup do
     :ok = Ecto.Adapters.SQL.Sandbox.checkout(Serge.Repo)
     [
-      user: insert(:user),
+      user: insert(:user, name: "do-er"),
       variables: %{
         "tid" => "tmp42",
         "label" => "that thing to do",
@@ -44,6 +44,13 @@ defmodule Serge.Task.MutationCreateTaskTest do
       assert get_in(result, ["createTask", "task", "label"]) == "that thing to do"
       assert get_in(result, ["createTask", "task", "scheduledOn"]) == "2017-03-09"
       assert get_in(result, ["createTask", "task", "completedOn"]) == nil
+    end
+
+    test "it triggers a :task_created event", ctx do
+      {:ok, %{data: _data}} = run(@document, ctx[:user].id, ctx[:variables])
+      event = Activity.recent_activity() |> List.first
+      assert event.operation == "task_created"
+      assert event.user_name == "do-er"
     end
 
     test "it can create a task without a schedule date", ctx do

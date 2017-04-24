@@ -24,6 +24,9 @@ defmodule Activity.Mixfile do
   end
 
   defp deps do
-    []
+    [
+      {:ecto_mnesia, "~> 0.9.0"},
+      {:timex, "~> 3.0"}
+    ]
   end
 end

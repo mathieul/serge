@@ -13,15 +13,15 @@
     <div class="row d-flex align-items-stretch" style="height: 100vh;">
       <div class="col-sm-4 bg-faded">
         <div class="card mx-3 my-4">
-          <div class="card-header">
-            Featured
-          </div>
           <div class="card-block">
             <h4 class="card-title">Authentication</h4>
             <p class="card-text">Please authenticate to access the application.</p>
             <a class="btn btn-primary btn-lg" href="<%= auth_path @conn, :index, "github" %>">
               Sign in with GitHub
             </a>
+          </div>
+          <div class="card-footer">
+            <em>Note</em>: You need a Github account to use this application
           </div>
         </div>
       </div>
@@ -32,8 +32,14 @@
         <%= if get_flash(@conn, :error) do %>
           <p class="alert alert-danger" role="alert"><%= get_flash(@conn, :error) %></p>
         <% end %>
-        <h2>Activity</h2>
-        <p class="lead">To do...</p>
+        <h2>Recent Activity</h2>
+        <div class="card my-4">
+          <div class="card-block">
+            <%= for activity <- @activities do %>
+              <%= render "activity.html", activity: activity %>
+            <% end %>
+          </div>
+        </div>
       </div>
     </div>
   </div>

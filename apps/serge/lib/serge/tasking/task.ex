@@ -1,5 +1,6 @@
 defmodule Serge.Tasking.Task do
   use Ecto.Schema
+  use Timex.Ecto.Timestamps
   import Ecto.Query
   alias Serge.DateHelpers
 
