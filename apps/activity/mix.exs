@@ -4,7 +4,7 @@ defmodule Activity.Mixfile do
   def project do
     [
       app: :activity,
-      version: "0.1.0",
+      version: "0.9.1",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
@@ -21,7 +21,8 @@ defmodule Activity.Mixfile do
       extra_applications: [
         :logger,
         :ecto_mnesia,
-        :phoenix_html_simplified_helpers
+        :phoenix_html_simplified_helpers,
+        :timex_ecto
       ],
       mod: {Activity.Application, []}
     ]

@@ -39,7 +39,7 @@ end
 # will be used by default
 
 release :combined do
-  set version: "0.9.0"
+  set version: "0.9.1"
   set applications: [
     :runtime_tools,
     activity: :permanent,
