@@ -10,38 +10,18 @@ defmodule Activity do
   Creates a :task_created event.
   """
   def task_created(task) do
-    avatar_url = task.user.avatar_url
-    user_name  = user_name_or_email(task.user)
-    attrs = %{
-      operation: "task_created",
-      user_name: user_name,
-      avatar_url: avatar_url,
-      message:  "Task #{inspect task.label} scheduled #{humanize_schedule(task.scheduled_on, "on", "for later")} by #{user_name}."
-    }
-    {:ok, _} = %Event{}
-    |> event_changeset(attrs)
-    |> Repo.insert
-
-    task
+    name = name_or_email(task.user)
+    message = "Task #{inspect task.label} scheduled #{humanize_schedule(task.scheduled_on, "on", "for later")} by #{name}."
+    trigger_task_event("task_created", task, message)
   end
 
   @doc """
   Creates a :task_rescheduled event.
   """
   def task_rescheduled(task, scheduled_on) do
-    avatar_url = task.user.avatar_url
-    user_name  = user_name_or_email(task.user)
-    attrs = %{
-      operation: "task_rescheduled",
-      user_name: user_name,
-      avatar_url: avatar_url,
-      message:  "Task #{inspect task.label} rescheduled #{humanize_schedule(scheduled_on, "to", "to later")} by #{user_name}."
-    }
-    {:ok, _} = %Event{}
-    |> event_changeset(attrs)
-    |> Repo.insert
-
-    task
+    name = name_or_email(task.user)
+    message = "Task #{inspect task.label} rescheduled #{humanize_schedule(scheduled_on, "to", "to later")} by #{name}."
+    trigger_task_event("task_rescheduled", task, message)
   end
 
   @doc """
@@ -51,6 +31,22 @@ defmodule Activity do
     Event.recent
     |> limit(10)
     |> Repo.all
+  end
+
+  defp trigger_task_event(operation, task, message) do
+    attrs = %{
+      operation:  operation,
+      user_name:  name_or_email(task.user),
+      avatar_url: task.user.avatar_url,
+      message:    message
+    }
+
+    {:ok, _} =
+      %Event{}
+      |> event_changeset(attrs)
+      |> Repo.insert
+
+    task
   end
 
   defp humanize_schedule(scheduled_on, prefix, later) do
@@ -69,7 +65,7 @@ defmodule Activity do
     |> validate_required([:operation, :user_name, :message])
   end
 
-  defp user_name_or_email(user) do
+  defp name_or_email(user) do
     user.name || user.email
   end
 end

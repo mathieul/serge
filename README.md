@@ -32,7 +32,7 @@ Serge is currently using the pre-release [`elm-graphql` package](https://github.
 
 ## Release ##
 
-Bump application version in `mix.exs` (i.e.: 0.9.4) and run as user `elixir`:
+Bump application version in `mix.exs` (i.e.: 0.9.5) and run as user `elixir`:
 
     $ export MIX_ENV=prod
     $ cd dev/serge
@@ -45,9 +45,9 @@ Bump application version in `mix.exs` (i.e.: 0.9.4) and run as user `elixir`:
     $ cd ../../..
     $ mix do phx.digest, compile
     $ mix release --env=prod --upgrade
-    $ cp -r _build/prod/rel/combined/releases/0.9.4 /apps/serge/releases/0.9.4
+    $ cp -r _build/prod/rel/combined/releases/0.9.5 /apps/serge/releases/0.9.5
     $ cd /apps/serge
-    $ ./bin/combined upgrade 0.9.4
+    $ ./bin/combined upgrade 0.9.5
     $ ./bin/combined restart
 
 As user `root`:
