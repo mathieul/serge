@@ -15,20 +15,38 @@ defmodule Activity.ReleaseTasks do
   ]
 
   def create do
-    Mnesia.start()
-    config = mnesia_config()
-    Mnesia.change_table_copy_type(:schema, config[:host], config[:storage_type])
-    Mnesia.create_schema([config[:host]])
+    run(fn ->
+      IO.puts "Start Mnesia.."
+      Mnesia.start()
+      config = mnesia_config()
+
+      IO.puts "Create schema.."
+      Mnesia.change_table_copy_type(:schema, config[:host], config[:storage_type])
+      Mnesia.create_schema([config[:host]])
+    end)
   end
 
   def drop do
-    Mnesia.stop()
-    ensure_mnesia_dir_exists()
-    Mnesia.delete_schema([mnesia_config()[:host]])
-    Mnesia.start()
+    run(fn ->
+      IO.puts "Stop Mnesia.."
+      Mnesia.stop()
+
+      IO.puts "Ensure dir exists.."
+      ensure_mnesia_dir_exists()
+
+      IO.puts "Delete schema.."
+      Mnesia.delete_schema([mnesia_config()[:host]])
+
+      IO.puts "Start Mnesia.."
+      Mnesia.start()
+    end)
   end
 
-  def seed do
+  def migrate do
+    run(fn -> Enum.each(@myapps, &run_migrations_for/1) end)
+  end
+
+  def run(func) do
     IO.puts "Loading myapp.."
     # Load the code for myapp, but don't start it
     :ok = Application.load(:activity)
@@ -41,15 +59,8 @@ defmodule Activity.ReleaseTasks do
     IO.puts "Starting repos.."
     Enum.each(@repos, &(&1.start_link(pool_size: 1)))
 
-    # Run migrations
-    Enum.each(@myapps, &run_migrations_for/1)
-
-    # Run the seed script if it exists
-    seed_script = Path.join([priv_dir(:activity), "repo", "seeds.exs"])
-    if File.exists?(seed_script) do
-      IO.puts "Running seed script.."
-      Code.eval_file(seed_script)
-    end
+    # Run
+    func.()
 
     # Signal shutdown
     IO.puts "Success!"
@@ -64,7 +75,6 @@ defmodule Activity.ReleaseTasks do
   end
 
   defp migrations_path(app), do: Path.join([priv_dir(app), "repo", "migrations"])
-  defp seed_path(app), do: Path.join([priv_dir(app), "repo", "seeds.exs"])
 
   defp ensure_mnesia_dir_exists() do
     Application.get_env(:mnesia, :dir) |> to_string |> File.mkdir_p!
@@ -72,8 +82,8 @@ defmodule Activity.ReleaseTasks do
 
   defp mnesia_config() do
     [
-      host: System.get_env("MNESIA_HOST"),
-      storage_type: System.get_env("MNESIA_STORAGE_TYPE")
+      host: String.to_atom(System.get_env("MNESIA_HOST")),
+      storage_type: String.to_atom(System.get_env("MNESIA_STORAGE_TYPE"))
     ]
   end
 end
