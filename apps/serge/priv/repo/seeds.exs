@@ -12,11 +12,14 @@
 
 alias Serge.{Tasking, Authentication, DateHelpers}
 
-if Mix.env == :dev do
-  user = Authentication.get_user_by_email!("mathieu@caring.com")
-
+IO.puts "Environment: #{inspect Mix.env()}"
+if Mix.env() == :dev do
+  IO.puts "* delete all tasks"
   Tasking.delete_all_tasks()
 
+  user = Authentication.get_user_by_email!("mathieu@caring.com")
+
+  IO.puts "* create test tasks"
   {:ok, _ } = Tasking.seed_task(%{
     user_id: user.id,
     label:   "scheduled 5 days ago completed 3 days ago",
@@ -66,4 +69,6 @@ if Mix.env == :dev do
     scheduled_on: nil,
     completed_on: nil
   })
+
+  IO.puts "* done"
 end

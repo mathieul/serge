@@ -77,7 +77,9 @@ defmodule Activity.ReleaseTasks do
   defp migrations_path(app), do: Path.join([priv_dir(app), "repo", "migrations"])
 
   defp ensure_mnesia_dir_exists() do
-    Application.get_env(:mnesia, :dir) |> to_string |> File.mkdir_p!
+    dir = Application.get_env(:mnesia, :dir) |> to_string
+    IO.puts "ensure_mnesia_dir_exists: #{inspect dir}"
+    File.mkdir_p!(dir)
   end
 
   defp mnesia_config() do
