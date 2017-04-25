@@ -32,7 +32,7 @@ Serge is currently using the pre-release [`elm-graphql` package](https://github.
 
 ## Release ##
 
-Bump application version in `mix.exs` (i.e.: 0.9.1) and run as user `elixir`:
+Bump application version in `mix.exs` (i.e.: 0.9.2) and run as user `elixir`:
 
     $ export MIX_ENV=prod
     $ cd dev/serge
@@ -45,9 +45,9 @@ Bump application version in `mix.exs` (i.e.: 0.9.1) and run as user `elixir`:
     $ cd ../../..
     $ mix do phx.digest, compile
     $ mix release --env=prod --upgrade
-    $ cp -r _build/prod/rel/combined/releases/0.9.1 /apps/serge/releases/0.9.1
+    $ cp -r _build/prod/rel/combined/releases/0.9.2 /apps/serge/releases/0.9.2
     $ cd /apps/serge
-    $ ./bin/combined upgrade 0.9.1
+    $ ./bin/combined upgrade 0.9.2
     $ ./bin/combined restart
 
 As user `root`:
@@ -57,5 +57,4 @@ As user `root`:
 
 ## Production ##
 
-Running at https://serge.cloudigisafe.com - requires a github account as the
-application is using OAuth2 with currently only a Github provider.
+Make sure to create Ecto databases and migrate them.

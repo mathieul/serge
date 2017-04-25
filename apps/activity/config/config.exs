@@ -1,7 +1,7 @@
 use Mix.Config
 
-mnesia_priv_path = "priv/data/mnesia_#{Mix.env}"
-mnesia_path = Path.join(File.cwd!(), mnesia_priv_path)
+mnesia_path = System.get_env("MNESIA_PATH") ||
+                Path.join(File.cwd!(), "priv/data/mnesia_#{Mix.env}")
 
 unless File.exists?(mnesia_path), do: File.mkdir_p!(mnesia_path)
 

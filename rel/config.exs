@@ -39,12 +39,17 @@ end
 # will be used by default
 
 release :combined do
-  set version: "0.9.1"
+  set version: "0.9.2"
   set applications: [
     :runtime_tools,
     activity: :permanent,
     serge: :permanent,
     serge_web: :permanent
+  ]
+  set commands: [
+    "migrate": "rel/commands/migrate.sh",
+    "create_activity": "rel/commands/create_activity.sh",
+    "drop_activity": "rel/commands/drop_activity.sh",
   ]
 end
 
