@@ -92,6 +92,7 @@ defmodule Serge.Tasking do
   def update_task(%Task{} = task, attrs) do
     task
     |> task_changeset(attrs)
+    |> trigger_update_activities
     |> Repo.update()
   end
 
@@ -282,5 +283,16 @@ defmodule Serge.Tasking do
       end
     end)
     |> Repo.transaction
+  end
+
+  def trigger_update_activities(changeset) do
+    case fetch_change(changeset, :scheduled_on) do
+      {:ok, scheduled_on} ->
+        task = Repo.preload(changeset.data, :user)
+        Activity.task_rescheduled(task, scheduled_on)
+        changeset
+      :error ->
+        changeset
+    end
   end
 end

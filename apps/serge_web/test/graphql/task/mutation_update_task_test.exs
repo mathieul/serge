@@ -70,6 +70,24 @@ defmodule Serge.Task.MutationUpdateTaskTest do
       {:ok, %{data: result}} = run(@document, ctx[:user].id, %{"id" => ctx[:task].id, "uncomplete" => true})
       assert get_in(result, ["updateTask", "completedOn"]) == nil
     end
+
+    test "it triggers a :task_rescheduled event when scheduledOn changes", ctx do
+      :mnesia.clear_table(:events)
+      {:ok, %{data: result}} = run(@document, ctx[:user].id, %{"id" => ctx[:task].id, "scheduledOn" => "2017-01-01"})
+
+      assert get_in(result, ["updateTask", "scheduledOn"]) == "2017-01-01"
+      events = Activity.recent_activity()
+      assert length(events) == 1
+      assert List.first(events).operation == "task_rescheduled"
+    end
+
+    test "it doesn't trigger a :task_rescheduled event when scheduledOn doesn't change", ctx do
+      :mnesia.clear_table(:events)
+      {:ok, %{data: result}} = run(@document, ctx[:user].id, %{"id" => ctx[:task].id, "completedOn" => "2017-12-31"})
+
+      assert get_in(result, ["updateTask", "completedOn"]) == "2017-12-31"
+      assert Activity.recent_activity() == []
+    end
   end
 
   describe "with invalid attributes" do

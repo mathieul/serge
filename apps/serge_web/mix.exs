@@ -30,8 +30,8 @@ defmodule Serge.Web.Mixfile do
 
   defp deps do
     [
-      {:absinthe_plug, "~> 1.2.2"},
-      {:absinthe, "~> 1.2.1"},
+      {:absinthe_plug, "~> 1.3.0"},
+      {:absinthe, "~> 1.3.0"},
       {:activity, in_umbrella: true},
       {:comeonin, "~> 3.0"},
       {:cowboy, "~> 1.1.2"},
