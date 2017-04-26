@@ -18,7 +18,7 @@ import Html5.DragDrop as DragDrop
 -- LOCAL IMPORTS
 
 import Model exposing (..)
-import View exposing (..)
+import Views.Main exposing (view)
 import StoryTask exposing (StoryTask)
 import Api
 
