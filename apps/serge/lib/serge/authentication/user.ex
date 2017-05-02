@@ -9,6 +9,7 @@ defmodule Serge.Authentication.User do
     field :avatar_url, :string
 
     has_many :teams, Serge.Scrumming.Team, foreign_key: :owner_id
+    has_many :tasks, Serge.Tasking.Task
 
     timestamps()
   end

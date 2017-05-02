@@ -37,27 +37,27 @@ defmodule Serge.ScrummingTest do
     assert {:error, %Ecto.Changeset{}} = Scrumming.create_team(%{nope: "err"}, owner: user)
   end
 
-  # test "update_team/2 with valid data updates the team" do
-  #   team = fixture(:team)
-  #   assert {:ok, team} = Scrumming.update_team(team, @update_attrs)
-  #   assert %Team{} = team
-  #   assert team.name == "some updated name"
-  # end
-  #
-  # test "update_team/2 with invalid data returns error changeset" do
-  #   team = fixture(:team)
-  #   assert {:error, %Ecto.Changeset{}} = Scrumming.update_team(team, @invalid_attrs)
-  #   assert team == Scrumming.get_team!(team.id)
-  # end
-  #
-  # test "delete_team/1 deletes the team" do
-  #   team = fixture(:team)
-  #   assert {:ok, %Team{}} = Scrumming.delete_team(team)
-  #   assert_raise Ecto.NoResultsError, fn -> Scrumming.get_team!(team.id) end
-  # end
-  #
-  # test "change_team/1 returns a team changeset" do
-  #   team = fixture(:team)
-  #   assert %Ecto.Changeset{} = Scrumming.change_team(team)
-  # end
+  test "update_team_by_id/2 with valid data updates the team", %{user: user} do
+    team = insert(:team, owner: user, name: "Original")
+    assert {:ok, team} = Scrumming.update_team_by_id(%{"id" => team.id, "name" => "Updated"}, owner: user)
+    assert %Team{} = team
+    assert team.name == "Updated"
+  end
+
+  test "update_team_by_id/2 with invalid data returns error changeset", %{user: user} do
+    team = insert(:team, owner: user, name: "Original")
+    assert {:error, %Ecto.Changeset{}} = Scrumming.update_team_by_id(%{"id" => team.id, "name" => ""}, owner: user)
+    assert team == Scrumming.get_team(team.id, owner: user)
+  end
+
+  test "delete_team/1 deletes the team", %{user: user} do
+    team = insert(:team, owner: user)
+    assert {:ok, %Team{}} = Scrumming.delete_team(team.id, owner: user)
+    assert Scrumming.get_team(team.id, owner: user) == nil
+  end
+
+  test "change_team/1 returns a team changeset", %{user: user} do
+    team = insert(:team, owner: user)
+    assert %Ecto.Changeset{} = Scrumming.change_team(team)
+  end
 end

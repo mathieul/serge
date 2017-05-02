@@ -19,7 +19,7 @@ defmodule Serge.Scrumming do
   end
 
   @doc """
-  Gets a single task and raise Ecto.NoResultsError if not found.
+  Gets a single team and raise Ecto.NoResultsError if not found.
   """
   def get_team(id, owner: owner) when is_map(owner) do
     case Team
@@ -33,12 +33,53 @@ defmodule Serge.Scrumming do
   end
 
   @doc """
-  Creates a task for a user.
+  Creates a team for a user.
   """
   def create_team(attrs, owner: owner) when is_map(attrs) and is_map(owner) do
     Ecto.build_assoc(owner, :teams)
     |> team_changeset(attrs)
     |> Repo.insert
+  end
+
+  @doc """
+  Updates a team from a team id.
+  """
+  def update_team_by_id(%{"id" => id} = attrs, owner: owner) when is_map(owner) do
+    case get_team(id, owner: owner) do
+      nil ->
+        changeset = change_team(%Team{})
+        {:error, add_error(changeset, :team, "doesn't exist")}
+      team ->
+        update_team(team, attrs)
+    end
+  end
+
+  @doc """
+  Updates a team.
+  """
+  def update_team(%Team{} = team, attrs) when is_map(attrs) do
+    team
+    |> team_changeset(attrs)
+    |> Repo.update()
+  end
+
+  @doc """
+  Deletes a team.
+  """
+  def delete_team(%Team{} = team) do
+    Repo.delete(team)
+  end
+
+  @doc """
+  Deletes a team from its id.
+  """
+  def delete_team(id, owner: owner) when is_binary(id) or is_integer(id)  do
+    case get_team(id, owner: owner) do
+      nil ->
+        {:error, "Team doesn't exist"}
+      team ->
+        delete_team(team)
+    end
   end
 
   @doc """
