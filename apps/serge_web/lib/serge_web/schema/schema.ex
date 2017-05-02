@@ -6,7 +6,6 @@ defmodule Serge.Web.Schema do
   import_types Serge.Web.Schema.CommonTypes
   import_types Serge.Web.Schema.UserTypes
   import_types Serge.Web.Schema.TaskTypes
-  import_types Serge.Web.Schema.TeamTypes
 
   query do
     field :task, :task do
@@ -19,10 +18,6 @@ defmodule Serge.Web.Schema do
       arg :include_yesterday, :boolean
 
       resolve &Resolvers.Task.all/3
-    end
-
-    field :teams, list_of(:team) do
-      resolve &Resolvers.Team.all/3
     end
   end
 

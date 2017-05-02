@@ -11,11 +11,25 @@ defmodule Serge.Scrumming do
   @doc """
   Guess what the previous day of work was.
   """
-  def list_teams(owner_id: owner_id) do
-    Team.for_owner_id(owner_id)
+  def list_teams(owner: owner) when is_map(owner) do
+    Team.for_owner_id(owner.id)
     |> Team.ordered_by_name()
     |> Repo.all()
-    |> Repo.preload(:owner)
+    |> Enum.map(fn team -> %{team | owner: owner} end)
+  end
+
+  @doc """
+  Gets a single task and raise Ecto.NoResultsError if not found.
+  """
+  def get_team(id, owner: owner) when is_map(owner) do
+    case Team
+    |> Team.for_owner_id(owner.id)
+    |> Repo.get(id) do
+      nil ->
+        nil
+      team ->
+        %{team | owner: owner}
+    end
   end
 
   @doc """
