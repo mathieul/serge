@@ -1,46 +1,37 @@
-<%= if @current_user do %>
-  <div id="elm-tasker"></div>
-
-  <script src="<%= static_path(@conn, "/js/app.js") %>"></script>
-  <%= render Serge.Web.SharedView, "elm_init.html",
-                               elm_module:     assigns[:elm_module],
-                               elm_app_config: assigns[:elm_app_config] %>
-<% else %>
-  <nav class="navbar navbar-toggleable navbar-inverse bg-inverse">
-    <a class="navbar-brand" href="/">Tasker</a>
-  </nav>
-  <div class="container-fluid">
-    <div class="row d-flex align-items-stretch" style="height: 100vh;">
-      <div class="col-sm-4 bg-faded">
-        <div class="card mx-3 my-4">
-          <div class="card-block">
-            <h4 class="card-title">Authentication</h4>
-            <p class="card-text">Please authenticate to access the application.</p>
-            <a class="btn btn-primary btn-lg" href="<%= auth_path @conn, :index, "github" %>">
-              Sign in with GitHub
-            </a>
-          </div>
-          <div class="card-footer">
-            <em>Note</em>: You need a Github account to use this application
-          </div>
+<nav class="navbar navbar-toggleable navbar-inverse bg-inverse">
+  <a class="navbar-brand" href="/">Serge</a>
+</nav>
+<div class="container-fluid">
+  <div class="row d-flex align-items-stretch" style="height: 100vh;">
+    <div class="col-sm-4 bg-faded">
+      <div class="card mx-3 my-4">
+        <div class="card-block">
+          <h4 class="card-title">Authentication</h4>
+          <p class="card-text">Please authenticate to access the application.</p>
+          <a class="btn btn-primary btn-lg" href="<%= auth_path @conn, :index, "github" %>">
+            Sign in with GitHub
+          </a>
+        </div>
+        <div class="card-footer">
+          <em>Note</em>: You need a Github account to use this application
         </div>
       </div>
-      <div class="col-sm-8 p-3">
-        <%= if get_flash(@conn, :info) do %>
-          <p class="alert alert-info" role="alert"><%= get_flash(@conn, :info) %></p>
-        <% end %>
-        <%= if get_flash(@conn, :error) do %>
-          <p class="alert alert-danger" role="alert"><%= get_flash(@conn, :error) %></p>
-        <% end %>
-        <h2>Recent Activity</h2>
-        <div class="card my-4">
-          <div class="card-block">
-            <%= for activity <- @activities do %>
-              <%= render "activity.html", activity: activity %>
-            <% end %>
-          </div>
+    </div>
+    <div class="col-sm-8 p-3">
+      <%= if get_flash(@conn, :info) do %>
+        <p class="alert alert-info" role="alert"><%= get_flash(@conn, :info) %></p>
+      <% end %>
+      <%= if get_flash(@conn, :error) do %>
+        <p class="alert alert-danger" role="alert"><%= get_flash(@conn, :error) %></p>
+      <% end %>
+      <h2>Recent Activity</h2>
+      <div class="card my-4">
+        <div class="card-block">
+          <%= for activity <- @activities do %>
+            <%= render "activity.html", activity: activity %>
+          <% end %>
         </div>
       </div>
     </div>
   </div>
-<% end %>
+</div>

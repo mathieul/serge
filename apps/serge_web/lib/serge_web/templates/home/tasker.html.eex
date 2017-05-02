@@ -1,0 +1,6 @@
+<div id="elm-tasker"></div>
+
+<script src="<%= static_path(@conn, "/js/app.js") %>"></script>
+<%= render Serge.Web.SharedView, "elm_init.html",
+                             elm_module:     assigns[:elm_module],
+                             elm_app_config: assigns[:elm_app_config] %>
