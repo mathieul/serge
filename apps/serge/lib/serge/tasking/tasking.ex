@@ -14,13 +14,6 @@ defmodule Serge.Tasking do
   @max_rank :math.pow(2, 31) |> round
 
   @doc """
-  Returns the list of Tasks.
-  """
-  def list_task do
-    Repo.all(Task)
-  end
-
-  @doc """
   Gets a single task and raise Ecto.NoResultsError if not found.
   """
   def get_task!(id) do
