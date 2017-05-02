@@ -8,6 +8,8 @@ defmodule Serge.Authentication.User do
     field :email, :string
     field :avatar_url, :string
 
+    has_many :teams, Serge.Scrumming.Team, foreign_key: :owner_id
+
     timestamps()
   end
 end

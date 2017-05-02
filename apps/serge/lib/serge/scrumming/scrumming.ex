@@ -33,6 +33,15 @@ defmodule Serge.Scrumming do
   end
 
   @doc """
+  Creates a task for a user.
+  """
+  def create_team(attrs, owner: owner) when is_map(attrs) and is_map(owner) do
+    Ecto.build_assoc(owner, :teams)
+    |> team_changeset(attrs)
+    |> Repo.insert
+  end
+
+  @doc """
   Returns an `%Ecto.Changeset{}` for tracking team changes.
   """
   def change_team(%Team{} = team) do

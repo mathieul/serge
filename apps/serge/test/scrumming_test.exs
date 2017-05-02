@@ -3,6 +3,7 @@ defmodule Serge.ScrummingTest do
   import Serge.Factory
 
   alias Serge.Scrumming
+  alias Serge.Scrumming.Team
 
   setup do
     %{user: insert(:user)}
@@ -27,15 +28,15 @@ defmodule Serge.ScrummingTest do
     assert Scrumming.get_team(team.id, owner: user) == nil
   end
 
-  # test "create_team/1 with valid data creates a team" do
-  #   assert {:ok, %Team{} = team} = Scrumming.create_team(@create_attrs)
-  #   assert team.name == "some name"
-  # end
-  #
-  # test "create_team/1 with invalid data returns error changeset" do
-  #   assert {:error, %Ecto.Changeset{}} = Scrumming.create_team(@invalid_attrs)
-  # end
-  #
+  test "create_team/1 with valid data creates a team", %{user: user} do
+    assert {:ok, %Team{} = team} = Scrumming.create_team(%{name: "My Team"}, owner: user)
+    assert team.name == "My Team"
+  end
+
+  test "create_team/1 with invalid data returns error changeset", %{user: user} do
+    assert {:error, %Ecto.Changeset{}} = Scrumming.create_team(%{nope: "err"}, owner: user)
+  end
+
   # test "update_team/2 with valid data updates the team" do
   #   team = fixture(:team)
   #   assert {:ok, team} = Scrumming.update_team(team, @update_attrs)
