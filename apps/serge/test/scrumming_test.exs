@@ -9,55 +9,78 @@ defmodule Serge.ScrummingTest do
     %{user: insert(:user)}
   end
 
-  test "list_teams/1 returns all teams ordered by name", %{user: user} do
-    zorglub = insert(:team, owner: user, name: "zorglub")
-    insert(:team)
-    blahblah = insert(:team, owner: user, name: "blahblah")
-    assert Scrumming.list_teams(owner: user) == [blahblah, zorglub]
+  describe "list_teams/1" do
+    test "it returns all teams ordered by name", %{user: user} do
+      zorglub = insert(:team, owner: user, name: "zorglub")
+      insert(:team)
+      blahblah = insert(:team, owner: user, name: "blahblah")
+      assert Scrumming.list_teams(owner: user) == [blahblah, zorglub]
+    end
   end
 
-  test "get_team/2 returns the team with given id owned by the user", %{user: user} do
-    team = insert(:team, owner: user)
-    assert Scrumming.get_team(team.id, owner: user) == team
+  describe "get_team/2" do
+    test "it returns the team with given id owned by the user", %{user: user} do
+      team = insert(:team, owner: user)
+      assert Scrumming.get_team(team.id, owner: user) == team
+    end
+
+    test "it raises an error if it doesn't exist or belong to another user", %{user: user} do
+      assert Scrumming.get_team(42, owner: user) == nil
+
+      team = insert(:team)
+      assert Scrumming.get_team(team.id, owner: user) == nil
+    end
   end
 
-  test "get_team/2 raises an error if it doesn't exist or belong to another user", %{user: user} do
-    assert Scrumming.get_team(42, owner: user) == nil
+  describe "create_team/1" do
+    test "with valid data it creates a team", %{user: user} do
+      assert {:ok, %Team{} = team} = Scrumming.create_team(%{name: "My Team"}, owner: user)
+      assert team.name == "My Team"
+    end
 
-    team = insert(:team)
-    assert Scrumming.get_team(team.id, owner: user) == nil
+    test "with valid data it creates a read/write team access", %{user: user} do
+      {:ok, team} = Scrumming.create_team(%{name: "My Team"}, owner: user)
+
+      accesses = Scrumming.list_team_accesses(user: user)
+      assert length(accesses) == 1
+      access = List.first(accesses)
+      assert access.user == user
+      assert access.team == team
+      assert access.kind == :read_write
+    end
+
+    test "with invalid data it returns error changeset", %{user: user} do
+      assert {:error, %Ecto.Changeset{}} = Scrumming.create_team(%{nope: "err"}, owner: user)
+    end
   end
 
-  test "create_team/1 with valid data creates a team", %{user: user} do
-    assert {:ok, %Team{} = team} = Scrumming.create_team(%{name: "My Team"}, owner: user)
-    assert team.name == "My Team"
+  describe "update_team_by_id/2" do
+    test "with valid data it updates the team", %{user: user} do
+      team = insert(:team, owner: user, name: "Original")
+      assert {:ok, team} = Scrumming.update_team_by_id(%{"id" => team.id, "name" => "Updated"}, owner: user)
+      assert %Team{} = team
+      assert team.name == "Updated"
+    end
+
+    test "with invalid data it returns error changeset", %{user: user} do
+      team = insert(:team, owner: user, name: "Original")
+      assert {:error, %Ecto.Changeset{}} = Scrumming.update_team_by_id(%{"id" => team.id, "name" => ""}, owner: user)
+      assert team == Scrumming.get_team(team.id, owner: user)
+    end
   end
 
-  test "create_team/1 with invalid data returns error changeset", %{user: user} do
-    assert {:error, %Ecto.Changeset{}} = Scrumming.create_team(%{nope: "err"}, owner: user)
+  describe "delete_team/1" do
+    test "it deletes the team", %{user: user} do
+      team = insert(:team, owner: user)
+      assert {:ok, %Team{}} = Scrumming.delete_team(team.id, owner: user)
+      assert Scrumming.get_team(team.id, owner: user) == nil
+    end
   end
 
-  test "update_team_by_id/2 with valid data updates the team", %{user: user} do
-    team = insert(:team, owner: user, name: "Original")
-    assert {:ok, team} = Scrumming.update_team_by_id(%{"id" => team.id, "name" => "Updated"}, owner: user)
-    assert %Team{} = team
-    assert team.name == "Updated"
-  end
-
-  test "update_team_by_id/2 with invalid data returns error changeset", %{user: user} do
-    team = insert(:team, owner: user, name: "Original")
-    assert {:error, %Ecto.Changeset{}} = Scrumming.update_team_by_id(%{"id" => team.id, "name" => ""}, owner: user)
-    assert team == Scrumming.get_team(team.id, owner: user)
-  end
-
-  test "delete_team/1 deletes the team", %{user: user} do
-    team = insert(:team, owner: user)
-    assert {:ok, %Team{}} = Scrumming.delete_team(team.id, owner: user)
-    assert Scrumming.get_team(team.id, owner: user) == nil
-  end
-
-  test "change_team/1 returns a team changeset", %{user: user} do
-    team = insert(:team, owner: user)
-    assert %Ecto.Changeset{} = Scrumming.change_team(team)
+  describe "change_team/1" do
+    test "it returns a team changeset", %{user: user} do
+      team = insert(:team, owner: user)
+      assert %Ecto.Changeset{} = Scrumming.change_team(team)
+    end
   end
 end

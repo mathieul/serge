@@ -6,10 +6,10 @@ defmodule Serge.Scrumming do
   import Ecto.{Query, Changeset}, warn: false
   alias Serge.Repo
 
-  alias Serge.Scrumming.Team
+  alias Serge.Scrumming.{Team, TeamAccess}
 
   @doc """
-  Guess what the previous day of work was.
+  List all teams for owner.
   """
   def list_teams(owner: owner) when is_map(owner) do
     Team.for_owner_id(owner.id)
@@ -33,12 +33,32 @@ defmodule Serge.Scrumming do
   end
 
   @doc """
-  Creates a team for a user.
+  Creates a team for a user, along with a read/write team access.
   """
   def create_team(attrs, owner: owner) when is_map(attrs) and is_map(owner) do
-    Ecto.build_assoc(owner, :teams)
+    case do_create_team_and_access(attrs, owner) do
+      {:ok, result} ->
+        {:ok, result.team}
+
+      {:error, _, changeset, _} ->
+        {:error, changeset}
+    end
+  end
+
+  defp do_create_team(attrs, owner) do
+    owner
+    |> Ecto.build_assoc(:teams)
     |> team_changeset(attrs)
     |> Repo.insert
+  end
+
+  defp do_create_team_and_access(attrs, owner) do
+    Ecto.Multi.new
+    |> Ecto.Multi.run(:team, fn _ -> do_create_team(attrs, owner) end)
+    |> Ecto.Multi.run(:access, fn %{team: team} ->
+      create_team_access(%{kind: :read_write}, user: owner, team: team)
+    end)
+    |> Repo.transaction
   end
 
   @doc """
@@ -93,5 +113,40 @@ defmodule Serge.Scrumming do
     team
     |> cast(attrs, [:name, :owner_id])
     |> validate_required([:name, :owner_id])
+  end
+
+  @doc """
+  List all team accesses with teams for owner.
+  """
+  def list_team_accesses(user: user) when is_map(user) do
+    TeamAccess.for_user_id(user.id)
+    |> Repo.all()
+    |> Repo.preload(:team)
+    |> Enum.map(fn access -> %{access | user: user} end)
+  end
+
+  @doc """
+  Creates a team access for a user and a team.
+  """
+  def create_team_access(attrs, user: user, team: team)
+  when is_map(attrs) and is_map(user) and is_map(team) do
+    attrs = Map.put(attrs, :team_id, team.id)
+    user
+    |> Ecto.build_assoc(:team_accesses)
+    |> team_access_changeset(attrs)
+    |> Repo.insert()
+  end
+
+  @doc """
+  Returns an `%Ecto.Changeset{}` for tracking team changes.
+  """
+  def change_team_access(%TeamAccess{} = team_access) do
+    team_access_changeset(team_access, %{})
+  end
+
+  defp team_access_changeset(%TeamAccess{} = team_access, attrs) do
+    team_access
+    |> cast(attrs, [:user_id, :team_id, :kind])
+    |> validate_required([:user_id, :team_id, :kind])
   end
 end

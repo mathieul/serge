@@ -31,8 +31,10 @@ defmodule Serge.Mixfile do
     [
       {:ex_machina, "~> 2.0", only: :test},
       {:ecto, "~> 2.1"},
+      {:ecto_enum, "~> 1.0"},
       {:postgrex, ">= 0.0.0"},
-      {:timex, "~> 3.0"}
+      {:timex, "~> 3.0"},
+      {:timex_ecto, "~> 3.0"},
     ]
   end
 

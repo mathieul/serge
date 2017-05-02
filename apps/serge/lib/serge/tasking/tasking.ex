@@ -43,7 +43,7 @@ defmodule Serge.Tasking do
   end
 
   @doc """
-  Guess what the previous day of work was.
+  List all tasks since a date for user.
   """
   def list_tasks_since(date, user_id: user_id) do
     Task.starting_from(date)
