@@ -21,6 +21,7 @@ defmodule Serge.Web do
       import Serge.Web.Router.Helpers
       import Serge.Web.ErrorHelpers
       import Serge.Web.Gettext
+      import PhoenixActiveLink
     end
   end
 
