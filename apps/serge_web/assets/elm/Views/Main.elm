@@ -4,7 +4,6 @@ import Html as H exposing (Html, div, text)
 import Html.Attributes as A exposing (class, classList)
 import Bootstrap.Button as Button
 import Bootstrap.Modal as Modal
-import Bootstrap.Navbar as Navbar
 
 
 -- LOCAL IMPORTS
@@ -19,36 +18,10 @@ import Views.ContentCard as ContentCard
 view : Model -> Html Msg
 view model =
     div []
-        [ menu model
-        , ContentCard.view model
+        [ ContentCard.view model
         , summaryModal model
         , confirmModal model
         ]
-
-
-menu : Model -> Html Msg
-menu model =
-    Navbar.config NavMsg
-        |> Navbar.withAnimation
-        |> Navbar.primary
-        |> Navbar.brand [ A.href "/" ]
-            [ text model.config.name
-            , H.small [ class "pl-3" ] [ text <| "(" ++ model.config.email ++ ")" ]
-            ]
-        |> Navbar.customItems
-            [ Navbar.textItem
-                [ class "pull-right mr-3" ]
-                [ text <| formatShortDate model.context.today ]
-            , Navbar.customItem
-                (H.span
-                    [ class "pull-right " ]
-                    [ Button.linkButton
-                        [ Button.danger, Button.attrs [ A.href "/auth/logout" ] ]
-                        [ text "Logout" ]
-                    ]
-                )
-            ]
-        |> Navbar.view model.navState
 
 
 summaryModal : Model -> Html Msg
@@ -71,7 +44,9 @@ summaryModal model =
             formatShortDate <| earliestYesterday completedTasks
     in
         Modal.config SummaryModalMsg
-            |> Modal.h4 [ class "w-100 text-center" ] [ text "Scrum Summary" ]
+            |> Modal.h4
+                [ class "w-100 text-center" ]
+                [ text <| "Scrum Summary (" ++ (formatShortDate model.context.today) ++ ")" ]
             |> Modal.body []
                 [ div [ class "mt-3 mb-4" ]
                     [ H.h6 [ class "text-center mb-3" ]
