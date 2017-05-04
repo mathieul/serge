@@ -3,9 +3,11 @@ defmodule Serge.Web.TeamController do
 
   alias Serge.Scrumming
 
+  plug :set_authenticated_layout
+
   def index(conn, _params) do
     teams = Scrumming.list_teams(owner: conn.assigns[:current_user])
-    render(conn, "index.html", teams: teams)
+    render(conn, "index.html", teams: teams, page_title: "Teams")
   end
 
   def new(conn, _params) do
@@ -55,5 +57,9 @@ defmodule Serge.Web.TeamController do
     conn
     |> put_flash(:info, "Team deleted successfully.")
     |> redirect(to: team_path(conn, :index))
+  end
+
+  defp set_authenticated_layout(conn, _options) do
+    put_layout(conn, "authenticated.html")
   end
 end

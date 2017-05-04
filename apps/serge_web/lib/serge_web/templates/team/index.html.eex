@@ -1,28 +1,30 @@
-<%= render Serge.Web.SharedView, "navigation.html", assigns %>
+<div class="card mt-3">
+  <div class="card-block">
+    <%= if Enum.empty?(@teams) do %>
+      <div class="alert alert-warning">
+        No team exists yet.
+      </div>
+    <% else %>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <%= for team <- @teams do %>
+              <tr>
+                <td><%= team.name %></td>
 
-<h2>Listing Teams</h2>
-
-<table class="table">
-  <thead>
-    <tr>
-      <th>Name</th>
-
-      <th></th>
-    </tr>
-  </thead>
-  <tbody>
-<%= for team <- @teams do %>
-    <tr>
-      <td><%= team.name %></td>
-
-      <td class="text-right">
-        <span><%= link "Show", to: team_path(@conn, :show, team), class: "btn btn-default btn-xs" %></span>
-        <span><%= link "Edit", to: team_path(@conn, :edit, team), class: "btn btn-default btn-xs" %></span>
-        <span><%= link "Delete", to: team_path(@conn, :delete, team), method: :delete, data: [confirm: "Are you sure?"], class: "btn btn-danger btn-xs" %></span>
-      </td>
-    </tr>
-<% end %>
-  </tbody>
-</table>
-
-<span><%= link "New Team", to: team_path(@conn, :new) %></span>
+                <td class="text-right">
+                  <span><%= link "Edit", to: team_path(@conn, :edit, team), class: "btn btn-default btn-xs" %></span>
+                  <span><%= link "Delete", to: team_path(@conn, :delete, team), method: :delete, data: [confirm: "Are you sure?"], class: "btn btn-danger btn-xs" %></span>
+                </td>
+              </tr>
+          <% end %>
+        </tbody>
+      </table>
+    <% end %>
+  </div>
+</div>

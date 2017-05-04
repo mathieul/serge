@@ -1,0 +1,4 @@
+<%= link to: team_path(@conn, :new), class: "btn btn-primary pull-right" do %>
+  <i class="fa fa-plus"></i>
+  New Team
+<% end %>
