@@ -19,12 +19,23 @@ defmodule Serge.Scrumming do
   end
 
   @doc """
-  Gets a single team and raise Ecto.NoResultsError if not found.
+  Gets a single team and return nil if not found.
   """
   def get_team(id, owner: owner) when is_map(owner) do
+    do_get_team(id, owner, &Repo.get/2)
+  end
+
+  @doc """
+  Gets a single team and raise Ecto.NoResultsError if not found.
+  """
+  def get_team!(id, owner: owner) when is_map(owner) do
+    do_get_team(id, owner, &Repo.get!/2)
+  end
+
+  defp do_get_team(id, owner, getter) do
     case Team
     |> Team.for_owner_id(owner.id)
-    |> Repo.get(id) do
+    |> getter.(id) do
       nil ->
         nil
       team ->
@@ -59,19 +70,6 @@ defmodule Serge.Scrumming do
       create_team_access(%{kind: :read_write}, user: owner, team: team)
     end)
     |> Repo.transaction
-  end
-
-  @doc """
-  Updates a team from a team id.
-  """
-  def update_team_by_id(%{"id" => id} = attrs, owner: owner) when is_map(owner) do
-    case get_team(id, owner: owner) do
-      nil ->
-        changeset = change_team(%Team{})
-        {:error, add_error(changeset, :team, "doesn't exist")}
-      team ->
-        update_team(team, attrs)
-    end
   end
 
   @doc """
