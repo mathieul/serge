@@ -5,6 +5,8 @@ defmodule Serge.Scrumming.Team do
 
   schema "teams" do
     field :name, :string
+    field :description, :string
+
     belongs_to :owner, Serge.Authentication.User
     has_many :team_accesses, Serge.Scrumming.TeamAccess
 

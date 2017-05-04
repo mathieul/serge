@@ -11,8 +11,8 @@ defmodule Serge.Web.TeamController do
   end
 
   def new(conn, _params) do
-    changeset = Scrumming.change_team(%Scrumming.Team{})
-    render(conn, "new.html", changeset: changeset)
+    changeset = Scrumming.change_team(%Scrumming.Team{owner_id: conn.assigns[:current_user].id})
+    render(conn, "new.html", changeset: changeset, page_title: "New Team")
   end
 
   def create(conn, %{"team" => team_params}) do
@@ -26,15 +26,10 @@ defmodule Serge.Web.TeamController do
     end
   end
 
-  def show(conn, %{"id" => id}) do
-    team = Scrumming.get_team!(id)
-    render(conn, "show.html", team: team)
-  end
-
   def edit(conn, %{"id" => id}) do
     team = Scrumming.get_team!(id)
     changeset = Scrumming.change_team(team)
-    render(conn, "edit.html", team: team, changeset: changeset)
+    render(conn, "edit.html", team: team, changeset: changeset, page_title: "Edit Team")
   end
 
   def update(conn, %{"id" => id, "team" => team_params}) do

@@ -1,7 +1,1 @@
-<%= render Serge.Web.SharedView, "navigation.html", assigns %>
-<h2>Edit Team</h2>
-
-<%= render "form.html", changeset: @changeset,
-                        action: team_path(@conn, :update, @team) %>
-
-<span><%= link "Back", to: team_path(@conn, :index) %></span>
+<%= render "form.html", changeset: @changeset, action: team_path(@conn, :update, @team) %>

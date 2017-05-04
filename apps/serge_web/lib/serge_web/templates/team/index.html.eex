@@ -2,25 +2,24 @@
   <div class="card-block">
     <%= if Enum.empty?(@teams) do %>
       <div class="alert alert-warning">
-        No team exists yet.
+        There are no teams yet.
       </div>
     <% else %>
       <table class="table">
         <thead>
           <tr>
             <th>Name</th>
-            <th></th>
+            <th>Description</th>
           </tr>
         </thead>
         <tbody>
           <%= for team <- @teams do %>
               <tr>
                 <td><%= team.name %></td>
-
-                <td class="text-right">
-                  <span><%= link "Edit", to: team_path(@conn, :edit, team), class: "btn btn-default btn-xs" %></span>
-                  <span><%= link "Delete", to: team_path(@conn, :delete, team), method: :delete, data: [confirm: "Are you sure?"], class: "btn btn-danger btn-xs" %></span>
+                <td>
+                  <%= link team.name, to: team_path(@conn, :edit, team) %>
                 </td>
+                <td><%= team.description %></td>
               </tr>
           <% end %>
         </tbody>
