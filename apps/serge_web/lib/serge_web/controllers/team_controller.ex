@@ -36,7 +36,7 @@ defmodule Serge.Web.TeamController do
     team = Scrumming.get_team!(id, owner: conn.assigns[:current_user])
 
     case Scrumming.update_team(team, team_params) do
-      {:ok, team} ->
+      {:ok, _team} ->
         conn
         |> put_flash(:info, "Team updated successfully.")
         |> redirect(to: team_path(conn, :index))
