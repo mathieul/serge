@@ -15,4 +15,11 @@ defmodule Serge.Factory do
       rank:         sequence(:rank, fn n -> n end),
     }
   end
+
+  def team_factory do
+    %Serge.Scrumming.Team{
+      owner: build(:user),
+      name:  sequence("Team #"),
+    }
+  end
 end

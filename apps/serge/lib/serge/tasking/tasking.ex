@@ -14,13 +14,6 @@ defmodule Serge.Tasking do
   @max_rank :math.pow(2, 31) |> round
 
   @doc """
-  Returns the list of Tasks.
-  """
-  def list_task do
-    Repo.all(Task)
-  end
-
-  @doc """
   Gets a single task and raise Ecto.NoResultsError if not found.
   """
   def get_task!(id) do
@@ -50,7 +43,7 @@ defmodule Serge.Tasking do
   end
 
   @doc """
-  Guess what the previous day of work was.
+  List all tasks since a date for user.
   """
   def list_tasks_since(date, user_id: user_id) do
     Task.starting_from(date)
@@ -110,14 +103,14 @@ defmodule Serge.Tasking do
   end
 
   @doc """
-  Deletes a Task.
+  Deletes a task.
   """
   def delete_task(%Task{} = task) do
     Repo.delete(task)
   end
 
   @doc """
-  Deletes a Task from its id.
+  Deletes a task from its id.
   """
   def delete_task(id, user_id: user_id) when is_binary(id) or is_integer(id)  do
     case get_task(id, user_id: user_id) do
@@ -129,7 +122,7 @@ defmodule Serge.Tasking do
   end
 
   @doc """
-  Deletes all the Tasks.
+  Deletes all the tasks.
   """
   def delete_all_tasks() do
     Repo.delete_all(Task)

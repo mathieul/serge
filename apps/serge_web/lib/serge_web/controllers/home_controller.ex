@@ -2,9 +2,16 @@ defmodule Serge.Web.HomeController do
   use Serge.Web, :controller
 
   def index(conn, _params) do
+    if conn.assigns.current_user do
+      redirect(conn, to: tasker_path(conn, :tasker))
+    else
+      render(conn, "index.html", activities: Activity.recent_activity)
+    end
+  end
+
+  def tasker(conn, _params) do
     config = elm_app_config(conn.assigns.current_user, conn.assigns.access_token)
-    activities = Activity.recent_activity
-    render(conn, "index.html", elm_module: "Tasker", elm_app_config: config, activities: activities)
+    render(conn, "tasker.html", elm_module: "Tasker", elm_app_config: config)
   end
 
   defp elm_app_config(nil, _), do: %{}

@@ -1,0 +1,26 @@
+<div class="row">
+  <div class="col-sm-8 offset-sm-1">
+    <div class="card mt-3">
+      <div class="card-block">
+        <%= if Enum.empty?(@teams) do %>
+          <div class="alert alert-warning">
+            There are no teams yet.
+          </div>
+        <% else %>
+          <%= for team <- @teams do %>
+            <div class="card">
+              <div class="card-header">
+                &nbsp;
+              </div>
+              <div class="card-block">
+                <h4 class="card-title"><%= team.name %></h4>
+                <p class="card-text"><%= team.description || "--" %></p>
+                <%= link "Edit", to: team_path(@conn, :edit, team), class: "btn btn-primary" %>
+              </div>
+            </div>
+          <% end %>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Serge: Agile Assistant</title>
+    <link rel="stylesheet" href="<%= static_path(@conn, "/app.css") %>">
+  </head>
+
+  <body>
+    <%= render Serge.Web.SharedView, "navigation.html", assigns %>
+    <div class="container-fluid">
+      <div class="mt-3">
+        <div class="row">
+          <div class="col-sm-2">
+            <h2 class="mb-3"><%= @page_title %></h2>
+          </div>
+          <div class="col-sm-8">
+            <%= for {kind, message} <- Phoenix.Controller.get_flash(@conn) do %>
+              <div class="w-100 align-top">
+                <div class="mb-0 alert alert-<%= kind %> alert-dismissible fade show" role="alert">
+                  <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                  <%= message %>
+                </div>
+              </div>
+            <% end %>
+          </div>
+          <div class="col-sm-2">
+            <%= render_existing @view_module, "actions." <> @view_template, assigns %>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-3">
+        <%= render @view_module, @view_template, assigns %>
+      </div>
+    </div>
+
+    <script
+      src="<%= static_path(@conn, "/js/app.js") %>"
+    ></script>
+    <script
+      src="https://code.jquery.com/jquery-3.1.1.slim.min.js"
+      integrity="sha384-A7FZj7v+d/sdmMqp/nOQwliLvUsJfDHW+k9Omg/a/EheAdgtzNs3hpfag6Ed950n"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js"
+      integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js"
+      integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn"
+      crossorigin="anonymous"
+    ></script>
+    <script>
+      (function () {
+        var interface = new AuthenticatedInterface()
+        interface.start()
+      })()
+    </script>
+  </body>
+</html>

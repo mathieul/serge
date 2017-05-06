@@ -20,6 +20,8 @@ defmodule Serge.Web.Router do
     pipe_through :browser
 
     get "/", HomeController, :index
+    get "/tasker", HomeController, :tasker, as: :tasker
+    resources "/teams", TeamController
   end
 
   scope "/" do

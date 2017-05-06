@@ -4,7 +4,7 @@ defmodule Serge.Web.Mixfile do
   def project do
     [
       app: :serge_web,
-      version: "0.9.1",
+      version: "0.10.0",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
@@ -37,6 +37,7 @@ defmodule Serge.Web.Mixfile do
       {:cowboy, "~> 1.1.2"},
       {:gettext, "~> 0.13.1"},
       {:oauth2, "~> 0.9"},
+      {:phoenix_active_link, "~> 0.1.1"},
       {:phoenix_ecto, "~> 3.0"},
       {:phoenix_html, "~> 2.9.3"},
       {:phoenix_html_simplified_helpers, "~> 1.1"},

@@ -4,7 +4,7 @@ defmodule Serge.Mixfile do
   def project do
     [
       app: :serge,
-      version: "0.9.5",
+      version: "0.10.0",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
@@ -31,8 +31,10 @@ defmodule Serge.Mixfile do
     [
       {:ex_machina, "~> 2.0", only: :test},
       {:ecto, "~> 2.1"},
+      {:ecto_enum, "~> 1.0"},
       {:postgrex, ">= 0.0.0"},
-      {:timex, "~> 3.0"}
+      {:timex, "~> 3.0"},
+      {:timex_ecto, "~> 3.0"},
     ]
   end
 

@@ -19,6 +19,7 @@ defmodule Serge.Web.ConnCase do
     quote do
       # Import conveniences for testing with connections
       use Phoenix.ConnTest
+      use Plug.Test
 
       alias Serge.Repo
       import Ecto
