@@ -36,7 +36,6 @@ import Time.TimeZone exposing (TimeZone)
 import Time.ZonedDateTime as ZonedDateTime
 import Time.Date as Date exposing (Date)
 import GraphQL.Client.Http as GraphQLClient
-import Html5.DragDrop as DragDrop
 
 
 -- LOCAL IMPORTS
@@ -54,6 +53,7 @@ type alias Model =
     , confirmModalState : Modal.State
     , dropdownStates : Dict String Dropdown.State
     , orderingMode : Bool
+    , orderingTaskEditor : Maybe TaskEditor
     , message : AppMessage
     , context : AppContext
     , timeZone : TimeZone
@@ -64,7 +64,6 @@ type alias Model =
     , showCompleted : Bool
     , showYesterday : Bool
     , confirmation : Confirmation
-    , dragDrop : DragDrop.Model TaskEditor MoveTaskRequest
     }
 
 
@@ -76,6 +75,7 @@ initialModel config navState =
     , confirmModalState = Modal.hiddenState
     , dropdownStates = Dict.empty
     , orderingMode = False
+    , orderingTaskEditor = Nothing
     , message = MessageNone
     , context = makeEmptyAppContext
     , timeZone = TimeZones.utc ()
@@ -86,7 +86,6 @@ initialModel config navState =
     , showCompleted = False
     , showYesterday = False
     , confirmation = emptyConfirmation
-    , dragDrop = DragDrop.init
     }
 
 
@@ -123,7 +122,9 @@ type Msg
     | ChangeDatePeriod DatePeriod
     | ToggleShowCompleted
     | ToggleShowYesterday
-    | DragDropMsg (DragDrop.Msg TaskEditor MoveTaskRequest)
+    | StartOrdering TaskEditor
+    | StopOrdering
+    | ExecuteMoveRequest MoveTaskRequest
 
 
 

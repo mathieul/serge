@@ -11,8 +11,8 @@ type CssClasses
     | TextGhost
     | BadgeCompleted
     | SortButton
-    | SortHandle
-    | UnselectableTask
+    | MovingInProgress
+    | TaskItem
     | PeriodBadge
     | DropTarget
     | DropTargetHighlight
@@ -45,10 +45,11 @@ css =
             [ position absolute
             , right (px 40)
             ]
-        , class SortHandle
-            [ fontSize (px 16) ]
-        , class UnselectableTask
-            [ opacity (num 0.4) ]
+        , class TaskItem
+            [ hover [ backgroundColor (hex "f1f1f1") ]
+            , withClass MovingInProgress
+                [ hover [ backgroundColor transparent ] ]
+            ]
         , class PeriodBadge
             [ display inlineBlock
             , width (px 75)

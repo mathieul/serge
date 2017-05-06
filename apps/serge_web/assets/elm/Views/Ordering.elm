@@ -3,11 +3,10 @@ module Views.Ordering exposing (view)
 import Dict exposing (Dict)
 import Html as H exposing (Html, div, text)
 import Html.Attributes as A exposing (class, classList)
-import Bootstrap.Badge as Badge
 import Bootstrap.Button as Button
+import Bootstrap.ButtonGroup as ButtonGroup
 import Bootstrap.Card as Card
 import Bootstrap.ListGroup as ListGroup
-import Html5.DragDrop as DragDrop
 
 
 -- LOCAL IMPORTS
@@ -22,85 +21,10 @@ view model =
         taskEditorList =
             List.filter (not << .completed) model.taskEditors
 
-        dragged =
-            DragDrop.getDragId model.dragDrop
-
-        hovered =
-            case DragDrop.getDropId model.dragDrop of
-                Just (MoveTaskBefore task) ->
-                    Just task
-
-                Just (MoveTaskAfter task) ->
-                    Just task
-
-                Nothing ->
-                    Nothing
-
-        dropTargetAttrs : MoveTaskRequest -> TaskEditor -> List (H.Attribute Msg)
-        dropTargetAttrs request editor =
-            if Just editor == dragged then
-                [ class "hidden-xs-up" ]
-            else
-                List.concat
-                    [ [ class "DropTarget align-items-center justify-content-between"
-                      , classList [ ( "DropTargetHighlight", hovered == Just editor.task ) ]
-                      ]
-                    , DragDrop.droppable DragDropMsg request
-                    ]
-
-        dropTargetListForDay : ( String, List TaskEditor ) -> Html Msg
-        dropTargetListForDay ( day, editors ) =
-            let
-                dropTarget request editor =
-                    ListGroup.li
-                        [ ListGroup.attrs <| dropTargetAttrs request editor ]
-                        [ div []
-                            [ H.i [ class "fa fa-chevron-right" ] []
-                            , H.i [ class "fa fa-chevron-right" ] []
-                            , H.i [ class "fa fa-chevron-right" ] []
-                            ]
-                        , div []
-                            [ H.i [ class "fa fa-chevron-left" ] []
-                            , H.i [ class "fa fa-chevron-left" ] []
-                            , H.i [ class "fa fa-chevron-left" ] []
-                            ]
-                        ]
-
-                taskReference editor =
-                    ListGroup.li
-
-                makeDropTargets before editors =
-                    dropTarget (MoveTaskBefore before.task) before
-                        :: List.concatMap
-                            (\editor ->
-                                [ taskItem False editor
-                                , dropTarget (MoveTaskAfter editor.task) editor
-                                ]
-                            )
-                            editors
-            in
-                div []
-                    [ H.h6 [ class "text-muted" ] [ text day ]
-                    , ListGroup.ul <|
-                        case List.reverse editors of
-                            first :: remainder ->
-                                makeDropTargets first (first :: remainder)
-
-                            [] ->
-                                []
-                    ]
-
         taskListByDay =
             taskEditorList
-                |> List.map (taskItem True)
+                |> List.map (taskItem model.orderingTaskEditor)
                 |> ListGroup.ul
-
-        dropTargetListByDay =
-            taskEditorList
-                |> taskEditorsByDay
-                |> Dict.toList
-                |> List.map dropTargetListForDay
-                |> div []
     in
         Card.config [ Card.attrs [ class "mt-3" ] ]
             |> Card.block []
@@ -109,12 +33,7 @@ view model =
                         [ H.h3 [] [ text "Order Tasks" ]
                         , H.p [ class "mt-2 mb-4" ]
                             [ text "Drag and drop tasks to re-order them." ]
-                        , case dragged of
-                            Just _ ->
-                                dropTargetListByDay
-
-                            Nothing ->
-                                taskListByDay
+                        , taskListByDay
                         ]
                 ]
             |> Card.footer []
@@ -154,25 +73,66 @@ taskEditorsByDay taskList =
             taskList
 
 
-taskItem : Bool -> TaskEditor -> ListGroup.Item Msg
-taskItem isDropTarget editor =
+taskItem : Maybe TaskEditor -> TaskEditor -> ListGroup.Item Msg
+taskItem orderingEditor editor =
     let
         ( periodLabel, periodBadge ) =
             datePeriodConfig editor.period
 
-        attrs =
-            List.concat
-                [ if isDropTarget then
-                    DragDrop.draggable DragDropMsg editor
-                  else
-                    [ class "UnselectableTask" ]
-                , [ class "justify-content-start" ]
-                ]
+        ( attrs, actions ) =
+            case orderingEditor of
+                Just source ->
+                    if source == editor then
+                        ( [ class "justify-content-start TaskItem MovingInProgress" ]
+                        , [ ButtonGroup.button
+                                [ Button.secondary
+                                , Button.onClick StopOrdering
+                                ]
+                                [ H.i [ class "fa fa-ban" ] []
+                                , text " Cancel"
+                                ]
+                          ]
+                        )
+                    else
+                        ( [ class "justify-content-start TaskItem" ]
+                        , [ ButtonGroup.button
+                                [ Button.warning
+                                , Button.onClick (ExecuteMoveRequest <| MoveTaskBefore editor.task)
+                                ]
+                                [ H.i [ class "fa fa-arrow-up" ] []
+                                , text " Before"
+                                ]
+                          , ButtonGroup.button
+                                [ Button.success
+                                , Button.onClick (ExecuteMoveRequest <| MoveTaskAfter editor.task)
+                                ]
+                                [ H.i [ class "fa fa-arrow-down" ] []
+                                , text " After"
+                                ]
+                          ]
+                        )
+
+                Nothing ->
+                    ( [ class "justify-content-start TaskItem" ]
+                    , [ ButtonGroup.button
+                            [ Button.info
+                            , Button.attrs [ class "ml-auto" ]
+                            , Button.onClick (StartOrdering editor)
+                            ]
+                            [ H.i [ class "fa fa-arrows" ] []
+                            , text " Move"
+                            ]
+                      ]
+                    )
     in
         ListGroup.li [ ListGroup.attrs attrs ]
             [ H.span
                 [ class <| "PeriodBadge badge mr-3 " ++ periodBadge ]
                 [ text periodLabel ]
             , text editor.task.label
-            , Badge.pill [ class "ml-auto" ] [ H.i [ class "fa fa-arrows SortHandle" ] [] ]
+            , ButtonGroup.buttonGroup
+                [ ButtonGroup.attrs [ class "ml-auto" ]
+                , ButtonGroup.small
+                ]
+                actions
             ]

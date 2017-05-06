@@ -12,7 +12,6 @@ import Bootstrap.Modal as Modal
 import Bootstrap.Dropdown as Dropdown
 import Bootstrap.Button as Button
 import GraphQL.Client.Http as GraphQLClient
-import Html5.DragDrop as DragDrop
 
 
 -- LOCAL IMPORTS
@@ -285,25 +284,25 @@ update msg model =
         HideOrdering ->
             { model | orderingMode = False } ! []
 
-        DragDropMsg msg_ ->
+        StartOrdering editor ->
+            { model | orderingTaskEditor = Just editor } ! []
+
+        StopOrdering ->
+            { model | orderingTaskEditor = Nothing } ! []
+
+        ExecuteMoveRequest moveRequest ->
             let
-                ( dragDropModel, result ) =
-                    DragDrop.update msg_ model.dragDrop
-
-                _ =
-                    Debug.log "result" result
-
                 command =
-                    case result of
-                        Just ( editorDragged, moveRequest ) ->
-                            Api.moveTaskRequest editorDragged.task moveRequest
+                    case model.orderingTaskEditor of
+                        Just taskEditor ->
+                            Api.moveTaskRequest taskEditor.task moveRequest
                                 |> Api.sendMutationRequest
                                 |> Task.attempt UpdateTask
 
                         Nothing ->
                             Cmd.none
             in
-                ( { model | dragDrop = dragDropModel }, command )
+                ( { model | orderingTaskEditor = Nothing }, command )
 
 
 updateModelForTime : Time -> Model -> Model
