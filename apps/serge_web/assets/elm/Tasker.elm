@@ -282,7 +282,12 @@ update msg model =
             { model | orderingMode = True } ! []
 
         HideOrdering ->
-            { model | orderingMode = False } ! []
+            ( { model
+                | orderingMode = False
+                , orderingTaskEditor = Nothing
+              }
+            , Cmd.none
+            )
 
         StartOrdering editor ->
             { model | orderingTaskEditor = Just editor } ! []
