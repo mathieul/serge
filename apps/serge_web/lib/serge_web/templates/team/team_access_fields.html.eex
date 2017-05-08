@@ -1,0 +1,35 @@
+<%= inputs_for @form, :team_accesses, fn taf -> %>
+  <div class="row team-access">
+    <div class="col-sm-6">
+      <div class="form-group">
+        <%= label taf, :email, class: "control-label" %>
+        <%= email_input taf, :email, class: "form-control" %>
+        <%= error_tag taf, :email %>
+      </div>
+    </div>
+    <div class="col-sm-4">
+      <div class="form-group">
+        <%= label taf, :access, "Role in the team", class: "control-label" %>
+        <%= select taf, :kind, ["Chicken": "read", "Pig": "read_write"], class: "form-control" %>
+      </div>
+    </div>
+    <div class="col-sm-2">
+      <div class="form-group">
+        <label class="control-label">Delete</label>
+        <%= if @persisted do %>
+          <div class="form-check">
+            <%= label taf, :delete, class: "form-check-label" do %>
+              <%= checkbox taf, :delete, class: "form-check-input" %>
+              <i class="fa fa-trash" aria-hidden="true"></i>
+            <% end %>
+          </div>
+        <% else %>
+          <%= link to: "#", class: "delete-team-access btn btn-danger" do %>
+            <i class="fa fa-trash" aria-hidden="true"></i>
+            Delete
+          <% end %>
+        <% end %>
+      </div>
+    </div>
+  </div>
+<% end %>

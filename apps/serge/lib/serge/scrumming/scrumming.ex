@@ -110,6 +110,7 @@ defmodule Serge.Scrumming do
   defp team_changeset(%Team{} = team, attrs) do
     team
     |> cast(attrs, [:name, :description, :owner_id])
+    |> cast_assoc(:team_accesses, with: &team_access_changeset/2)
     |> validate_required([:name, :owner_id])
   end
 
