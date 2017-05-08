@@ -1,4 +1,5 @@
 <%= render "form.html",
+  title: "Edit team #{inspect @team.name}",
   changeset: @changeset,
   action: team_path(@conn, :update, @team),
   cancel: team_path(@conn, :index),

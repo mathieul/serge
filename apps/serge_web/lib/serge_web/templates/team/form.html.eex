@@ -2,7 +2,7 @@
   <div class="col-sm-8 offset-sm-1">
     <div class="card mt-3">
       <div class="card-block">
-        <h4 class="card-title">Create a new team</h4>
+        <h4 class="card-title"><%= @title %></h4>
         <%= form_for @changeset, @action, fn f -> %>
           <%= if @changeset.action do %>
             <div class="alert alert-danger">
@@ -22,7 +22,24 @@
             <%= error_tag f, :description %>
           </div>
 
-          <div class="form-group text-right">
+          <fieldset class="form-group">
+            <legend>Team members</legend>
+            <%= inputs_for f, :team_accesses, fn taf -> %>
+              <div class="form-group">
+                <%= label taf, :email, class: "control-label" %>
+                <%= email_input taf, :email, class: "form-control" %>
+                <%= error_tag taf, :email %>
+              </div>
+              <div class="form-group">
+                <%= label taf, :access, class: "control-label" %>
+                <%= select taf, :kind, ["Chicken": "read", "Pig": "read_write"], class: "form-control" %>
+              </div>
+            <% end %>
+          </fieldset>
+
+          <hr>
+
+          <div class="text-right">
             <%= if @delete do %>
               <%= link "Delete", to: @delete, class: "btn btn-danger pull-left",
                 data: [confirm: "Really delete team and all its history (can't be undone)?"],

@@ -2,6 +2,7 @@ defmodule Serge.Web.TeamController do
   use Serge.Web, :controller
 
   alias Serge.Scrumming
+  alias Serge.Scrumming.{Team, TeamAccess}
 
   plug :set_authenticated_layout
 
@@ -11,7 +12,12 @@ defmodule Serge.Web.TeamController do
   end
 
   def new(conn, _params) do
-    changeset = Scrumming.change_team(%Scrumming.Team{owner_id: conn.assigns[:current_user].id})
+    changeset = Scrumming.change_team(%Team{
+      owner_id: conn.assigns[:current_user].id,
+      team_accesses: [
+        %TeamAccess{kind: :read_write}
+      ]
+    })
     render(conn, "new.html", changeset: changeset, page_title: "Teams")
   end
 

@@ -14,8 +14,17 @@
               </div>
               <div class="card-block">
                 <h4 class="card-title"><%= team.name %></h4>
-                <p class="card-text"><%= team.description || "--" %></p>
-                <%= link "Edit", to: team_path(@conn, :edit, team), class: "btn btn-primary" %>
+                <div class="row">
+                  <div class="col-sm-8">
+                    <p class="card-text"><%= team.description || "--" %></p>
+                    <p class="card-text">
+                      x team members, y invitations pending.
+                    </p>
+                  </div>
+                  <div class="col-sm-4">
+                    <%= link "Edit", to: team_path(@conn, :edit, team), class: "btn btn-primary pull-right" %>
+                  </div>
+                </div>
               </div>
             </div>
           <% end %>
