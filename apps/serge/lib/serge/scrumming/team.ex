@@ -4,11 +4,13 @@ defmodule Serge.Scrumming.Team do
   import Ecto.Query
 
   schema "teams" do
-    field :name, :string
-    field :description, :string
+    field :name,              :string
+    field :description,       :string
+    field :member_count,      :integer, virtual: true
+    field :invitation_count,  :integer, virtual: true
 
-    belongs_to :owner, Serge.Authentication.User
-    has_many :team_accesses, Serge.Scrumming.TeamAccess
+    belongs_to :owner,        Serge.Authentication.User
+    has_many :team_accesses,  Serge.Scrumming.TeamAccess
 
     timestamps()
   end
