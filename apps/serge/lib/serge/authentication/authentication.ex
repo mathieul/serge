@@ -11,7 +11,7 @@ defmodule Serge.Authentication do
   @doc """
   Gets a single user.
   """
-  def get_user_by_uid_or_create(uid, attrs) do
+  def get_user_by_uid_or_create!(uid, attrs) do
     case Repo.get_by(User, uid: uid) do
       nil ->
         create_user(attrs)
@@ -48,7 +48,7 @@ defmodule Serge.Authentication do
   def create_user(attrs \\ %{}) do
     %User{}
     |> user_changeset(attrs)
-    |> Repo.insert()
+    |> Repo.insert!()
   end
 
   defp user_changeset(%User{} = user, attrs) do

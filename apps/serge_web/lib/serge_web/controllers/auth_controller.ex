@@ -51,7 +51,7 @@ defmodule Serge.Web.AuthController do
 
   defp get_user!(provider, client) do
     params = params_for(provider, client)
-    Authentication.get_user_by_uid_or_create(params.uid, params)
+    Authentication.get_user_by_uid_or_create!(params.uid, params)
   end
 
   defp params_for("github", client) do
