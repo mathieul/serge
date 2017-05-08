@@ -5,8 +5,10 @@ defmodule Serge.Scrumming do
 
   import Ecto.{Query, Changeset}, warn: false
   alias Serge.Repo
-
   alias Serge.Scrumming.{Team, TeamAccess}
+  alias Serge.DateHelpers, as: DH
+
+  @email_regex ~r/^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,4}$/
 
   @doc """
   List all teams for owner.
@@ -41,6 +43,30 @@ defmodule Serge.Scrumming do
       team ->
         %{team | owner: owner}
     end
+  end
+
+  @doc """
+  Preload team_accesses.
+  """
+  def preload_team_accesses(team) do
+    with_accesses = Repo.preload(team, team_accesses: :user)
+    %{with_accesses | team_accesses: Enum.map(with_accesses.team_accesses, &set_team_access_status/1)}
+  end
+
+  defp set_team_access_status(access) do
+    %{access | status: cond do
+      access.accepted_at ->
+        "member since #{DH.mmddyy(access.accepted_at)}"
+
+      access.rejected_at ->
+        "rejected on #{DH.mmddyy(access.rejected_at)}"
+
+      access.user_id ->
+        "created on #{DH.mmddyy(access.inserted_at)}"
+
+      true ->
+        "pending"
+    end}
   end
 
   @doc """
@@ -145,7 +171,31 @@ defmodule Serge.Scrumming do
 
   defp team_access_changeset(%TeamAccess{} = team_access, attrs) do
     team_access
-    |> cast(attrs, [:user_id, :team_id, :kind])
-    |> validate_required([:user_id, :team_id, :kind])
+    |> cast(attrs, [:user_id, :team_id, :kind, :email, :delete])
+    |> validate_format(:email, @email_regex)
+    |> validate_required([:kind])
+    |> validate_email_or_user_id_present
+    |> set_delete_action
+  end
+
+  defp validate_email_or_user_id_present(changeset) do
+    cond do
+      get_field(changeset, :user_id) ->
+        changeset
+
+      (get_field(changeset, :email) || "" |> String.trim) != "" ->
+        changeset
+
+      true ->
+        add_error(changeset, :email, "is required")
+    end
+  end
+
+  defp set_delete_action(changeset) do
+    if get_change(changeset, :delete) do
+      %{changeset | action: :delete}
+    else
+      changeset
+    end
   end
 end

@@ -15,8 +15,12 @@ defmodule Serge.DateHelpers do
   def tomorrow, do: days_from_now(1)
   def later, do: days_from_now(30)
 
-  defp yyyymmdd(time) do
+  def yyyymmdd(time) do
     Timex.format!(time, "%Y-%m-%d", :strftime)
+  end
+
+  def mmddyy(time) do
+    Timex.format!(time, "%-m/%-d/%y", :strftime)
   end
 
   def validate_date(changeset, field, options \\ []) do

@@ -8,6 +8,8 @@ defmodule Serge.Repo.Migrations.AddTokenAndTimestampsToTeamAccesses do
       add :expires_at,  :utc_datetime
       add :accepted_at, :utc_datetime
       add :rejected_at, :utc_datetime
+
+      modify :user_id,  :id, null: true
     end
   end
 end

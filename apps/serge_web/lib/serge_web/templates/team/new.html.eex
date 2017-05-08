@@ -1,6 +1,7 @@
 <%= render "form.html",
   title: "Create a new team",
   changeset: @changeset,
+  owner: @owner,
   action: team_path(@conn, :create),
   cancel: team_path(@conn, :index),
   delete: nil

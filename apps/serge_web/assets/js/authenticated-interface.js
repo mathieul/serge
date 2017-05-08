@@ -9,21 +9,21 @@ export default class AuthenticatedInterface {
 }
 
 function canAddTeamAccess() {
-  $(document).on("click", "#add-team-access", function (event) {
+  $(document).on('click', '#add-team-access', function (event) {
     event.preventDefault()
     const time = new Date().getTime()
     const template = $(this)
-      .data("template")
+      .data('template')
       .replace(/\[0\]/g, `[${time}]`)
       .replace(/_0_/g, `_${time}_`)
 
-      $(this).after(template)
+      $(this).parents('.team-accesses').after(template)
   })
 }
 
 function canDeleteTeamAccess() {
-  $(document).on("click", ".delete-team-access", function (event) {
+  $(document).on('click', '.delete-team-access', function (event) {
     event.preventDefault()
-    $(this).parents(".team-access").remove()
+    $(this).parents('.team-access').remove()
   })
 }

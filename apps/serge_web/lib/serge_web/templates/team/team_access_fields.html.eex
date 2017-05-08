@@ -1,35 +1,74 @@
-<%= inputs_for @form, :team_accesses, fn taf -> %>
-  <div class="row team-access">
-    <div class="col-sm-6">
-      <div class="form-group">
-        <%= label taf, :email, class: "control-label" %>
-        <%= email_input taf, :email, class: "form-control" %>
-        <%= error_tag taf, :email %>
+<%= inputs_for @form, :team_accesses, fn f -> %>
+  <%= hidden_input f, :user_id %>
+  <%= hidden_input f, :team_id %>
+
+  <% # team access already exists %>
+  <%= if f.data.id do %>
+    <div class="row team-access">
+      <div class="col-sm-4">
+        <div class="form-group">
+          <%= if f.data.user do %>
+            <%= label f, :name, class: "control-label" %>
+            <p class="form-control-static"><%= f.data.user.name %></p>
+          <% else %>
+            <%= label f, :email, class: "control-label" %>
+            <p class="form-control-static"><%= f.data.email %></p>
+          <% end %>
+        </div>
+      </div>
+      <div class="col-sm-3">
+        <div class="form-group">
+          <%= label f, :access, "Role in the team", class: "control-label" %>
+          <%= select f, :kind, ["Chicken": "read", "Pig": "read_write"], class: "form-control" %>
+        </div>
+      </div>
+      <div class="col-sm-3">
+        <div class="form-group">
+          <%= label f, :status, class: "control-label" %>
+          <p class="form-control-static"><%= f.data.status %></p>
+        </div>
+      </div>
+      <div class="col-sm-2">
+        <div class="form-group">
+          <%= unless f.data.user_id == @owner.id do %>
+            <label class="control-label">Delete</label>
+            <div class="form-check">
+              <%= label f, :delete, class: "form-check-label" do %>
+                <%= checkbox f, :delete, class: "form-check-input" %>
+                <i class="fa fa-trash text-danger" aria-hidden="true"></i>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
       </div>
     </div>
-    <div class="col-sm-4">
-      <div class="form-group">
-        <%= label taf, :access, "Role in the team", class: "control-label" %>
-        <%= select taf, :kind, ["Chicken": "read", "Pig": "read_write"], class: "form-control" %>
+  <% # new team access %>
+  <% else %>
+    <div class="row team-access">
+      <div class="col-sm-4">
+        <div class="form-group">
+          <%= label f, :email, class: "control-label" %>
+          <%= email_input f, :email, class: "form-control" %>
+          <%= error_tag f, :email %>
+        </div>
       </div>
-    </div>
-    <div class="col-sm-2">
-      <div class="form-group">
-        <label class="control-label">Delete</label>
-        <%= if @persisted do %>
-          <div class="form-check">
-            <%= label taf, :delete, class: "form-check-label" do %>
-              <%= checkbox taf, :delete, class: "form-check-input" %>
-              <i class="fa fa-trash" aria-hidden="true"></i>
-            <% end %>
-          </div>
-        <% else %>
+      <div class="col-sm-3">
+        <div class="form-group">
+          <%= label f, :access, "Role in the team", class: "control-label" %>
+          <%= select f, :kind, ["Chicken": "read", "Pig": "read_write"], class: "form-control" %>
+        </div>
+      </div>
+      <div class="col-sm-3">
+      </div>
+      <div class="col-sm-2">
+        <div class="form-group">
+          <label class="control-label">Delete</label>
           <%= link to: "#", class: "delete-team-access btn btn-danger" do %>
             <i class="fa fa-trash" aria-hidden="true"></i>
             Delete
           <% end %>
-        <% end %>
+        </div>
       </div>
     </div>
-  </div>
+  <% end %>
 <% end %>

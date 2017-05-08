@@ -2,7 +2,6 @@ defmodule Serge.Web.TeamController do
   use Serge.Web, :controller
 
   alias Serge.Scrumming
-  alias Serge.Scrumming.{Team, TeamAccess}
 
   plug :set_authenticated_layout
 
@@ -12,13 +11,9 @@ defmodule Serge.Web.TeamController do
   end
 
   def new(conn, _params) do
-    changeset = Scrumming.change_team(%Team{
-      owner_id: conn.assigns[:current_user].id,
-      team_accesses: [
-        %TeamAccess{kind: :read_write}
-      ]
-    })
-    render(conn, "new.html", changeset: changeset, page_title: "Teams")
+    user = conn.assigns[:current_user]
+    changeset = Scrumming.change_team(%Scrumming.Team{owner: user})
+    render(conn, "new.html", changeset: changeset, owner: user, page_title: "Teams")
   end
 
   def create(conn, %{"team" => team_params}) do
@@ -28,18 +23,27 @@ defmodule Serge.Web.TeamController do
         |> put_flash(:info, "Team #{inspect team.name} created successfully.")
         |> redirect(to: team_path(conn, :index))
       {:error, %Ecto.Changeset{} = changeset} ->
-        render(conn, "new.html", changeset: changeset)
+        user = conn.assigns[:current_user]
+        render(conn, "new.html", changeset: changeset, owner: user, page_title: "Teams")
     end
   end
 
   def edit(conn, %{"id" => id}) do
-    team = Scrumming.get_team!(id, owner: conn.assigns[:current_user])
+    user = conn.assigns[:current_user]
+    team =
+      id
+      |> Scrumming.get_team!(owner: user)
+      |> Scrumming.preload_team_accesses
     changeset = Scrumming.change_team(team)
-    render(conn, "edit.html", team: team, changeset: changeset, page_title: "Teams")
+    render(conn, "edit.html", team: team, changeset: changeset, owner: user, page_title: "Teams")
   end
 
   def update(conn, %{"id" => id, "team" => team_params}) do
-    team = Scrumming.get_team!(id, owner: conn.assigns[:current_user])
+    user = conn.assigns[:current_user]
+    team =
+      id
+      |> Scrumming.get_team!(owner: user)
+      |> Scrumming.preload_team_accesses
 
     case Scrumming.update_team(team, team_params) do
       {:ok, _team} ->
@@ -47,7 +51,7 @@ defmodule Serge.Web.TeamController do
         |> put_flash(:info, "Team updated successfully.")
         |> redirect(to: team_path(conn, :index))
       {:error, %Ecto.Changeset{} = changeset} ->
-        render(conn, "edit.html", team: team, changeset: changeset)
+        render(conn, "edit.html", team: team, changeset: changeset, owner: user, page_title: "Teams")
     end
   end
 

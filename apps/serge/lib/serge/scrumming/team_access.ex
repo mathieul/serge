@@ -12,6 +12,7 @@ defmodule Serge.Scrumming.TeamAccess do
     field :rejected_at, Ecto.DateTime
 
     field :delete,      :boolean,     virtual: true
+    field :status,      :string,      virtual: true
 
     belongs_to :user,   Serge.Authentication.User
     belongs_to :team,   Serge.Scrumming.Team
