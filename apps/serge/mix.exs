@@ -33,6 +33,7 @@ defmodule Serge.Mixfile do
       {:ecto, "~> 2.1"},
       {:ecto_enum, "~> 1.0"},
       {:postgrex, ">= 0.0.0"},
+      {:secure_random, "~> 0.5.1"},
       {:timex, "~> 3.0"},
       {:timex_ecto, "~> 3.0"},
     ]
