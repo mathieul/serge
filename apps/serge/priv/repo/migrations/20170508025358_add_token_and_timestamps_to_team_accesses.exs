@@ -3,6 +3,7 @@ defmodule Serge.Repo.Migrations.AddTokenAndTimestampsToTeamAccesses do
 
   def change do
     alter table(:team_accesses) do
+      add :email,       :string
       add :token,       :string
       add :expires_at,  :utc_datetime
       add :accepted_at, :utc_datetime
