@@ -5,6 +5,7 @@ export default class AuthenticatedInterface {
   start() {
     canAddTeamAccess()
     canDeleteTeamAccess()
+    autoCloseAlerts()
   }
 }
 
@@ -26,4 +27,8 @@ function canDeleteTeamAccess() {
     event.preventDefault()
     $(this).parents('.team-access').remove()
   })
+}
+
+function autoCloseAlerts() {
+  setTimeout(() => $('.alert-dismissible').alert('close'), 5000)
 }
