@@ -1,52 +1,53 @@
-<div class="row">
-  <div class="col-sm-8 offset-sm-1">
-    <div class="card mt-3">
-      <div class="card-block">
-        <h4 class="card-title">
-          <%= @title %>
-          <%= if @delete do %>
-            <span class="pull-right">
-              <%= link "Delete", to: @delete, class: "btn btn-danger",
-                data: [confirm: "Really delete team and all its history (can't be undone)?"],
-                method: :delete %>
-            <% end %>
-            </span>
-        </h4>
-        <%= form_for @changeset, @action, fn f -> %>
+<div class="card mt-3">
+  <div class="card-block">
+    <h4 class="card-title">
+      <%= @title %>
+      <%= if @delete do %>
+        <span class="pull-right">
+          <%= link "Delete", to: @delete, class: "btn btn-danger",
+            data: [confirm: "Really delete team and all its history (can't be undone)?"],
+            method: :delete %>
+        <% end %>
+      </span>
+    </h4>
+
+    <%= form_for @changeset, @action, fn f -> %>
+      <div class="row">
+        <div class="col-sm-8">
           <%= if @changeset.action do %>
             <div class="alert alert-danger">
               Oops, something went wrong! Please check the errors below.
             </div>
           <% end %>
 
-          <div class="form-group">
+          <%= form_group f, :name do %>
             <%= label f, :name, class: "control-label" %>
             <%= text_input f, :name, class: "form-control", autofocus: true %>
             <%= error_tag f, :name %>
-          </div>
+          <% end %>
 
-          <div class="form-group">
+          <%= form_group f, :description do %>
             <%= label f, :description, class: "control-label" %>
             <%= textarea f, :description, class: "form-control" %>
             <%= error_tag f, :description %>
-          </div>
-
-          <fieldset class="form-group">
-            <legend>Team members</legend>
-            <div class="team-accesses mb-3">
-              <%= link_to_team_access_fields(f.data.id, owner: @owner) %>
-            </div>
-            <%= render "team_access_fields.html", form: f, owner: f.data.owner %>
-          </fieldset>
-
-          <hr>
-
-          <div class="text-right">
-            <%= link "Cancel", to: @cancel, class: "btn btn-secondary" %>
-            <%= submit "Save", class: "btn btn-primary" %>
-          </div>
-        <% end %>
+          <% end %>
+        </div>
       </div>
-    </div>
+
+      <fieldset class="form-group">
+        <legend>Team members</legend>
+        <div class="team-accesses mb-3">
+          <%= link_to_team_access_fields(f.data.id, owner: @owner) %>
+        </div>
+        <%= render "team_access_fields.html", form: f, owner: f.data.owner %>
+      </fieldset>
+
+      <hr>
+
+      <div class="text-right">
+        <%= link "Cancel", to: @cancel, class: "btn btn-secondary" %>
+        <%= submit "Save", class: "btn btn-primary" %>
+      </div>
+    <% end %>
   </div>
 </div>

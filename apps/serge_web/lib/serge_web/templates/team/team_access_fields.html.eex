@@ -6,7 +6,7 @@
   <%= if f.data.id do %>
     <div class="row team-access">
       <div class="col-sm-4">
-        <div class="form-group">
+        <%= form_group f, :name do %>
           <%= if f.data.user do %>
             <%= label f, :name, class: "control-label" %>
             <p class="form-control-static"><%= f.data.user.name %></p>
@@ -14,22 +14,22 @@
             <%= label f, :email, class: "control-label" %>
             <p class="form-control-static"><%= f.data.email %></p>
           <% end %>
-        </div>
+        <% end %>
       </div>
       <div class="col-sm-3">
-        <div class="form-group">
+        <%= form_group f, :kind do %>
           <%= label f, :access, "Role in the team", class: "control-label" %>
-          <%= select f, :kind, ["Chicken": "read", "Pig": "read_write"], class: "form-control" %>
-        </div>
+          <%= select f, :kind, ["View only": "read", "Can make changes": "read_write"], class: "form-control" %>
+        <% end %>
       </div>
       <div class="col-sm-3">
-        <div class="form-group">
+        <%= form_group f, :status do %>
           <%= label f, :status, class: "control-label" %>
           <p class="form-control-static"><%= f.data.status %></p>
-        </div>
+        <% end %>
       </div>
       <div class="col-sm-2">
-        <div class="form-group">
+        <%= form_group f, :delete do %>
           <%= unless f.data.user_id == @owner.id do %>
             <label class="control-label">Delete</label>
             <div class="form-check">
@@ -39,35 +39,40 @@
               <% end %>
             </div>
           <% end %>
-        </div>
+        <% end %>
       </div>
     </div>
   <% # new team access %>
   <% else %>
     <div class="row team-access">
       <div class="col-sm-4">
-        <div class="form-group">
+        <%= form_group f, :email do %>
           <%= label f, :email, class: "control-label" %>
           <%= email_input f, :email, class: "form-control" %>
           <%= error_tag f, :email %>
-        </div>
+        <% end %>
       </div>
       <div class="col-sm-3">
-        <div class="form-group">
+        <%= form_group f, :kind do %>
           <%= label f, :access, "Role in the team", class: "control-label" %>
           <%= select f, :kind, ["Chicken": "read", "Pig": "read_write"], class: "form-control" %>
-        </div>
+        <% end %>
       </div>
       <div class="col-sm-3">
+        <%= form_group f, :status do %>
+          <%= label f, :status, class: "control-label" %>
+          <p class="form-control-static">New</p>
+        <% end %>
       </div>
       <div class="col-sm-2">
-        <div class="form-group">
+        <%= form_group f, :delete do %>
           <label class="control-label">Delete</label>
-          <%= link to: "#", class: "delete-team-access btn btn-danger" do %>
-            <i class="fa fa-trash" aria-hidden="true"></i>
+          <br>
+          <%= link to: "#", class: "delete-team-access btn btn-danger btn-sm" do %>
             Delete
+            <i class="fa fa-trash" aria-hidden="true"></i>
           <% end %>
-        </div>
+        <% end %>
       </div>
     </div>
   <% end %>

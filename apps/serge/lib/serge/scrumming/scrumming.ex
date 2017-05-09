@@ -176,6 +176,7 @@ defmodule Serge.Scrumming do
     |> validate_required([:kind])
     |> validate_email_or_user_id_present
     |> set_delete_action
+    |> initialize_if_new
   end
 
   defp validate_email_or_user_id_present(changeset) do
@@ -196,6 +197,18 @@ defmodule Serge.Scrumming do
       %{changeset | action: :delete}
     else
       changeset
+    end
+  end
+
+  defp initialize_if_new(changeset) do
+    case get_field(changeset, :token) do
+      nil ->
+        changeset
+        |> put_change(:token, SecureRandom.hex(32))
+        |> put_change(:expires_at, DH.days_from_now(3, as_time: true))
+
+      _ ->
+        changeset
     end
   end
 end

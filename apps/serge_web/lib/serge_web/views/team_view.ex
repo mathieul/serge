@@ -21,4 +21,9 @@ defmodule Serge.Web.TeamView do
       id: "add-team-access",
       class: "btn btn-info btn-sm"
   end
+
+  def form_group(form, field, [do: block]) do
+    classes = "form-group#{if form.errors[field], do: " has-danger"}"
+    content_tag(:div, block, class: classes)
+  end
 end

@@ -1,12 +1,18 @@
 defmodule Serge.DateHelpers do
-  import Ecto.Date, only: [cast!: 1, cast: 1]
   import Ecto.Changeset, only: [validate_change: 3]
 
   def days_from_now(days) when is_integer(days) do
     Timex.local
       |> Timex.shift(days: days)
-      |> yyyymmdd
-      |> cast!
+      |> Timex.format!("%Y-%m-%d", :strftime)
+      |> Ecto.Date.cast!
+  end
+
+  def days_from_now(days, as_time: true) when is_integer(days) do
+    Timex.local
+      |> Timex.shift(days: days)
+      |> Timex.format!("%Y-%m-%d %H:%M:%S", :strftime)
+      |> Ecto.DateTime.cast!
   end
 
   def days_ago(days), do: days_from_now(-days)
@@ -15,17 +21,13 @@ defmodule Serge.DateHelpers do
   def tomorrow, do: days_from_now(1)
   def later, do: days_from_now(30)
 
-  def yyyymmdd(time) do
-    Timex.format!(time, "%Y-%m-%d", :strftime)
-  end
-
   def mmddyy(time) do
     Timex.format!(time, "%-m/%-d/%y", :strftime)
   end
 
   def validate_date(changeset, field, options \\ []) do
     validate_change(changeset, field, fn _, value ->
-      case cast(value) do
+      case Ecto.Date.cast(value) do
         {:ok, _} ->
           []
         :error ->
