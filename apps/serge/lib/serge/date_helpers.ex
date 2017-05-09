@@ -21,6 +21,8 @@ defmodule Serge.DateHelpers do
   def tomorrow, do: days_from_now(1)
   def later, do: days_from_now(30)
 
+  def now, do: days_from_now(0, as_time: true)
+
   def mmddyy(time) do
     Timex.format!(time, "%-m/%-d/%y", :strftime)
   end

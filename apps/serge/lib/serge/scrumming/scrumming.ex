@@ -16,8 +16,14 @@ defmodule Serge.Scrumming do
   def list_teams(owner: owner) when is_map(owner) do
     Team.for_owner_id(owner.id)
     |> Team.ordered_by_name()
+    |> Team.with_team_access_counts()
     |> Repo.all()
-    |> Enum.map(fn team -> %{team | owner: owner} end)
+    |> Enum.map(fn res ->
+      %{res.team | count_pending: res.pending || 0,
+                   count_accepted: res.accepted || 0,
+                   count_rejected: res.rejected || 0,
+                   owner: owner}
+    end)
   end
 
   @doc """
@@ -93,7 +99,7 @@ defmodule Serge.Scrumming do
     Ecto.Multi.new
     |> Ecto.Multi.run(:team, fn _ -> do_create_team(attrs, owner) end)
     |> Ecto.Multi.run(:access, fn %{team: team} ->
-      create_team_access(%{kind: :read_write}, user: owner, team: team)
+      create_team_access(%{kind: :read_write, accepted_at: DH.now()}, user: owner, team: team)
     end)
     |> Repo.transaction
   end
@@ -171,7 +177,7 @@ defmodule Serge.Scrumming do
 
   defp team_access_changeset(%TeamAccess{} = team_access, attrs) do
     team_access
-    |> cast(attrs, [:user_id, :team_id, :kind, :email, :delete])
+    |> cast(attrs, [:user_id, :team_id, :kind, :email, :delete, :accepted_at, :rejected_at])
     |> validate_format(:email, @email_regex)
     |> validate_required([:kind])
     |> validate_email_or_user_id_present

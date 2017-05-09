@@ -26,4 +26,12 @@ defmodule Serge.Web.TeamView do
     classes = "form-group#{if form.errors[field], do: " has-danger"}"
     content_tag(:div, block, class: classes)
   end
+
+  def pluralize(noun, count) do
+    if count == 1 do
+      "1 #{noun}"
+    else
+      "#{count} #{noun}s"
+    end
+  end
 end
