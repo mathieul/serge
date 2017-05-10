@@ -1,4 +1,4 @@
-defmodule GitHub do
+defmodule Serge.Web.Oauth.GitHub do
   @moduledoc """
   An OAuth2 strategy for GitHub.
   """
@@ -7,7 +7,7 @@ defmodule GitHub do
   alias OAuth2.Strategy.AuthCode
 
   defp config do
-    [strategy: GitHub,
+    [strategy: __MODULE__,
      site: "https://api.github.com",
      authorize_url: "https://github.com/login/oauth/authorize",
      token_url: "https://github.com/login/oauth/access_token"]
@@ -16,7 +16,7 @@ defmodule GitHub do
   # Public API
 
   def client do
-    Application.get_env(:serge_web, GitHub)
+    Application.get_env(:serge_web, __MODULE__)
     |> Keyword.merge(config())
     |> OAuth2.Client.new()
   end

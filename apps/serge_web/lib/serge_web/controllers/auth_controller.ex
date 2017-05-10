@@ -1,6 +1,7 @@
 defmodule Serge.Web.AuthController do
   use Serge.Web, :controller
   alias Serge.Authentication
+  alias Serge.Web.Oauth.GitHub
 
   @doc """
   This action is reached via `/auth/:provider` and redirects to the OAuth2 provider

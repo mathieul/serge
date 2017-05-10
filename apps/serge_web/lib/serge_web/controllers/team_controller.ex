@@ -3,6 +3,7 @@ defmodule Serge.Web.TeamController do
 
   alias Serge.Scrumming
 
+  plug Serge.Web.Oauth.AuthorizePlug
   plug :set_authenticated_layout
 
   def index(conn, _params) do

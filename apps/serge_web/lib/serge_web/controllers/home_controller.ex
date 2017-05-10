@@ -3,7 +3,9 @@ defmodule Serge.Web.HomeController do
 
   def index(conn, _params) do
     if conn.assigns.current_user do
-      redirect(conn, to: tasker_path(conn, :tasker))
+      conn
+      |> put_session(:return_to, nil)
+      |> redirect(external: get_session(conn, :return_to) || tasker_path(conn, :tasker))
     else
       render(conn, "index.html", activities: Activity.recent_activity)
     end
