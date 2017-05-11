@@ -157,6 +157,15 @@ defmodule Serge.Scrumming do
   end
 
   @doc """
+  Get a team access by its token.
+  """
+  def get_team_access_by_token(token) do
+    TeamAccess
+    |> Repo.get_by(token: token)
+    |> Repo.preload(team: :owner)
+  end
+
+  @doc """
   Creates a team access for a user and a team.
   """
   def create_team_access(attrs, user: user, team: team)
@@ -183,6 +192,44 @@ defmodule Serge.Scrumming do
     |> validate_email_or_user_id_present
     |> set_delete_action
     |> initialize_if_new
+  end
+
+  @doc """
+  Returns if a team access can be accepted.
+  """
+  def team_access_acceptable?(team_access) do
+    case Ecto.DateTime.compare(team_access.expires_at, DH.now()) do
+      :gt ->
+        is_nil(team_access.accepted_at) && is_nil(team_access.rejected_at)
+
+      _ ->
+        false
+    end
+  end
+
+  @doc """
+  Allow to accept a team access
+  """
+  def accept_team_access(team_access, user: user) do
+    accept_or_reject_team_access(team_access, :accepted_at, user.id)
+  end
+
+  @doc """
+  Allow to accept a team access
+  """
+  def reject_team_access(team_access, user: user) do
+    accept_or_reject_team_access(team_access, :rejected_at, user.id)
+  end
+
+  defp accept_or_reject_team_access(team_access, time_field, user_id) do
+    if team_access_acceptable?(team_access) do
+      team_access
+      |> team_access_changeset(%{time_field => DH.now(), user_id: user_id})
+      |> Repo.update()
+      true
+    else
+      false
+    end
   end
 
   defp validate_email_or_user_id_present(changeset) do

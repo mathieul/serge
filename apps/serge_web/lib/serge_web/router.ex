@@ -21,7 +21,13 @@ defmodule Serge.Web.Router do
 
     get "/", HomeController, :index
     get "/tasker", HomeController, :tasker, as: :tasker
+    resources "/team_invitations", TeamInvitationController, only: [:edit, :update]
     resources "/teams", TeamController
+    scope "/team_invitations" do
+      get "/:token", TeamInvitationController, :edit
+      post "/:token/accept", TeamInvitationController, :accept
+      post "/:token/reject", TeamInvitationController, :reject
+    end
   end
 
   scope "/" do

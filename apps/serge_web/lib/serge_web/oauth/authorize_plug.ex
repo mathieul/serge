@@ -12,8 +12,7 @@ defmodule Serge.Web.Oauth.AuthorizePlug do
       |> put_flash(:warning, "You must authenticate to access this page")
       |> put_session(:return_to, current_url(conn))
       |> redirect(to: "/")
-      |> halt
+      |> halt()
     end
   end
-
 end

@@ -5,6 +5,8 @@ defmodule Serge.Web do
       import Plug.Conn
       import Serge.Web.Router.Helpers
       import Serge.Web.Gettext
+
+      import Serge.Web.Controllers.Helpers
     end
   end
 

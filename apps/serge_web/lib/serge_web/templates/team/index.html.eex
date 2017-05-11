@@ -7,31 +7,54 @@
           <div class="alert alert-warning">
             There are no teams yet.
           </div>
-        <% else %>
-          <%= for team <- @teams do %>
-            <div class="card mb-3">
-              <div class="card-header">
-                &nbsp;
-              </div>
-              <div class="card-block">
-                <h4 class="card-title"><%= team.name %></h4>
-                <div class="row">
-                  <div class="col-sm-10">
-                    <p class="card-text"><%= team.description || "--" %></p>
-                    <p class="card-text">
-                      <%= pluralize("team member", team.count_accepted) %>,
-                      <%= pluralize("pending invitation", team.count_pending) %>,
-                      <%= pluralize("rejected invitation", team.count_rejected) %>.
-                    </p>
-                  </div>
-                  <div class="col-sm-2">
-                    <%= link "Edit", to: team_path(@conn, :edit, team), class: "btn btn-primary pull-right" %>
-                  </div>
+        <% end %>
+        <%= for team <- @teams do %>
+          <div class="card mb-3">
+            <div class="card-header">
+              &nbsp;
+            </div>
+            <div class="card-block">
+              <h4 class="card-title"><%= team.name %></h4>
+              <div class="row">
+                <div class="col-sm-10">
+                  <p class="card-text"><%= team.description || "--" %></p>
+                  <p class="card-text">
+                    <%= pluralize("team member", team.count_accepted) %>,
+                    <%= pluralize("pending invitation", team.count_pending) %>,
+                    <%= pluralize("rejected invitation", team.count_rejected) %>.
+                  </p>
+                </div>
+                <div class="col-sm-2">
+                  <%= link "Edit", to: team_path(@conn, :edit, team), class: "btn btn-primary pull-right" %>
                 </div>
               </div>
             </div>
-          <% end %>
+          </div>
         <% end %>
+      </div>
+    </div>
+
+    <p class="lead mt-4">And the teams I have access to:</p>
+    <div class="card mt-3">
+      <div class="card-block">
+        <ul class="list-group">
+          <%= if Enum.empty?(@team_accesses) do %>
+            <div class="alert alert-warning">
+              You don't yet have access to any team.
+            </div>
+          <% end %>
+          <%= for team_access <- @team_accesses do %>
+            <li class="list-group-item justify-content-between">
+              <%= team_access.team.name %>
+              <small><%= team_access.team.description %></small>
+              <%= if team_access.kind == :read_write do %>
+                <span class="badge badge-primary">read/write</span>
+              <% else %>
+                <span class="badge badge-info">read only</span>
+              <% end %>
+            </li>
+          <% end %>
+        </ul>
       </div>
     </div>
   </div>

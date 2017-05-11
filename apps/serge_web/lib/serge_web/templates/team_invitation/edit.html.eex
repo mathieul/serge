@@ -1,0 +1,35 @@
+<div class="row">
+  <div class="col-sm-10">
+    <p class="lead">
+      You've been invited to join the team
+      <strong class="text-primary"><%= @team_access.team.name %></strong>:
+    </p>
+    <div class="card mt-3">
+      <div class="card-block">
+        <h4 class="card-title">Team <%= @team_access.team.name %></h4>
+        <%= if @team_access_acceptable do %>
+          <p class="card-text">
+            <%= @team_access.team.owner.name %> invited you to join the team. Do you want to accept?
+          </p>
+          <div class="mr-5 pull-left">
+            <%= button "Reject the invitation",
+                to: team_invitation_path(@conn, :reject, @team_access.token),
+                class: "btn btn-danger" %>
+          </div>
+          <div class="pull-left">
+            <%= button "Accept and join the team",
+                to: team_invitation_path(@conn, :accept, @team_access.token),
+                class: "btn btn-primary" %>
+          </div>
+        <% else %>
+          <p class="card-text lead text-danger">
+            Unfortunately this invitation has expired or has already been used.
+          </p>
+          <p class="card-text lead">
+            Please request a new invitation to join this team.
+          </p>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>

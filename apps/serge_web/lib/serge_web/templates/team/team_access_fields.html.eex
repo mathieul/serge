@@ -55,7 +55,7 @@
       <div class="col-sm-3">
         <%= form_group f, :kind do %>
           <%= label f, :access, "Role in the team", class: "control-label" %>
-          <%= select f, :kind, ["Chicken": "read", "Pig": "read_write"], class: "form-control" %>
+          <%= select f, :kind, ["View only": "read", "Can make changes": "read_write"], class: "form-control" %>
         <% end %>
       </div>
       <div class="col-sm-3">
