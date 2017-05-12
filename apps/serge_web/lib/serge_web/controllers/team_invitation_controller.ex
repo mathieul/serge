@@ -28,13 +28,7 @@ defmodule Serge.Web.TeamInvitationController do
     |> redirect(to: team_path(conn, :index))
   end
 
-  def accept(conn, _params) do
-    conn
-    |> put_flash(:info, "You've accepted the invitation.")
-    |> redirect(to: team_path(conn, :index))
-  end
-
-  defp fetch_team_access(conn, options) do
+  defp fetch_team_access(conn, _options) do
     token = conn.params["token"]
     case Scrumming.get_team_access_by_token(token) do
       nil ->

@@ -22,8 +22,8 @@ Ready to run in production? Please [check our deployment guides](http://www.phoe
 ## Github OAuth app for development ##
 
     export GITHUB_REDIRECT_URI=http://localhost:4000/auth/github/callback
-    export GITHUB_CLIENT_ID=18e2f95af473d367c294
-    export GITHUB_CLIENT_SECRET=e3b62ba98785a95a88d6238a865ce15a72e78756
+    export GITHUB_CLIENT_ID=xxx-client-id-xxx
+    export GITHUB_CLIENT_SECRET=xxx-client-secret-xxx
 
 ## GraphQL ##
 

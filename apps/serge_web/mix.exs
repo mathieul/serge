@@ -21,7 +21,7 @@ defmodule Serge.Web.Mixfile do
   def application do
     [
       mod: {Serge.Web.Application, []},
-      extra_applications: [:logger, :runtime_tools, :elixir_make, :timex_ecto]
+      extra_applications: [:bamboo, :logger, :runtime_tools, :elixir_make, :timex_ecto]
     ]
   end
 
@@ -33,6 +33,7 @@ defmodule Serge.Web.Mixfile do
       {:absinthe_plug, "~> 1.3.0"},
       {:absinthe, "~> 1.3.0"},
       {:activity, in_umbrella: true},
+      {:bamboo, "~> 1.0.0-rc.1"},
       {:comeonin, "~> 3.0"},
       {:cowboy, "~> 1.1.2"},
       {:gettext, "~> 0.13.1"},

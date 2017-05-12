@@ -11,10 +11,9 @@
         <%= for team <- @teams do %>
           <div class="card mb-3">
             <div class="card-header">
-              &nbsp;
+              <h4 class="card-title"><%= team.name %></h4>
             </div>
             <div class="card-block">
-              <h4 class="card-title"><%= team.name %></h4>
               <div class="row">
                 <div class="col-sm-10">
                   <p class="card-text"><%= team.description || "--" %></p>
