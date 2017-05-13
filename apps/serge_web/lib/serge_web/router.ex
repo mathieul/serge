@@ -28,6 +28,10 @@ defmodule Serge.Web.Router do
       post "/:token/accept", TeamInvitationController, :accept
       post "/:token/reject", TeamInvitationController, :reject
     end
+
+    if Mix.env == :dev do
+      forward "/sent_emails", SentEmailViewer.Plug
+    end
   end
 
   scope "/" do

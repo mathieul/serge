@@ -40,3 +40,6 @@ config :serge_web, Serge.Web.Endpoint,
       ~r{lib/serge_web/templates/.*(eex)$}
     ]
   ]
+
+  config :serge_web, Serge.Web.Mailer,
+    adapter: Bamboo.LocalAdapter

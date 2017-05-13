@@ -59,6 +59,12 @@ config :phoenix, :serve_endpoints, true
 #     config :serge_web, Serge.Web.Endpoint, server: true
 #
 
+config :serge_web, Serge.Web.Mailer,
+  adapter: Bamboo.MailgunAdapter,
+  api_key: System.get_env("MAILGUN_API_KEY"),
+  deliver_later_strategy: Serge.Web.TeamInviteDeliverStrategy,
+  domain: System.get_env("MAILGUN_DOMAIN")
+
 # Finally import the config/prod.secret.exs
 # which should be versioned separately.
 import_config "prod.secret.exs"

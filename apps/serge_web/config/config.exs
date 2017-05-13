@@ -36,12 +36,6 @@ config :serge_web, Serge.Web.Oauth.GitHub,
   client_secret: System.get_env("GITHUB_CLIENT_SECRET"),
   redirect_uri: System.get_env("GITHUB_REDIRECT_URI")
 
-config :serge_web, Serge.Web.Mailer,
-  adapter: Bamboo.MailgunAdapter,
-  api_key: System.get_env("MAILGUN_API_KEY"),
-  deliver_later_strategy: Serge.Web.TeamInviteDeliverStrategy,
-  domain: System.get_env("MAILGUN_DOMAIN")
-
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{Mix.env}.exs"
