@@ -8,6 +8,7 @@ defmodule Serge.Scrumming.TeamAccess do
     field :email,       :string
     field :token,       :string
     field :expires_at,  Ecto.DateTime
+    field :sent_at,     Ecto.DateTime
     field :accepted_at, Ecto.DateTime
     field :rejected_at, Ecto.DateTime
 
@@ -28,6 +29,10 @@ defmodule Serge.Scrumming.TeamAccess do
     from(ta in scope, where: ta.user_id == ^user_id)
   end
 
+  def for_team_id(scope \\ __MODULE__, team_id) do
+    from(ta in scope, where: ta.team_id == ^team_id)
+  end
+
   def count(scope \\ __MODULE__) do
     from(ta in scope, group_by: ta.team_id, select: %{team_id: ta.team_id, count: count(ta.id)})
   end
@@ -42,5 +47,9 @@ defmodule Serge.Scrumming.TeamAccess do
 
   def pending(scope \\ __MODULE__) do
     from(ta in scope, where: is_nil(ta.accepted_at) and is_nil(ta.rejected_at))
+  end
+
+  def not_sent(scope \\ __MODULE__) do
+    from(ta in scope, where: is_nil(ta.sent_at))
   end
 end

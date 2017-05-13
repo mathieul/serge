@@ -49,10 +49,18 @@ defmodule Serge.Web.TeamController do
       |> Scrumming.preload_team_accesses
 
     case Scrumming.update_team(team, team_params) do
-      {:ok, _team} ->
+      {:ok, team} ->
+        for invitation <- Scrumming.team_pending_invitations(team) do
+          team
+          |> Serge.Web.TeamInviteEmail.invite(invitation)
+          |> Serge.Web.Mailer.deliver_later
+          Scrumming.mark_team_access_as_sent(invitation)
+        end
+
         conn
         |> put_flash(:info, "Team updated successfully.")
         |> redirect(to: team_path(conn, :index))
+
       {:error, %Ecto.Changeset{} = changeset} ->
         render(conn, "edit.html", team: team, changeset: changeset, owner: user, page_title: "Teams")
     end

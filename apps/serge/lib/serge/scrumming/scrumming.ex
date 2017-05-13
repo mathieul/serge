@@ -232,6 +232,32 @@ defmodule Serge.Scrumming do
     end
   end
 
+  @doc """
+  Send an invitation to join the team for each pending team access that hasn't yet been sent.
+  """
+  def team_pending_invitations(%Team{} = team) do
+    TeamAccess.for_team_id(team.id)
+    |> TeamAccess.pending()
+    |> TeamAccess.not_sent()
+    |> Repo.all()
+  end
+
+  @doc """
+  Mark team access as being just sent.
+  """
+  def mark_team_access_as_sent(%TeamAccess{} = team_access) do
+    case team_access.sent_at do
+      nil ->
+        team_access
+        |> team_access_changeset(%{sent_at: DH.now()})
+        |> Repo.update()
+        true
+
+      _ ->
+        false
+    end
+  end
+
   defp validate_email_or_user_id_present(changeset) do
     cond do
       get_field(changeset, :user_id) ->

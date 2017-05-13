@@ -12,7 +12,7 @@ defmodule Serge.Web.TeamInviteEmail do
     )
   end
 
-  defp text(team, team_access) do
+  defp text(team, _team_access) do
     """
     You've been invited to join team #{team.name}!
 
