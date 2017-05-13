@@ -1,7 +1,7 @@
 You've been invited to join team <%= @team.name %>!
 
-You can accept or reject the invitation by going to this address: https://todo.
+You can accept or reject the invitation by going to this address: <%= invitation_url(@team_access) %>.
 
 Cheers,
 
-Serge (text)
+Serge

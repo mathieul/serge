@@ -29,7 +29,7 @@ defmodule Serge.Web.TeamInvitationController do
   end
 
   defp fetch_team_access(conn, _options) do
-    token = conn.params["token"]
+    token = conn.params["id"]
     case Scrumming.get_team_access_by_token(token) do
       nil ->
         conn

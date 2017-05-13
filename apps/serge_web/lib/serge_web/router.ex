@@ -24,9 +24,9 @@ defmodule Serge.Web.Router do
     resources "/team_invitations", TeamInvitationController, only: [:edit, :update]
     resources "/teams", TeamController
     scope "/team_invitations" do
-      get "/:token", TeamInvitationController, :edit
-      post "/:token/accept", TeamInvitationController, :accept
-      post "/:token/reject", TeamInvitationController, :reject
+      get "/:id", TeamInvitationController, :edit
+      post "/:id/accept", TeamInvitationController, :accept
+      post "/:id/reject", TeamInvitationController, :reject
     end
 
     if Mix.env == :dev do

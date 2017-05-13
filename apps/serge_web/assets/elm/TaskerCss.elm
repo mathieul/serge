@@ -1,7 +1,7 @@
 module TaskerCss exposing (..)
 
 import Css exposing (..)
-import Css.Elements exposing (li)
+import Css.Elements exposing (a)
 
 
 type CssClasses
@@ -14,8 +14,7 @@ type CssClasses
     | MovingInProgress
     | TaskItem
     | PeriodBadge
-    | DropTarget
-    | DropTargetHighlight
+    | NavBrand
 
 
 css : Stylesheet
@@ -54,22 +53,11 @@ css =
             [ display inlineBlock
             , width (px 75)
             ]
-        , li
-            [ withClass DropTarget
-                [ backgroundColor (hex "c7e6c7")
-                , borderColor (hex "a3d7a3")
-                , borderRadius (px 5) |> important
-                , color (hex "959")
-                , fontSize (px 10)
-                , marginBottom (px 3)
-                , marginLeft (pct 50)
-                , marginTop (px 3)
-                , paddingBottom (px 5)
-                , paddingTop (px 5)
-                , width (pct 50)
-                , withClass DropTargetHighlight
-                    [ backgroundColor (hex "a8d6fe")
-                    , borderColor (hex "75bffe")
+        , a
+            [ withClass NavBrand
+                [ pseudoClass "not([href]):not([tabindex])"
+                    [ color (hex "f0ad4e")
+                    , hover [ color (hex "f0ad4e") ]
                     ]
                 ]
             ]

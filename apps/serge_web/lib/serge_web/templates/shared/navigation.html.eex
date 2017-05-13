@@ -2,7 +2,7 @@
   <button class="navbar-toggler navbar-toggler-right" type="button">
     <span class="navbar-toggler-icon"></span>
   </button>
-  <a class="navbar-brand" href="/">
+  <a class="navbar-brand NavBrand">
     <%= @current_user.name %>
     <small class="pl-3">
       (<%= @current_user.email %>)
