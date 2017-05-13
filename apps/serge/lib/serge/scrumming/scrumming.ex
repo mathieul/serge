@@ -71,7 +71,11 @@ defmodule Serge.Scrumming do
         "created on #{DH.mmddyy(access.inserted_at)}"
 
       true ->
-        "pending"
+        if is_nil(access.sent_at) do
+          "pending"
+        else
+          "pending (invite sent)"
+        end
     end}
   end
 
@@ -249,7 +253,7 @@ defmodule Serge.Scrumming do
     case team_access.sent_at do
       nil ->
         team_access
-        |> team_access_changeset(%{sent_at: DH.now()})
+        |> cast(%{sent_at: DH.now()}, [:sent_at])
         |> Repo.update()
         true
 

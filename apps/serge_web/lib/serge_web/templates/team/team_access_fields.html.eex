@@ -31,7 +31,7 @@
       <div class="col-sm-2">
         <%= form_group f, :delete do %>
           <%= unless f.data.user_id == @owner.id do %>
-            <label class="control-label">Delete</label>
+            <label class="control-label">Revoke</label>
             <div class="form-check">
               <%= label f, :delete, class: "form-check-label" do %>
                 <%= checkbox f, :delete, class: "form-check-input" %>
@@ -66,10 +66,10 @@
       </div>
       <div class="col-sm-2">
         <%= form_group f, :delete do %>
-          <label class="control-label">Delete</label>
+          <label class="control-label">&nbsp;</label>
           <br>
           <%= link to: "#", class: "delete-team-access btn btn-danger btn-sm" do %>
-            Delete
+            Remove
             <i class="fa fa-trash" aria-hidden="true"></i>
           <% end %>
         <% end %>
