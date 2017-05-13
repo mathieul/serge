@@ -41,5 +41,5 @@ config :serge_web, Serge.Web.Endpoint,
     ]
   ]
 
-  config :serge_web, Serge.Web.Mailer,
-    adapter: Bamboo.LocalAdapter
+config :serge_web, Serge.Web.Mailer,
+  adapter: Bamboo.LocalAdapter

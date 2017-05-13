@@ -1,7 +1,9 @@
-You've been invited to join team <%= @team.name %>!
+<h3>You've been invited to join team <%= @team.name %>!</h3>
 
-You can accept or reject the invitation by going to this address: https://todo.
+<p>
+  You can accept or reject the invitation by going to this address: https://todo.
+</p>
 
-Cheers,
+<p>Cheers,</p>
 
-Serge (html)
+<p>Serge (html)</p>
