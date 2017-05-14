@@ -1,7 +1,7 @@
 module TaskerCss exposing (..)
 
 import Css exposing (..)
-import Css.Elements exposing (a)
+import Css.Elements as E exposing (a)
 
 
 type CssClasses
@@ -59,6 +59,8 @@ css =
                     [ color (hex "f0ad4e")
                     , hover [ color (hex "f0ad4e") ]
                     ]
+                , children
+                    [ E.small [ fontSize (px 12) ] ]
                 ]
             ]
         ]

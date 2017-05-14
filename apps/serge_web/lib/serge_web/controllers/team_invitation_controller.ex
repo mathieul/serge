@@ -5,6 +5,7 @@ defmodule Serge.Web.TeamInvitationController do
   plug Serge.Web.Oauth.AuthorizePlug
   plug :fetch_team_access
   plug :set_authenticated_layout
+  plug :shows_navigation_top_bar when action in [:edit]
 
   def edit(conn, _params) do
     render(conn, "edit.html", page_title: "Join Team")

@@ -1,11 +1,13 @@
 defmodule Serge.Web.HomeController do
   use Serge.Web, :controller
 
+  plug :shows_navigation_top_bar when action in [:index, :tasker]
+
   def index(conn, _params) do
     if conn.assigns.current_user do
       conn
       |> put_session(:return_to, nil)
-      |> redirect(external: get_session(conn, :return_to) || tasker_path(conn, :tasker))
+      |> redirect(external: get_session(conn, :return_to) || team_path(conn, :index))
     else
       render(conn, "index.html", activities: Activity.recent_activity)
     end

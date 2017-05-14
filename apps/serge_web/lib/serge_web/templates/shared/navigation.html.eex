@@ -4,18 +4,33 @@
   </button>
   <a class="navbar-brand NavBrand">
     <%= @current_user.name %>
-    <small class="pl-3">
+    <small class="pl-1">
       (<%= @current_user.email %>)
     </small>
   </a>
   <div class="collapse navbar-collapse">
     <div style="display: flex; width: 100%;">
       <ul class="navbar-nav mr-auto">
+        <%= if length(@team_accesses) == 0 do %>
+        <li class="nav-item">
+          <%= active_link @conn, "My Teams", to: team_path(@conn, :index), class: "nav-link" %>
+        </li>
+        <% else %>
+          <li class="nav-item dropdown">
+            <%= link "Teams", to: "#", class: "nav-link dropdown-toggle", data: [toggle: "dropdown"] %>
+            <div class="dropdown-menu">
+              <%= link "My Teams", to: team_path(@conn, :index), class: "dropdown-item" %>
+              <div class="dropdown-divider"></div>
+              <%= for team_access <- @team_accesses do %>
+                <%= link team_access.team.name,
+                    to: team_path(@conn, :edit, team_access.team.id),
+                    class: "dropdown-item" %>
+              <% end %>
+            </div>
+          </li>
+        <% end %>
         <li class="nav-item">
           <%= active_link @conn, "Tasker", to: tasker_path(@conn, :tasker), class: "nav-link" %>
-        </li>
-        <li class="nav-item">
-          <%= active_link @conn, "Teams", to: team_path(@conn, :index), class: "nav-link" %>
         </li>
       </ul>
       <span class="pull-right ">

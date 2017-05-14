@@ -5,6 +5,7 @@ defmodule Serge.Web.TeamController do
 
   plug Serge.Web.Oauth.AuthorizePlug
   plug :set_authenticated_layout
+  plug :shows_navigation_top_bar when action in [:index, :new, :edit]
 
   def index(conn, _params) do
     current_user = conn.assigns[:current_user]
