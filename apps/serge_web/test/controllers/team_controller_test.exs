@@ -15,7 +15,7 @@ defmodule Serge.Web.TeamControllerTest do
       |> init_test_session(current_user_id: user.id)
       |> get(team_path(conn, :index))
 
-    assert html_response(conn, 200) =~ "Listing Teams"
+    assert html_response(conn, 200) =~ "all the teams belonging to you"
   end
 
   # test "renders form for new teams", %{conn: conn} do

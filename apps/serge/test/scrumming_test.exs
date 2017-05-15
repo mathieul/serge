@@ -11,10 +11,10 @@ defmodule Serge.ScrummingTest do
 
   describe "list_teams/1" do
     test "it returns all teams ordered by name", %{user: user} do
-      zorglub = insert(:team, owner: user, name: "zorglub")
+      insert(:team, owner: user, name: "zorglub")
       insert(:team)
-      blahblah = insert(:team, owner: user, name: "blahblah")
-      assert Scrumming.list_teams(owner: user) == [blahblah, zorglub]
+      insert(:team, owner: user, name: "blahblah")
+      assert Enum.map(Scrumming.list_teams(owner: user), &(&1.name)) == ["blahblah", "zorglub"]
     end
   end
 
@@ -54,17 +54,17 @@ defmodule Serge.ScrummingTest do
     end
   end
 
-  describe "update_team_by_id/2" do
+  describe "update_team/2" do
     test "with valid data it updates the team", %{user: user} do
       team = insert(:team, owner: user, name: "Original")
-      assert {:ok, team} = Scrumming.update_team_by_id(%{"id" => team.id, "name" => "Updated"}, owner: user)
+      assert {:ok, team} = Scrumming.update_team(team, %{"id" => team.id, "name" => "Updated"})
       assert %Team{} = team
       assert team.name == "Updated"
     end
 
     test "with invalid data it returns error changeset", %{user: user} do
       team = insert(:team, owner: user, name: "Original")
-      assert {:error, %Ecto.Changeset{}} = Scrumming.update_team_by_id(%{"id" => team.id, "name" => ""}, owner: user)
+      {:error, %Ecto.Changeset{}} = Scrumming.update_team(team, %{"id" => team.id, "name" => ""})
       assert team == Scrumming.get_team(team.id, owner: user)
     end
   end
