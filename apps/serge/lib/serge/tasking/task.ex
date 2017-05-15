@@ -36,11 +36,10 @@ defmodule Serge.Tasking.Task do
     from(t in scope, where: t.completed_on < ^today, select: max(t.completed_on))
   end
 
-  def starting_from(scope \\ __MODULE__, date) do
+  def pending_or_completed_since(scope \\ __MODULE__, date) do
     from(t in scope,
       where: t.completed_on >= ^date,
-      or_where: is_nil(t.completed_on) and t.scheduled_on >= ^date,
-      or_where: is_nil(t.completed_on) and is_nil(t.scheduled_on))
+      or_where: is_nil(t.completed_on))
   end
 
   def last_for_user_and_scheduled_on(scope \\ __MODULE__, user_id, scheduled_on) do

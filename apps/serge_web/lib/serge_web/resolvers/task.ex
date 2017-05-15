@@ -18,7 +18,7 @@ defmodule Serge.Web.Resolvers.Task do
       DateHelpers.today()
     end
 
-    tasks = Tasking.list_tasks_since(from, user_id: ctx.current_user.id)
+    tasks = Tasking.list_pending_tasks_and_completed_since(from, user_id: ctx.current_user.id)
     { :ok, tasks }
   end
 

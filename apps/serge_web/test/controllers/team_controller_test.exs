@@ -3,8 +3,6 @@ defmodule Serge.Web.TeamControllerTest do
   use Plug.Test
   import Serge.Factory
 
-  alias Serge.Web.Scrumming
-
   setup do
     %{user: insert(:user)}
   end

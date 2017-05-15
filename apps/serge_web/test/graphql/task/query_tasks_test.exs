@@ -43,7 +43,7 @@ defmodule Serge.Task.QueryTasksTest do
     test "it doesn't return tasks tasks before yesterday if false", ctx do
       doc = "query { tasks(includeYesterday: false) { label } }"
       {:ok, %{data: result}} = run(doc, ctx[:user].id)
-      assert task_labels(result) == ["Today", "Tomorrow", "Later"]
+      assert task_labels(result) == ["Yesterday", "Today", "Tomorrow", "Later"]
     end
 
     test "it returns tasks returned 'yesterday' if true", ctx do
@@ -67,6 +67,13 @@ defmodule Serge.Task.QueryTasksTest do
       doc = "query { tasks(includeYesterday: true) { label } }"
       {:ok, %{data: result}} = run(doc, ctx[:user].id)
       assert task_labels(result) == ["Yesterday", "Today", "Tomorrow", "Done today", "Later"]
+    end
+
+    test "it also returns tasks scheduled before yesterday but still not completed", ctx do
+      insert(:task, user: ctx[:user], label: "Scheduled 4 days ago", scheduled_on: DH.days_ago(4))
+      doc = "query { tasks(includeYesterday: true) { label } }"
+      {:ok, %{data: result}} = run(doc, ctx[:user].id)
+      assert task_labels(result) == ["Scheduled 4 days ago", "Done 3 days ago", "Yesterday", "Today", "Tomorrow", "Later"]
     end
   end
 

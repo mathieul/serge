@@ -43,10 +43,10 @@ defmodule Serge.Tasking do
   end
 
   @doc """
-  List all tasks since a date for user.
+  List all pending tasks and those completed since a date for user.
   """
-  def list_tasks_since(date, user_id: user_id) do
-    Task.starting_from(date)
+  def list_pending_tasks_and_completed_since(date, user_id: user_id) do
+    Task.pending_or_completed_since(date)
     |> Task.for_user_id(user_id)
     |> Task.ordered_by_schedule_and_rank()
     |> Repo.all()

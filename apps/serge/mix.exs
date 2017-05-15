@@ -4,7 +4,7 @@ defmodule Serge.Mixfile do
   def project do
     [
       app: :serge,
-      version: "0.10.0",
+      version: "0.10.2",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
