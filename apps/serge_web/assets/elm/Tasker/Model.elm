@@ -1,4 +1,4 @@
-module Model
+module Tasker.Model
     exposing
         ( AppConfig
         , AppMessage(..)
@@ -40,7 +40,7 @@ import GraphQL.Client.Http as GraphQLClient
 
 -- LOCAL IMPORTS
 
-import StoryTask exposing (StoryTask)
+import Tasker.StoryTask as StoryTask exposing (StoryTask)
 
 
 -- MODEL

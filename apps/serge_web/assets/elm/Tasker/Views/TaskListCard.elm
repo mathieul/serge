@@ -1,4 +1,4 @@
-module Views.TaskListCard exposing (view, datePeriodConfig)
+module Tasker.Views.TaskListCard exposing (view, datePeriodConfig)
 
 import Dict exposing (Dict)
 import String.Extra
@@ -12,8 +12,8 @@ import Bootstrap.Dropdown as Dropdown
 
 -- LOCAL IMPORTS
 
-import Model exposing (..)
-import StoryTask exposing (StoryTask)
+import Tasker.Model exposing (..)
+import Tasker.StoryTask as StoryTask exposing (StoryTask)
 
 
 view : Model -> Html Msg

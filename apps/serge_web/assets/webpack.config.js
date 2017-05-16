@@ -9,7 +9,7 @@ module.exports = {
   devtool: 'source-map',
   entry: [
     './elm/Stylesheets.elm',
-    './elm/Tasker.elm',
+    './elm/Tasker/Main.elm',
     './js/app.js'
   ],
   output: {

@@ -1,9 +1,9 @@
-import Elm from '../elm/Tasker'
+import Elm from '../elm/Tasker/Main'
 
 export default class TaskerInterface {
   constructor(config) {
     this.node = document.getElementById('elm-tasker')
-    this.app = Elm.Tasker.embed(this.node, config)
+    this.app = Elm.Tasker.Main.embed(this.node, config)
   }
 
   start() {

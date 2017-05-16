@@ -1,4 +1,4 @@
-module StoryTask
+module Tasker.StoryTask
     exposing
         ( StoryTask
         , makeNewTask

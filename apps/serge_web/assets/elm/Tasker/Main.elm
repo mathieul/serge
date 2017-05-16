@@ -1,4 +1,4 @@
-port module Tasker exposing (main)
+port module Tasker.Main exposing (main)
 
 import Dict exposing (Dict)
 import Time exposing (Time)
@@ -16,10 +16,10 @@ import GraphQL.Client.Http as GraphQLClient
 
 -- LOCAL IMPORTS
 
-import Model exposing (..)
-import Views.Main exposing (view)
-import StoryTask exposing (StoryTask)
-import Api
+import Tasker.Model exposing (..)
+import Tasker.Views.Main exposing (view)
+import Tasker.StoryTask exposing (StoryTask)
+import Tasker.Api as Api
 
 
 -- MAIN

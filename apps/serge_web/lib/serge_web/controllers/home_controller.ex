@@ -1,7 +1,7 @@
 defmodule Serge.Web.HomeController do
   use Serge.Web, :controller
 
-  plug :shows_navigation_top_bar when action in [:index, :tasker]
+  plug :shows_navigation_top_bar when action in [:tasker]
 
   def index(conn, _params) do
     if conn.assigns.current_user do

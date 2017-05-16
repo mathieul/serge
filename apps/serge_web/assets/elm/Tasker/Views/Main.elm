@@ -1,4 +1,4 @@
-module Views.Main exposing (view)
+module Tasker.Views.Main exposing (view)
 
 import Html as H exposing (Html, div, text)
 import Html.Attributes as A exposing (class, classList)
@@ -8,8 +8,8 @@ import Bootstrap.Modal as Modal
 
 -- LOCAL IMPORTS
 
-import Model exposing (..)
-import Views.ContentCard as ContentCard
+import Tasker.Model exposing (..)
+import Tasker.Views.ContentCard as ContentCard
 
 
 -- VIEW

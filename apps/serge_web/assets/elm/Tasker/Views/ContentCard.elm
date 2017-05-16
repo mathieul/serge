@@ -1,4 +1,4 @@
-module Views.ContentCard exposing (view)
+module Tasker.Views.ContentCard exposing (view)
 
 import Html as H exposing (Html, div, text)
 import Html.Attributes as A exposing (class)
@@ -13,9 +13,9 @@ import Bootstrap.Grid.Col as Col
 
 -- LOCAL IMPORTS
 
-import Model exposing (..)
-import Views.Ordering as Ordering
-import Views.TaskListCard as TaskListCard
+import Tasker.Model exposing (..)
+import Tasker.Views.Ordering as Ordering
+import Tasker.Views.TaskListCard as TaskListCard
 
 
 view : Model -> Html Msg

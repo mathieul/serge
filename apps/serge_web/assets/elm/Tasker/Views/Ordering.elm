@@ -1,4 +1,4 @@
-module Views.Ordering exposing (view)
+module Tasker.Views.Ordering exposing (view)
 
 import Dict exposing (Dict)
 import Html as H exposing (Html, div, text)
@@ -11,8 +11,8 @@ import Bootstrap.ListGroup as ListGroup
 
 -- LOCAL IMPORTS
 
-import Model exposing (..)
-import Views.TaskListCard exposing (datePeriodConfig)
+import Tasker.Model exposing (..)
+import Tasker.Views.TaskListCard exposing (datePeriodConfig)
 
 
 view : Model -> Html Msg

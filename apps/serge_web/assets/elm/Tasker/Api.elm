@@ -1,4 +1,4 @@
-module Api
+module Tasker.Api
     exposing
         ( sendQueryRequest
         , sendMutationRequest
@@ -18,8 +18,8 @@ import GraphQL.Client.Http as GraphQLClient
 
 -- LOCAL IMPORTS
 
-import StoryTask exposing (StoryTask)
-import Model exposing (Id, CreateTaskResponse, MoveTaskRequest(..))
+import Tasker.StoryTask exposing (StoryTask)
+import Tasker.Model exposing (Id, CreateTaskResponse, MoveTaskRequest(..))
 
 
 -- CONSTANTS
