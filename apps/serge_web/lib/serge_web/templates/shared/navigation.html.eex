@@ -23,7 +23,7 @@
               <div class="dropdown-divider"></div>
               <%= for team_access <- @team_accesses do %>
                 <%= link team_access.team.name,
-                    to: team_path(@conn, :edit, team_access.team.id),
+                    to: team_scrum_path(@conn, :scrum, team_access.team.id),
                     class: "dropdown-item" %>
               <% end %>
             </div>

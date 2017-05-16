@@ -4,8 +4,8 @@ defmodule Serge.Web.TeamController do
   alias Serge.Scrumming
 
   plug Serge.Web.Oauth.AuthorizePlug
-  plug :set_authenticated_layout
-  plug :shows_navigation_top_bar when action in [:index, :new, :edit]
+  plug :set_authenticated_layout when action in [:index, :new, :edit]
+  plug :shows_navigation_top_bar when action in [:index, :new, :edit, :scrum]
 
   def index(conn, _params) do
     current_user = conn.assigns[:current_user]
@@ -74,5 +74,21 @@ defmodule Serge.Web.TeamController do
     conn
     |> put_flash(:info, "Team deleted successfully.")
     |> redirect(to: team_path(conn, :index))
+  end
+
+  def scrum(conn, %{"team_id" => team_id}) do
+    team = Scrumming.get_team!(team_id, owner: conn.assigns[:current_user])
+    config = elm_app_config(conn.assigns.current_user, conn.assigns.access_token)
+    render(conn, "scrum.html", elm_module: "Scrum", elm_app_config: config, page_title: "")
+  end
+
+  defp elm_app_config(nil, _), do: %{}
+  defp elm_app_config(current_user, access_token) do
+    %{
+      "id"           => current_user.id,
+      "name"         => current_user.name,
+      "email"        => current_user.email,
+      "access_token" => access_token
+    }
   end
 end

@@ -10,6 +10,7 @@ module.exports = {
   entry: [
     './elm/Stylesheets.elm',
     './elm/Tasker/Main.elm',
+    './elm/Scrum/Main.elm',
     './js/app.js'
   ],
   output: {
