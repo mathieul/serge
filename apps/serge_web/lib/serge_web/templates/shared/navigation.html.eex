@@ -17,7 +17,10 @@
         </li>
         <% else %>
           <li class="nav-item dropdown">
-            <%= link "Teams", to: "#", class: "nav-link dropdown-toggle", data: [toggle: "dropdown"] %>
+            <%= link "Teams",
+                to: "#",
+                class: "nav-link dropdown-toggle #{if active_path?(@conn, to: team_path(@conn, :index)), do: "active"}",
+                data: [toggle: "dropdown"] %>
             <div class="dropdown-menu">
               <%= link "My Teams", to: team_path(@conn, :index), class: "dropdown-item" %>
               <div class="dropdown-divider"></div>
