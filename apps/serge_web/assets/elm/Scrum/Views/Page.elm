@@ -3,16 +3,18 @@ module Scrum.Views.Page exposing (frame, ActivePage(..))
 {-| The frame around a typical page - that is, the header and footer.
 -}
 
-import Html exposing (..)
-import Html.Attributes exposing (class, classList)
+import Html exposing (Html, div, text, ul, li, a, i, span)
+import Html.Attributes exposing (class, classList, href)
 import Html.Lazy exposing (lazy2)
+import Bootstrap.Alert as Alert
+import Bootstrap.Grid as Grid
+import Bootstrap.Grid.Col as Col
 
 
 -- LOCAL IMPORTS
 
 import Scrum.Route as Route exposing (Route)
 import Scrum.Misc exposing (viewIf)
-import Scrum.Views.Spinner exposing (spinner)
 
 
 type ActivePage
@@ -23,28 +25,47 @@ type ActivePage
 
 frame : Bool -> ActivePage -> Html msg -> Html msg
 frame isLoading page content =
-    div []
-        [ viewHeader page isLoading
-        , content
-        , div [] [ text "Footer" ]
+    Grid.containerFluid []
+        [ div [ class "mt-3" ] [ viewHeader page isLoading ]
+        , div [ class "mt-3" ] [ content ]
         ]
 
 
 viewHeader : ActivePage -> Bool -> Html msg
 viewHeader page isLoading =
-    nav [ class "navbar navbar-light" ]
-        [ div [ class "container" ]
-            [ a [ class "navbar-brand", Route.href Route.Backlog ] [ text "Backlog" ]
-            , ul [ class "nav navbar-nav pull-xs-right" ] <|
+    Grid.row []
+        [ Grid.col [ Col.xs3 ]
+            [ Html.h2 [ class "my-3" ] [ text "TODO" ] ]
+        , Grid.col [ Col.xs3 ]
+            [ ul
+                [ class "nav nav-pills my-3" ]
+              <|
                 lazy2 viewIf isLoading spinner
-                    :: [ navbarLink (page == Backlog) Route.Backlog [ text "Backlog" ]
-                       , navbarLink (page == Sprints) Route.Sprints [ text "Sprints" ]
+                    :: [ pillLink (page == Backlog) Route.Backlog "Backlog"
+                       , pillLink (page == Sprints) Route.Sprints "Sprints"
                        ]
+            ]
+        , Grid.col []
+            [ div [ class "my-3" ]
+                [ Alert.success [ text "This will be where notices and errors will be displayed." ] ]
             ]
         ]
 
 
-navbarLink : Bool -> Route -> List (Html msg) -> Html msg
-navbarLink isActive route linkContent =
-    li [ classList [ ( "nav-item", True ), ( "active", isActive ) ] ]
-        [ a [ class "nav-link", Route.href route ] linkContent ]
+pillLink : Bool -> Route -> String -> Html msg
+pillLink isActive route label =
+    li [ class "nav-item" ]
+        [ a
+            [ classList [ ( "nav-link", True ), ( "active", isActive ) ]
+            , Route.href route
+            ]
+            [ text label ]
+        ]
+
+
+spinner : Html msg
+spinner =
+    li [ class "nav-item text-success mr-3" ]
+        [ i [ class "fa fa-refresh fa-spin fa-3x fa-fw" ] []
+        , span [ class "sr-only" ] [ text "Loading ..." ]
+        ]
