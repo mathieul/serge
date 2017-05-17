@@ -78,17 +78,22 @@ defmodule Serge.Web.TeamController do
 
   def scrum(conn, %{"team_id" => team_id}) do
     team = Scrumming.get_team!(team_id, owner: conn.assigns[:current_user])
-    config = elm_app_config(conn.assigns.current_user, conn.assigns.access_token)
-    render(conn, "scrum.html", elm_module: "Scrum", elm_app_config: config, page_title: "")
+    config = elm_app_config(team, conn.assigns.current_user, conn.assigns.access_token)
+    render(conn, "scrum.html", elm_module: "Scrum", elm_app_config: config)
   end
 
-  defp elm_app_config(nil, _), do: %{}
-  defp elm_app_config(current_user, access_token) do
+  defp elm_app_config(_, nil, _), do: %{}
+  defp elm_app_config(team, current_user, access_token) do
     %{
-      "id"           => current_user.id,
-      "name"         => current_user.name,
-      "email"        => current_user.email,
-      "access_token" => access_token
+      "team" => %{
+        "name" => team.name
+      },
+      "user" => %{
+        "id" => current_user.id,
+        "name" => current_user.name,
+        "email" => current_user.email,
+        "access_token" => access_token
+      }
     }
   end
 end

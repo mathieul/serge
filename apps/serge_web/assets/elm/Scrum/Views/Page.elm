@@ -14,6 +14,7 @@ import Bootstrap.Grid.Col as Col
 -- LOCAL IMPORTS
 
 import Scrum.Route as Route exposing (Route)
+import Scrum.Data.Session as Session exposing (Session)
 import Scrum.Misc exposing (viewIf)
 
 
@@ -23,20 +24,18 @@ type ActivePage
     | Sprints
 
 
-frame : Bool -> ActivePage -> Html msg -> Html msg
-frame isLoading page content =
+frame : Bool -> Session -> ActivePage -> Html msg -> Html msg
+frame isLoading session page content =
     Grid.containerFluid []
-        [ div [ class "mt-3" ] [ viewHeader page isLoading ]
+        [ div [ class "mt-3" ] [ viewHeader page isLoading session ]
         , div [ class "mt-3" ] [ content ]
         ]
 
 
-viewHeader : ActivePage -> Bool -> Html msg
-viewHeader page isLoading =
+viewHeader : ActivePage -> Bool -> Session -> Html msg
+viewHeader page isLoading session =
     Grid.row []
-        [ Grid.col [ Col.xs3 ]
-            [ Html.h2 [ class "my-3" ] [ text "TODO" ] ]
-        , Grid.col [ Col.xs3 ]
+        [ Grid.col [ Col.sm3 ]
             [ ul
                 [ class "nav nav-pills my-3" ]
               <|
@@ -45,6 +44,8 @@ viewHeader page isLoading =
                        , pillLink (page == Sprints) Route.Sprints "Sprints"
                        ]
             ]
+        , Grid.col [ Col.sm3 ]
+            [ Html.h2 [ class "my-3" ] [ text session.team.name ] ]
         , Grid.col []
             [ div [ class "my-3" ]
                 [ Alert.success [ text "This will be where notices and errors will be displayed." ] ]

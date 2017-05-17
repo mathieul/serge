@@ -64,10 +64,10 @@ initialPage =
 
 
 init : Value -> Location -> ( Model, Cmd Msg )
-init val location =
+init json location =
     setRoute (Route.fromLocation location)
         { pageState = Loaded initialPage
-        , session = {}
+        , session = Session.decodeFromJson json
         }
 
 
@@ -203,7 +203,7 @@ viewPage : Session -> Bool -> Page -> Html Msg
 viewPage session isLoading page =
     let
         frame =
-            Page.frame isLoading
+            Page.frame isLoading session
     in
         case page of
             NotFound ->
