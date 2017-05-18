@@ -4,25 +4,47 @@ import Html exposing (Html, div, text, h2)
 import Html.Attributes exposing (class)
 import Task exposing (Task)
 import Bootstrap.Table as Table
+import GraphQL.Request.Builder as B
+import GraphQL.Client.Http as GraphQLClient
 
 
 -- LOCAL IMPORTS
 
+import Scrum.Views.Page as Page
 import Scrum.Page.Errored as Errored exposing (PageLoadError, pageLoadError)
 import Scrum.Data.Session as Session exposing (Session)
 import Scrum.Data.Story as Story exposing (Story)
+import Scrum.Data.Api as Api
 
 
 type alias Model =
-    { stories : List Story }
+    { stories : List Story
+    }
 
 
 init : Session -> Task PageLoadError Model
 init session =
-    Task.succeed
-        { stories =
-            [ Story.testing, Story.testing, Story.testing ]
-        }
+    fetchStoriesRequest
+        |> Api.sendQueryRequest
+        |> handleError
+        |> Task.map Model
+
+
+fetchStoriesRequest : B.Request B.Query (List Story)
+fetchStoriesRequest =
+    B.field "stories" [] (B.list Story.story)
+        |> B.extract
+        |> B.queryDocument
+        |> B.request {}
+
+
+handleError : Task GraphQLClient.Error a -> Task PageLoadError a
+handleError task =
+    let
+        handleLoadError _ =
+            pageLoadError Page.Backlog "Backlog is currently unavailable."
+    in
+        Task.mapError handleLoadError task
 
 
 

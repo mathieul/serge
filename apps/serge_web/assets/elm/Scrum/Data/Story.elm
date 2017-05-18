@@ -1,4 +1,7 @@
-module Scrum.Data.Story exposing (Story, testing)
+module Scrum.Data.Story exposing (Story, story)
+
+import GraphQL.Request.Builder as B
+
 
 -- LOCAL IMPORTS
 
@@ -6,28 +9,27 @@ import Scrum.Data.User as User exposing (User)
 
 
 type alias Story =
-    { dev : Maybe User
+    { id : Int
+    , dev : Maybe User
     , pm : Maybe User
-    , sort : Int
+    , sort : Float
     , epic : String
     , points : Int
     , story : String
     }
 
 
-testing : Story
-testing =
-    let
-        dev =
-            User 1 "John Zorn" "john@zorn.com"
 
-        pm =
-            User 2 "Jane Zune" "jane@zune.com"
-    in
-        { dev = Just dev
-        , pm = Just pm
-        , sort = 3
-        , epic = ""
-        , points = 3
-        , story = "As a user I want to authenticate so I can use the application"
-        }
+-- GRAPHQL
+
+
+story : B.ValueSpec B.NonNull B.ObjectType Story vars
+story =
+    B.object Story
+        |> B.with (B.field "id" [] B.int)
+        |> B.with (B.field "dev" [] (B.nullable User.user))
+        |> B.with (B.field "pm" [] (B.nullable User.user))
+        |> B.with (B.field "sort" [] B.float)
+        |> B.with (B.field "epic" [] B.string)
+        |> B.with (B.field "points" [] B.int)
+        |> B.with (B.field "story" [] B.string)
