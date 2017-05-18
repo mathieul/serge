@@ -15,6 +15,9 @@ type CssClasses
     | TaskItem
     | PeriodBadge
     | NavBrand
+    | ColXs
+    | ColSm
+    | ColMd
 
 
 css : Stylesheet
@@ -63,4 +66,7 @@ css =
                     [ E.small [ fontSize (px 12) ] ]
                 ]
             ]
+        , class ColXs [ width (px 40) ]
+        , class ColSm [ width (px 80) ]
+        , class ColMd [ width (px 160) ]
         ]

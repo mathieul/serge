@@ -8,13 +8,12 @@ type alias User =
     { id : Int
     , name : String
     , email : String
-    , accessToken : String
     }
 
 
 empty : User
 empty =
-    User 0 "" "" ""
+    User 0 "" ""
 
 
 
@@ -27,4 +26,3 @@ decoder =
         |> required "id" Decode.int
         |> required "name" Decode.string
         |> required "email" Decode.string
-        |> required "access_token" Decode.string
