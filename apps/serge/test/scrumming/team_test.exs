@@ -1,4 +1,4 @@
-defmodule Serge.ScrummingTest do
+defmodule Serge.Scrumming.TeamTest do
   use Serge.DataCase
   import Serge.Factory
 

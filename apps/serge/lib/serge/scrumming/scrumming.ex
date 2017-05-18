@@ -5,7 +5,7 @@ defmodule Serge.Scrumming do
 
   import Ecto.{Query, Changeset}, warn: false
   alias Serge.Repo
-  alias Serge.Scrumming.{Team, TeamAccess}
+  alias Serge.Scrumming.{Team, TeamAccess, Story}
   alias Serge.DateHelpers, as: DH
 
   @email_regex ~r/^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,4}$/
@@ -293,5 +293,18 @@ defmodule Serge.Scrumming do
       _ ->
         changeset
     end
+  end
+
+  @doc """
+  List all stories for a team.
+  """
+  def list_stories(team: team) when is_map(team) do
+    Story.for_team_id(team.id)
+    |> Story.ordered_by_sort_and_inserted_at
+    |> Repo.all()
+    |> Repo.preload(:creator)
+    |> Repo.preload(:dev)
+    |> Repo.preload(:pm)
+    |> Enum.map(fn story -> %{story | team: team} end)
   end
 end
