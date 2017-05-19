@@ -29,6 +29,13 @@ defmodule Serge.Scrumming do
   @doc """
   Gets a single team and return nil if not found.
   """
+  def get_team!(id) do
+    Repo.get!(Team, id)
+  end
+
+  @doc """
+  Gets a single team and return nil if not found.
+  """
   def get_team(id, owner: owner) when is_map(owner) do
     do_get_team(id, owner, &Repo.get/2)
   end
@@ -306,5 +313,27 @@ defmodule Serge.Scrumming do
     |> Repo.preload(:dev)
     |> Repo.preload(:pm)
     |> Enum.map(fn story -> %{story | team: team} end)
+  end
+
+  @doc """
+  Creates a story for a creator.
+  """
+  def create_story(attrs, creator_id: creator_id) do
+    attrs = Map.put_new(attrs, :creator_id, creator_id)
+    create_story(attrs)
+  end
+
+  @doc """
+  Creates a story.
+  """
+  def create_story(attrs \\ %{}) do
+    story_changeset(%Story{}, attrs)
+    |> Repo.insert()
+  end
+
+  defp story_changeset(%Story{} = story, attrs) do
+    story
+    |> cast(attrs, [:creator_id, :team_id, :dev_id, :pm_id, :sort, :epic, :points, :description])
+    |> validate_required([:creator_id, :team_id, :description])
   end
 end

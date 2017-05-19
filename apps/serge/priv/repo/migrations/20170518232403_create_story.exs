@@ -10,7 +10,7 @@ defmodule Serge.Repo.Migrations.CreateStory do
       add :sort, :float, null: false, default: 10.0
       add :epic, :string
       add :points, :integer, null: false, default: 0
-      add :story, :string, null: false
+      add :description, :string, null: false
 
       timestamps()
     end

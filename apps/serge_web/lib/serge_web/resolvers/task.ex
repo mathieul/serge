@@ -1,4 +1,6 @@
 defmodule Serge.Web.Resolvers.Task do
+  import Serge.Web.Resolvers.Helpers, only: [format_changeset_errors: 1]
+
   alias Serge.Tasking
   alias Serge.DateHelpers
 
@@ -48,14 +50,5 @@ defmodule Serge.Web.Resolvers.Task do
       ok ->
         ok
     end
-  end
-
-  defp format_changeset_errors(changeset) do
-    evaluated = Ecto.Changeset.traverse_errors(changeset, fn {msg, opts} ->
-      Enum.reduce(opts, msg, fn {key, value}, acc ->
-        String.replace(acc, "%{#{key}}", to_string(value))
-      end)
-    end)
-    Enum.map(evaluated, fn { attr, message } -> "#{attr} #{message}" end)
   end
 end

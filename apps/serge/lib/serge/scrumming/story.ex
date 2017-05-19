@@ -4,10 +4,10 @@ defmodule Serge.Scrumming.Story do
   import Ecto.Query
 
   schema "stories" do
-    field :sort,   :float
-    field :epic,   :string
-    field :points, :integer
-    field :story,  :string
+    field :sort,        :float
+    field :epic,        :string
+    field :points,      :integer
+    field :description, :string
 
     belongs_to :creator,  Serge.Authentication.User
     belongs_to :team,     Serge.Scrumming.Team
