@@ -5,13 +5,14 @@ import Json.Decode.Pipeline as Pipeline exposing (decode, required)
 
 
 type alias Team =
-    { name : String
+    { id : Int
+    , name : String
     }
 
 
 empty : Team
 empty =
-    Team ""
+    Team -1 ""
 
 
 
@@ -21,4 +22,5 @@ empty =
 decoder : Decoder Team
 decoder =
     decode Team
+        |> required "id" Decode.int
         |> required "name" Decode.string

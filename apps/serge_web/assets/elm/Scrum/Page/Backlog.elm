@@ -5,6 +5,8 @@ import Html.Attributes exposing (class)
 import Task exposing (Task)
 import Bootstrap.Table as Table
 import GraphQL.Request.Builder as B
+import GraphQL.Request.Builder.Arg as Arg
+import GraphQL.Request.Builder.Variable as Var
 import GraphQL.Client.Http as GraphQLClient
 
 
@@ -24,25 +26,43 @@ type alias Model =
 
 init : Session -> Task PageLoadError Model
 init session =
-    fetchStoriesRequest
+    session.team.id
+        |> toString
+        |> fetchStoriesRequest
         |> Api.sendQueryRequest
         |> handleError
         |> Task.map Model
 
 
-fetchStoriesRequest : B.Request B.Query (List Story)
-fetchStoriesRequest =
-    B.field "stories" [] (B.list Story.story)
-        |> B.extract
-        |> B.queryDocument
-        |> B.request {}
+fetchStoriesQuery : B.Document B.Query (List Story) { vars | teamId : String }
+fetchStoriesQuery =
+    let
+        teamIDVar =
+            Var.required "teamId" .teamId Var.id
+
+        variables =
+            [ ( "teamId", Arg.variable teamIDVar ) ]
+    in
+        B.field "stories" variables (B.list Story.story)
+            |> B.extract
+            |> B.queryDocument
+
+
+fetchStoriesRequest : String -> B.Request B.Query (List Story)
+fetchStoriesRequest teamId =
+    fetchStoriesQuery
+        |> B.request { teamId = teamId }
 
 
 handleError : Task GraphQLClient.Error a -> Task PageLoadError a
 handleError task =
     let
-        handleLoadError _ =
-            pageLoadError Page.Backlog "Backlog is currently unavailable."
+        handleLoadError error =
+            let
+                _ =
+                    Debug.log "handleError - error=" error
+            in
+                pageLoadError Page.Backlog "Backlog is currently unavailable."
     in
         Task.mapError handleLoadError task
 
@@ -110,7 +130,7 @@ tableRow index story =
             , Table.td [] [ text <| userName story.dev ]
             , Table.td [] [ text <| userName story.pm ]
             , Table.td [] [ text <| toString story.sort ]
-            , Table.td [] [ text story.epic ]
-            , Table.td [] [ text story.story ]
+            , Table.td [] [ text <| Maybe.withDefault "-" story.epic ]
+            , Table.td [] [ text story.description ]
             , Table.td [] [ text <| toString story.points ]
             ]

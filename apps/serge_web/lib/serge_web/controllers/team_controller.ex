@@ -86,6 +86,7 @@ defmodule Serge.Web.TeamController do
   defp elm_app_config(team, current_user, access_token) do
     %{
       "team" => %{
+        "id" => team.id,
         "name" => team.name
       },
       "user" => %{
