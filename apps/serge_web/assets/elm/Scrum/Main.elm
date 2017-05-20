@@ -76,8 +76,8 @@ init json location =
 
 
 subscriptions : Model -> Sub Msg
-subscriptions _ =
-    Sub.none
+subscriptions model =
+    pageSubscriptions (getPage model.pageState)
 
 
 getPage : PageState -> Page
@@ -88,6 +88,18 @@ getPage pageState =
 
         TransitioningFrom page ->
             page
+
+
+pageSubscriptions : Page -> Sub Msg
+pageSubscriptions page =
+    case page of
+        Backlog subModel ->
+            subModel
+                |> Backlog.subscriptions
+                |> Sub.map BacklogMsg
+
+        _ ->
+            Sub.none
 
 
 

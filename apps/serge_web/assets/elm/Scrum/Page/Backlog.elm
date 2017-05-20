@@ -1,8 +1,10 @@
-module Scrum.Page.Backlog exposing (view, update, Model, Msg, init)
+module Scrum.Page.Backlog exposing (view, update, Model, Msg, init, subscriptions)
 
-import Html exposing (Html, div, text, h2)
+import Html exposing (Html, div, text, h2, i)
 import Html.Attributes exposing (class)
 import Task exposing (Task)
+import Bootstrap.Button as Button
+import Bootstrap.Dropdown as Dropdown
 import Bootstrap.Table as Table
 import GraphQL.Request.Builder as B
 import GraphQL.Request.Builder.Arg as Arg
@@ -17,10 +19,19 @@ import Scrum.Page.Errored as Errored exposing (PageLoadError, pageLoadError)
 import Scrum.Data.Session as Session exposing (Session)
 import Scrum.Data.Story as Story exposing (Story)
 import Scrum.Data.Api as Api
+import Scrum.Misc exposing ((=>))
 
 
 type alias Model =
-    { stories : List Story
+    { mainDropState : Dropdown.State
+    , stories : List Story
+    }
+
+
+initialModel : List Story -> Model
+initialModel stories =
+    { mainDropState = Dropdown.initialState
+    , stories = stories
     }
 
 
@@ -31,7 +42,7 @@ init session =
         |> fetchStoriesRequest
         |> Api.sendQueryRequest
         |> handleError
-        |> Task.map Model
+        |> Task.map initialModel
 
 
 fetchStoriesQuery : B.Document B.Query (List Story) { vars | teamId : String }
@@ -68,18 +79,27 @@ handleError task =
 
 
 
+-- SUBSCRIPTIONS --
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    Dropdown.subscriptions model.mainDropState MainDropMsg
+
+
+
 -- UPDATE --
 
 
 type Msg
-    = NoOp
+    = MainDropMsg Dropdown.State
 
 
 update : Session -> Msg -> Model -> ( Model, Cmd Msg )
 update session msg model =
     case msg of
-        NoOp ->
-            model ! []
+        MainDropMsg state ->
+            { model | mainDropState = state } => Cmd.none
 
 
 
@@ -111,10 +131,26 @@ view session model =
                         , Table.th [ col_sm ] [ text "Epic" ]
                         , Table.th [] [ text "Story" ]
                         , Table.th [ col_sm ] [ text "Points" ]
+                        , Table.th [ col_xs ] (mainActionSelector model)
                         ]
                 , tbody = Table.tbody [] (List.indexedMap tableRow model.stories)
                 }
             ]
+
+
+mainActionSelector : Model -> List (Html Msg)
+mainActionSelector model =
+    [ Dropdown.dropdown
+        model.mainDropState
+        { options = [ Dropdown.alignMenuRight ]
+        , toggleMsg = MainDropMsg
+        , toggleButton = Dropdown.toggle [ Button.outlinePrimary ] [ i [ class "fa fa-ellipsis-v" ] [] ]
+        , items =
+            [ Dropdown.buttonItem [] [ text "Item 1" ]
+            , Dropdown.buttonItem [] [ text "Item 2" ]
+            ]
+        }
+    ]
 
 
 tableRow : Int -> Story -> Table.Row Msg
@@ -133,4 +169,5 @@ tableRow index story =
             , Table.td [] [ text <| Maybe.withDefault "-" story.epic ]
             , Table.td [] [ text story.description ]
             , Table.td [] [ text <| toString story.points ]
+            , Table.td [] [ i [ class "fa fa-ellipsis-v" ] [] ]
             ]
