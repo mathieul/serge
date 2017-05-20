@@ -1,5 +1,6 @@
 module Scrum.Page.Backlog exposing (view, update, Model, Msg, init, subscriptions)
 
+import Dict exposing (Dict)
 import Html exposing (Html, div, text, h2, i)
 import Html.Attributes exposing (class)
 import Task exposing (Task)
@@ -17,22 +18,31 @@ import GraphQL.Client.Http as GraphQLClient
 import Scrum.Views.Page as Page
 import Scrum.Page.Errored as Errored exposing (PageLoadError, pageLoadError)
 import Scrum.Data.Session as Session exposing (Session)
-import Scrum.Data.Story as Story exposing (Story)
+import Scrum.Data.Story as Story exposing (Story, StoryId)
 import Scrum.Data.Api as Api
 import Scrum.Misc exposing ((=>))
 
 
 type alias Model =
     { mainDropState : Dropdown.State
+    , dropStates : Dict StoryId Dropdown.State
     , stories : List Story
     }
 
 
 initialModel : List Story -> Model
 initialModel stories =
-    { mainDropState = Dropdown.initialState
-    , stories = stories
-    }
+    let
+        insertState story dict =
+            Dict.insert story.id Dropdown.initialState dict
+
+        dropStates =
+            List.foldl insertState Dict.empty stories
+    in
+        { mainDropState = Dropdown.initialState
+        , dropStates = dropStates
+        , stories = stories
+        }
 
 
 init : Session -> Task PageLoadError Model
@@ -84,7 +94,15 @@ handleError task =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Dropdown.subscriptions model.mainDropState MainDropMsg
+    let
+        subs =
+            Dict.toList model.dropStates
+                |> List.map (\( storyId, state ) -> Dropdown.subscriptions state (DropMsg storyId))
+
+        mainSub =
+            Dropdown.subscriptions model.mainDropState MainDropMsg
+    in
+        Sub.batch (mainSub :: subs)
 
 
 
@@ -93,6 +111,7 @@ subscriptions model =
 
 type Msg
     = MainDropMsg Dropdown.State
+    | DropMsg StoryId Dropdown.State
 
 
 update : Session -> Msg -> Model -> ( Model, Cmd Msg )
@@ -100,6 +119,9 @@ update session msg model =
     case msg of
         MainDropMsg state ->
             { model | mainDropState = state } => Cmd.none
+
+        DropMsg storyId state ->
+            { model | dropStates = Dict.insert storyId state model.dropStates } => Cmd.none
 
 
 
@@ -133,7 +155,7 @@ view session model =
                         , Table.th [ col_sm ] [ text "Points" ]
                         , Table.th [ col_xs ] (mainActionSelector model)
                         ]
-                , tbody = Table.tbody [] (List.indexedMap tableRow model.stories)
+                , tbody = Table.tbody [] (List.indexedMap (tableRow model) model.stories)
                 }
             ]
 
@@ -144,7 +166,12 @@ mainActionSelector model =
         model.mainDropState
         { options = [ Dropdown.alignMenuRight ]
         , toggleMsg = MainDropMsg
-        , toggleButton = Dropdown.toggle [ Button.outlinePrimary ] [ i [ class "fa fa-ellipsis-v" ] [] ]
+        , toggleButton =
+            Dropdown.toggle
+                [ Button.outlineInfo
+                , Button.small
+                ]
+                [ i [ class "fa fa-ellipsis-v" ] [] ]
         , items =
             [ Dropdown.buttonItem [] [ text "Item 1" ]
             , Dropdown.buttonItem [] [ text "Item 2" ]
@@ -153,8 +180,8 @@ mainActionSelector model =
     ]
 
 
-tableRow : Int -> Story -> Table.Row Msg
-tableRow index story =
+tableRow : Model -> Int -> Story -> Table.Row Msg
+tableRow model index story =
     let
         userName user =
             user
@@ -169,5 +196,30 @@ tableRow index story =
             , Table.td [] [ text <| Maybe.withDefault "-" story.epic ]
             , Table.td [] [ text story.description ]
             , Table.td [] [ text <| toString story.points ]
-            , Table.td [] [ i [ class "fa fa-ellipsis-v" ] [] ]
+            , Table.td [] (actionSelector model story)
             ]
+
+
+actionSelector : Model -> Story -> List (Html Msg)
+actionSelector model story =
+    let
+        dropState =
+            Dict.get story.id model.dropStates
+                |> Maybe.withDefault Dropdown.initialState
+    in
+        [ Dropdown.dropdown
+            dropState
+            { options = [ Dropdown.alignMenuRight ]
+            , toggleMsg = DropMsg story.id
+            , toggleButton =
+                Dropdown.toggle
+                    [ Button.outlineInfo
+                    , Button.small
+                    ]
+                    [ i [ class "fa fa-ellipsis-v" ] [] ]
+            , items =
+                [ Dropdown.buttonItem [] [ text "Item 1" ]
+                , Dropdown.buttonItem [] [ text "Item 2" ]
+                ]
+            }
+        ]

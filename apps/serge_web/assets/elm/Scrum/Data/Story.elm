@@ -1,4 +1,4 @@
-module Scrum.Data.Story exposing (Story, story)
+module Scrum.Data.Story exposing (Story, StoryId, story)
 
 import GraphQL.Request.Builder as B
 
@@ -8,8 +8,12 @@ import GraphQL.Request.Builder as B
 import Scrum.Data.User as User exposing (User)
 
 
+type alias StoryId =
+    String
+
+
 type alias Story =
-    { id : String
+    { id : StoryId
     , dev : Maybe User
     , pm : Maybe User
     , sort : Float
