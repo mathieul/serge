@@ -1,7 +1,7 @@
-module Scrum.Data.Session exposing (Session, decodeFromJson)
+module Scrum.Data.Session exposing (Session, AppMessage(..), decodeFromJson)
 
 import Json.Decode as Decode exposing (Value, Decoder)
-import Json.Decode.Pipeline as Pipeline exposing (decode, required)
+import Json.Decode.Pipeline as Pipeline exposing (decode, required, hardcoded)
 
 
 -- LOCAL IMPORTS
@@ -10,9 +10,17 @@ import Scrum.Data.User as User exposing (User)
 import Scrum.Data.Team as Team exposing (Team)
 
 
+type AppMessage
+    = MessageNone
+    | MessageSuccess String
+    | MessageNotice String
+    | MessageError String
+
+
 type alias Session =
     { user : User
     , team : Team
+    , message : AppMessage
     }
 
 
@@ -27,7 +35,10 @@ decodeFromJson json =
                 _ =
                     Debug.log "decodeFromJson ERROR" error
             in
-                { user = User.empty, team = Team.empty }
+                { user = User.empty
+                , team = Team.empty
+                , message = MessageNone
+                }
 
 
 decoder : Decoder Session
@@ -35,3 +46,4 @@ decoder =
     decode Session
         |> required "user" User.decoder
         |> required "team" Team.decoder
+        |> hardcoded MessageNone

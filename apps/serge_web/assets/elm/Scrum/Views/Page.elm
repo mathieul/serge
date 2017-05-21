@@ -14,7 +14,7 @@ import Bootstrap.Grid.Col as Col
 -- LOCAL IMPORTS
 
 import Scrum.Route as Route exposing (Route)
-import Scrum.Data.Session as Session exposing (Session)
+import Scrum.Data.Session as Session exposing (Session, AppMessage(..))
 import Scrum.Misc exposing (viewIf)
 
 
@@ -47,10 +47,24 @@ viewHeader page isLoading session =
         , Grid.col [ Col.sm3 ]
             [ Html.h2 [ class "my-3" ] [ text session.team.name ] ]
         , Grid.col []
-            [ div [ class "my-3" ]
-                [ Alert.success [ text "This will be where notices and errors will be displayed." ] ]
-            ]
+            [ div [ class "my-3" ] (messageAlert session) ]
         ]
+
+
+messageAlert : Session -> List (Html msg)
+messageAlert session =
+    case session.message of
+        MessageNone ->
+            []
+
+        MessageSuccess content ->
+            [ Alert.success [ text content ] ]
+
+        MessageNotice content ->
+            [ Alert.info [ text content ] ]
+
+        MessageError content ->
+            [ Alert.danger [ text content ] ]
 
 
 pillLink : Bool -> Route -> String -> Html msg
