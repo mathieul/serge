@@ -10,7 +10,7 @@ import Scrum.Data.User as User exposing (User)
 
 
 type alias Team =
-    { id : Int
+    { id : String
     , name : String
     , members : List User
     }
@@ -18,7 +18,7 @@ type alias Team =
 
 empty : Team
 empty =
-    Team -1 "" []
+    Team "" "" []
 
 
 
@@ -28,6 +28,6 @@ empty =
 decoder : Decoder Team
 decoder =
     decode Team
-        |> required "id" Decode.int
+        |> required "id" Decode.string
         |> required "name" Decode.string
         |> required "members" (Decode.list User.decoder)

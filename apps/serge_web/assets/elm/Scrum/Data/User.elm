@@ -6,7 +6,7 @@ import GraphQL.Request.Builder as B
 
 
 type alias User =
-    { id : Int
+    { id : String
     , name : String
     , email : String
     }
@@ -14,7 +14,7 @@ type alias User =
 
 empty : User
 empty =
-    User 0 "" ""
+    User "" "" ""
 
 
 
@@ -24,7 +24,7 @@ empty =
 decoder : Decoder User
 decoder =
     decode User
-        |> required "id" Decode.int
+        |> required "id" Decode.string
         |> required "name" Decode.string
         |> required "email" Decode.string
 
@@ -36,6 +36,6 @@ decoder =
 user : B.ValueSpec B.NonNull B.ObjectType User vars
 user =
     B.object User
-        |> B.with (B.field "id" [] B.int)
+        |> B.with (B.field "id" [] B.string)
         |> B.with (B.field "name" [] B.string)
         |> B.with (B.field "email" [] B.string)

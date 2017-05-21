@@ -93,7 +93,7 @@ defmodule Serge.Web.TeamController do
   defp elm_app_config(team, current_user, access_token) do
     %{
       "team" => %{
-        "id" => team.id,
+        "id" => to_string(team.id),
         "name" => team.name,
         "members" => Enum.map(team.members, &user_attributes/1)
       },
@@ -106,7 +106,7 @@ defmodule Serge.Web.TeamController do
 
   defp user_attributes(user) do
     %{
-      "id" => user.id,
+      "id" => to_string(user.id),
       "name" => user.name,
       "email" => user.email
     }

@@ -5,11 +5,6 @@ import GraphQL.Request.Builder as B
 import GraphQL.Client.Http as GraphQLClient
 
 
--- LOCAL IMPORTS
-
-import Scrum.Page.Errored as Errored exposing (PageLoadError, pageLoadError)
-
-
 -- CONSTANTS
 
 

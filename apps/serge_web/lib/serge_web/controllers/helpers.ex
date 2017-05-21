@@ -9,6 +9,13 @@ defmodule Serge.Web.Controllers.Helpers do
   def shows_navigation_top_bar(conn, _options) do
     current_user = conn.assigns[:current_user]
     team_accesses = Serge.Scrumming.list_team_accesses(user: current_user)
-    assign(conn, :team_accesses, team_accesses)
+    names =
+      team_accesses
+      |> Enum.map(fn access -> access.team.name end)
+      |> Enum.dedup
+
+    conn
+    |> assign(:team_accesses, team_accesses)
+    |> assign(:team_names, names)
   end
 end

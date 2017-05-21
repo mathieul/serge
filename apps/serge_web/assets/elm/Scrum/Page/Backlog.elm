@@ -52,7 +52,6 @@ initialModel stories =
 init : Session -> Task PageLoadError Model
 init session =
     session.team.id
-        |> toString
         |> fetchStoriesRequest
         |> Api.sendQueryRequest
         |> handleError
