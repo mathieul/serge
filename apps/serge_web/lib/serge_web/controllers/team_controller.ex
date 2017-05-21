@@ -77,9 +77,15 @@ defmodule Serge.Web.TeamController do
   end
 
   def scrum(conn, %{"team_id" => team_id}) do
-    team = Scrumming.get_team!(team_id, owner: conn.assigns[:current_user])
-    config = elm_app_config(team, conn.assigns.current_user, conn.assigns.access_token)
-    render(conn, "scrum.html", elm_module: "Scrum", elm_app_config: config)
+    team = Scrumming.get_team!(team_id)
+    if Scrumming.can_access_team?(team, user: conn.assigns[:current_user]) do
+      config = elm_app_config(team, conn.assigns.current_user, conn.assigns.access_token)
+      render(conn, "scrum.html", elm_module: "Scrum", elm_app_config: config)
+    else
+      conn
+      |> put_flash(:danger, "You are not allowed to access this team.")
+      |> redirect(to: team_path(conn, :index))
+    end
   end
 
   defp elm_app_config(_, nil, _), do: %{}
@@ -87,7 +93,8 @@ defmodule Serge.Web.TeamController do
     %{
       "team" => %{
         "id" => team.id,
-        "name" => team.name
+        "name" => team.name,
+        "members" =>[]
       },
       "user" => %{
         "id" => current_user.id,

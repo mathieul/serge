@@ -269,6 +269,19 @@ defmodule Serge.Scrumming do
     end
   end
 
+  @doc """
+  Returns if a user can access a team.
+  """
+  def can_access_team?(team, user: user) do
+    count_accesses =
+      TeamAccess.for_user_id(user.id)
+      |> TeamAccess.for_team_id(team.id)
+      |> TeamAccess.accepted()
+      |> Repo.aggregate(:count, :id)
+
+    count_accesses > 0
+  end
+
   defp validate_email_or_user_id_present(changeset) do
     cond do
       get_field(changeset, :user_id) ->
@@ -334,6 +347,6 @@ defmodule Serge.Scrumming do
   defp story_changeset(%Story{} = story, attrs) do
     story
     |> cast(attrs, [:creator_id, :team_id, :dev_id, :pm_id, :sort, :epic, :points, :description])
-    |> validate_required([:creator_id, :team_id, :description])
+    |> validate_required([:creator_id, :team_id])
   end
 end
