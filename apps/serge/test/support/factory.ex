@@ -38,9 +38,8 @@ defmodule Serge.Factory do
 
   def story_factory do
     %Serge.Scrumming.Story{
-      creator: build(:user),
-      team:    build(:team),
-      story:   "as somebody I want to do something so I can get benefit"
+      creator:      build(:user),
+      team:         build(:team)
     }
   end
 end

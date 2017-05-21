@@ -8,9 +8,9 @@ defmodule Serge.Repo.Migrations.CreateStory do
       add :dev_id, references(:users, on_delete: :nothing), null: true
       add :pm_id, references(:users, on_delete: :nothing), null: true
       add :sort, :float, null: false, default: 10.0
-      add :epic, :string
+      add :epic, :string, null: false, default: ""
       add :points, :integer, null: false, default: 0
-      add :description, :string, null: false
+      add :description, :string, null: false, default: ""
 
       timestamps()
     end
