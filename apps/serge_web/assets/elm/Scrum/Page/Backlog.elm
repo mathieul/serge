@@ -2,10 +2,12 @@ module Scrum.Page.Backlog exposing (view, update, Model, Msg, init, subscription
 
 import Dict exposing (Dict)
 import Html exposing (Html, div, text, h2, i)
-import Html.Attributes exposing (class)
+import Html.Attributes exposing (class, value)
 import Task exposing (Task)
 import Bootstrap.Button as Button
 import Bootstrap.Dropdown as Dropdown
+import Bootstrap.Form.Input as Input
+import Bootstrap.Form.Select as Select
 import Bootstrap.Table as Table
 import GraphQL.Request.Builder as B
 import GraphQL.Request.Builder.Arg as Arg
@@ -150,7 +152,7 @@ view session model =
                         , Table.th [ col_md ] [ text "Dev" ]
                         , Table.th [ col_md ] [ text "PM" ]
                         , Table.th [ col_sm ] [ text "Sort" ]
-                        , Table.th [ col_sm ] [ text "Epic" ]
+                        , Table.th [ col_md ] [ text "Epic" ]
                         , Table.th [] [ text "Story" ]
                         , Table.th [ col_sm ] [ text "Points" ]
                         , Table.th [ col_xs ] (mainActionSelector model)
@@ -168,13 +170,15 @@ mainActionSelector model =
         , toggleMsg = MainDropMsg
         , toggleButton =
             Dropdown.toggle
-                [ Button.outlineInfo
+                [ Button.outlineSecondary
                 , Button.small
                 ]
                 [ i [ class "fa fa-ellipsis-v" ] [] ]
         , items =
-            [ Dropdown.buttonItem [] [ text "Item 1" ]
-            , Dropdown.buttonItem [] [ text "Item 2" ]
+            [ Dropdown.buttonItem []
+                [ i [ class "fa fa-plus" ] []
+                , text " Add story"
+                ]
             ]
         }
     ]
@@ -187,15 +191,49 @@ tableRow model index story =
             user
                 |> Maybe.map .name
                 |> Maybe.withDefault "-"
+
+        devId =
+            case story.dev of
+                Just dev ->
+                    toString dev.id
+
+                Nothing ->
+                    ""
     in
         Table.tr []
             [ Table.td [] [ text <| toString (index + 1) ]
-            , Table.td [] [ text <| userName story.dev ]
+            , Table.td []
+                [ Select.select
+                    [ Select.small ]
+                    [ Select.item [ value "" ] [ text "None" ]
+                    , Select.item [ value "todo" ] [ text "TODO" ]
+                    ]
+                ]
             , Table.td [] [ text <| userName story.pm ]
-            , Table.td [] [ text <| toString story.sort ]
-            , Table.td [] [ text <| Maybe.withDefault "-" story.epic ]
-            , Table.td [] [ text story.description ]
-            , Table.td [] [ text <| toString story.points ]
+            , Table.td []
+                [ Input.text
+                    [ Input.small
+                    , Input.value (toString story.sort)
+                    ]
+                ]
+            , Table.td []
+                [ Input.text
+                    [ Input.small
+                    , Input.value (Maybe.withDefault "" story.epic)
+                    ]
+                ]
+            , Table.td []
+                [ Input.text
+                    [ Input.small
+                    , Input.value story.description
+                    ]
+                ]
+            , Table.td []
+                [ Input.number
+                    [ Input.small
+                    , Input.value (toString story.points)
+                    ]
+                ]
             , Table.td [] (actionSelector model story)
             ]
 
@@ -218,8 +256,14 @@ actionSelector model story =
                     ]
                     [ i [ class "fa fa-ellipsis-v" ] [] ]
             , items =
-                [ Dropdown.buttonItem [] [ text "Item 1" ]
-                , Dropdown.buttonItem [] [ text "Item 2" ]
+                [ Dropdown.buttonItem [ class "text-warning" ]
+                    [ i [ class "fa fa-arrow-up" ] []
+                    , text " Insert before"
+                    ]
+                , Dropdown.buttonItem [ class "text-success" ]
+                    [ i [ class "fa fa-arrow-down" ] []
+                    , text " Insert after"
+                    ]
                 ]
             }
         ]
