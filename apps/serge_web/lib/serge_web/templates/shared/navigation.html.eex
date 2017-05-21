@@ -24,9 +24,9 @@
             <div class="dropdown-menu">
               <%= link "My Teams", to: team_path(@conn, :index), class: "dropdown-item" %>
               <div class="dropdown-divider"></div>
-              <%= for team_access <- @team_accesses do %>
-                <%= link team_access.team.name,
-                    to: team_scrum_path(@conn, :scrum, team_access.team.id),
+              <%= for {team_id, team_name} <- @team_values do %>
+                <%= link team_name,
+                    to: team_scrum_path(@conn, :scrum, team_id),
                     class: "dropdown-item" %>
               <% end %>
             </div>
