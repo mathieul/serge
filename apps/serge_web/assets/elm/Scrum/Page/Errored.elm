@@ -4,7 +4,8 @@ module Scrum.Page.Errored exposing (view, pageLoadError, PageLoadError)
 for example a Page Not Found error.
 -}
 
-import Html exposing (..)
+import Html exposing (Html, text, p)
+import Bootstrap.Alert as Alert
 
 
 -- LOCAL IMPORTS
@@ -37,4 +38,7 @@ pageLoadError activePage errorMessage =
 
 view : Session -> PageLoadError -> Html msg
 view session (PageLoadError model) =
-    div [] [ text "Error page" ]
+    Alert.danger
+        [ Alert.h4 [] [ text "Oops, an error occurred" ]
+        , p [] [ text model.errorMessage ]
+        ]

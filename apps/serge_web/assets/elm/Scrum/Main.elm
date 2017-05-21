@@ -120,9 +120,6 @@ setRoute maybeRoute model =
         transition toMsg task =
             { model | pageState = TransitioningFrom (getPage model.pageState) }
                 => Task.attempt toMsg task
-
-        errored =
-            pageErrored model
     in
         case maybeRoute of
             Nothing ->
@@ -161,9 +158,6 @@ updatePage page msg model =
                     subUpdate subMsg subModel
             in
                 ( { model | pageState = Loaded (toModel newModel) }, Cmd.map toMsg newCmd )
-
-        errored =
-            pageErrored model
     in
         case ( msg, page ) of
             ( SetRoute route, _ ) ->

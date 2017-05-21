@@ -3,6 +3,7 @@ module Scrum.Page.Backlog exposing (view, update, Model, Msg, init, subscription
 import Dict exposing (Dict)
 import Html exposing (Html, div, text, h2, i)
 import Html.Attributes exposing (class, value)
+import Html.Events exposing (onClick)
 import Task exposing (Task)
 import Bootstrap.Button as Button
 import Bootstrap.Dropdown as Dropdown
@@ -45,8 +46,13 @@ initialModel stories =
     in
         { mainDropState = Dropdown.initialState
         , dropStates = dropStates
-        , stories = stories
+        , stories = sortStories stories
         }
+
+
+sortStories : List Story -> List Story
+sortStories stories =
+    List.sortBy .sort stories
 
 
 init : Session -> Task PageLoadError Model
@@ -115,6 +121,7 @@ subscriptions model =
 type Msg
     = MainDropMsg Dropdown.State
     | DropMsg StoryId Dropdown.State
+    | AddBlankStory
 
 
 update : Session -> Msg -> Model -> ( Model, Cmd Msg )
@@ -125,6 +132,9 @@ update session msg model =
 
         DropMsg storyId state ->
             { model | dropStates = Dict.insert storyId state model.dropStates } => Cmd.none
+
+        AddBlankStory ->
+            { model | stories = (Story.newStory model.stories) :: model.stories } => Cmd.none
 
 
 
@@ -179,7 +189,8 @@ mainActionSelector model =
                 ]
                 [ i [ class "fa fa-ellipsis-v" ] [] ]
         , items =
-            [ Dropdown.buttonItem []
+            [ Dropdown.buttonItem
+                [ onClick AddBlankStory ]
                 [ i [ class "fa fa-plus" ] []
                 , text " Add story"
                 ]

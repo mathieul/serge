@@ -1,5 +1,6 @@
-module Scrum.Data.Story exposing (Story, StoryId, story)
+module Scrum.Data.Story exposing (Story, StoryId, story, newStory)
 
+import String
 import GraphQL.Request.Builder as B
 
 
@@ -21,6 +22,28 @@ type alias Story =
     , points : Int
     , description : String
     }
+
+
+newStory : List Story -> Story
+newStory stories =
+    let
+        nextId =
+            List.map .id stories
+                |> List.maximum
+                |> Result.fromMaybe "error"
+                |> Result.andThen String.toInt
+                |> Result.withDefault 0
+                |> (+) 1
+                |> toString
+    in
+        { id = nextId
+        , dev = Nothing
+        , pm = Nothing
+        , sort = 0.0
+        , epic = Nothing
+        , points = 0
+        , description = ""
+        }
 
 
 
