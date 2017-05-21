@@ -66,6 +66,11 @@ defmodule Serge.Scrumming do
     %{with_accesses | team_accesses: Enum.map(with_accesses.team_accesses, &set_team_access_status/1)}
   end
 
+  @doc """
+  Preload members.
+  """
+  def preload_members(team), do: Repo.preload(team, :members)
+
   defp set_team_access_status(access) do
     %{access | status: cond do
       access.accepted_at ->

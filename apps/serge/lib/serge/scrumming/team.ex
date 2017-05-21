@@ -13,6 +13,7 @@ defmodule Serge.Scrumming.Team do
 
     belongs_to :owner,        Serge.Authentication.User
     has_many :team_accesses,  TeamAccess
+    has_many :members,        through: [:team_accesses, :user]
 
     timestamps()
   end

@@ -20,6 +20,8 @@ import GraphQL.Client.Http as GraphQLClient
 import Scrum.Views.Page as Page
 import Scrum.Page.Errored as Errored exposing (PageLoadError, pageLoadError)
 import Scrum.Data.Session as Session exposing (Session)
+import Scrum.Data.Team as Team exposing (Team)
+import Scrum.Data.User as User exposing (User)
 import Scrum.Data.Story as Story exposing (Story, StoryId)
 import Scrum.Data.Api as Api
 import Scrum.Misc exposing ((=>))
@@ -141,6 +143,9 @@ view session model =
 
         col_md =
             Table.cellAttr <| class "ColMd"
+
+        tableRowWithModelAndTeam =
+            tableRow model session.team
     in
         div []
             [ h2 [ class "mb-4" ] [ text "Product Backlog" ]
@@ -155,16 +160,16 @@ view session model =
                         , Table.th [ col_md ] [ text "Epic" ]
                         , Table.th [] [ text "Story" ]
                         , Table.th [ col_sm ] [ text "Points" ]
-                        , Table.th [ col_xs ] (mainActionSelector model)
+                        , Table.th [ col_xs ] [ mainActionSelector model ]
                         ]
-                , tbody = Table.tbody [] (List.indexedMap (tableRow model) model.stories)
+                , tbody = Table.tbody [] (List.indexedMap tableRowWithModelAndTeam model.stories)
                 }
             ]
 
 
-mainActionSelector : Model -> List (Html Msg)
+mainActionSelector : Model -> Html Msg
 mainActionSelector model =
-    [ Dropdown.dropdown
+    Dropdown.dropdown
         model.mainDropState
         { options = [ Dropdown.alignMenuRight ]
         , toggleMsg = MainDropMsg
@@ -181,11 +186,10 @@ mainActionSelector model =
                 ]
             ]
         }
-    ]
 
 
-tableRow : Model -> Int -> Story -> Table.Row Msg
-tableRow model index story =
+tableRow : Model -> Team -> Int -> Story -> Table.Row Msg
+tableRow model team index story =
     let
         userName user =
             user
@@ -202,14 +206,8 @@ tableRow model index story =
     in
         Table.tr []
             [ Table.td [] [ text <| toString (index + 1) ]
-            , Table.td []
-                [ Select.select
-                    [ Select.small ]
-                    [ Select.item [ value "" ] [ text "None" ]
-                    , Select.item [ value "todo" ] [ text "TODO" ]
-                    ]
-                ]
-            , Table.td [] [ text <| userName story.pm ]
+            , Table.td [] [ userSelector team.members story.dev ]
+            , Table.td [] [ userSelector team.members story.pm ]
             , Table.td []
                 [ Input.text
                     [ Input.small
@@ -234,18 +232,37 @@ tableRow model index story =
                     , Input.value (toString story.points)
                     ]
                 ]
-            , Table.td [] (actionSelector model story)
+            , Table.td [] [ actionSelector model story ]
             ]
 
 
-actionSelector : Model -> Story -> List (Html Msg)
+userSelector : List User -> Maybe User -> Html Msg
+userSelector users selected =
+    let
+        options =
+            List.map (\user -> Select.item [ value <| toString user.id ] [ text user.name ]) users
+
+        selectedAttribute =
+            case selected of
+                Just user ->
+                    [ value <| toString user.id ]
+
+                Nothing ->
+                    []
+    in
+        Select.select
+            [ Select.small, Select.attrs selectedAttribute ]
+            (Select.item [ value "" ] [ text "None" ] :: options)
+
+
+actionSelector : Model -> Story -> Html Msg
 actionSelector model story =
     let
         dropState =
             Dict.get story.id model.dropStates
                 |> Maybe.withDefault Dropdown.initialState
     in
-        [ Dropdown.dropdown
+        Dropdown.dropdown
             dropState
             { options = [ Dropdown.alignMenuRight ]
             , toggleMsg = DropMsg story.id
@@ -266,4 +283,3 @@ actionSelector model story =
                     ]
                 ]
             }
-        ]
