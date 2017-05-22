@@ -1,4 +1,4 @@
-defmodule Serge.Task.QueryTasksTest do
+defmodule Serge.Story.QueryStoriesTest do
   use Serge.Web.GraphqlCase, async: true
   import Serge.Factory
 
