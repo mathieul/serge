@@ -13,7 +13,6 @@ import Bootstrap.Table as Table
 import GraphQL.Request.Builder as B
 import GraphQL.Request.Builder.Arg as Arg
 import GraphQL.Request.Builder.Variable as Var
-import GraphQL.Client.Http as GraphQLClient
 
 
 -- LOCAL IMPORTS
@@ -60,41 +59,8 @@ init session =
     session.team.id
         |> fetchStoriesRequest
         |> Api.sendQueryRequest
-        |> handleError
+        |> Api.handleError Page.Backlog
         |> Task.map initialModel
-
-
-fetchStoriesQuery : B.Document B.Query (List Story) { vars | teamId : String }
-fetchStoriesQuery =
-    let
-        teamIDVar =
-            Var.required "teamId" .teamId Var.id
-
-        variables =
-            [ ( "teamId", Arg.variable teamIDVar ) ]
-    in
-        B.field "stories" variables (B.list Story.story)
-            |> B.extract
-            |> B.queryDocument
-
-
-fetchStoriesRequest : String -> B.Request B.Query (List Story)
-fetchStoriesRequest teamId =
-    fetchStoriesQuery
-        |> B.request { teamId = teamId }
-
-
-handleError : Task GraphQLClient.Error a -> Task PageLoadError a
-handleError task =
-    let
-        handleLoadError error =
-            let
-                _ =
-                    Debug.log "handleError - error=" error
-            in
-                pageLoadError Page.Backlog "Backlog is currently unavailable."
-    in
-        Task.mapError handleLoadError task
 
 
 
@@ -293,3 +259,68 @@ actionSelector model story =
                     ]
                 ]
             }
+
+
+
+-- QUERIES, MUTATIONS & REQUESTS
+-- FETCH STORIES
+
+
+fetchStoriesQuery : B.Document B.Query (List Story) { vars | teamId : String }
+fetchStoriesQuery =
+    let
+        teamIDVar =
+            Var.required "teamId" .teamId Var.id
+
+        variables =
+            [ ( "teamId", Arg.variable teamIDVar ) ]
+    in
+        B.field "stories" variables (B.list Story.story)
+            |> B.extract
+            |> B.queryDocument
+
+
+fetchStoriesRequest : String -> B.Request B.Query (List Story)
+fetchStoriesRequest teamId =
+    fetchStoriesQuery
+        |> B.request { teamId = teamId }
+
+
+
+-- CREATE STORY
+
+
+type alias CreateStoryVariables =
+    { teamId : String
+    , devId : Maybe String
+    , pmId : Maybe String
+    , sort : Float
+    , epic : String
+    , points : Int
+    , description : String
+    }
+
+
+createStoryQuery : B.Document B.Mutation Story CreateStoryVariables
+createStoryQuery =
+    let
+        variables =
+            [ ( "teamId", Arg.variable (Var.required "teamId" .teamId Var.id) )
+            , ( "devId", Arg.variable (Var.required "devId" .devId (Var.nullable Var.id)) )
+            , ( "pmId", Arg.variable (Var.required "pmId" .pmId (Var.nullable Var.id)) )
+            , ( "sort", Arg.variable (Var.required "sort" .sort Var.float) )
+            , ( "epic", Arg.variable (Var.required "epic" .epic Var.string) )
+            , ( "points", Arg.variable (Var.required "points" .points Var.int) )
+            , ( "description", Arg.variable (Var.required "description" .description Var.string) )
+            ]
+    in
+        Story.story
+            |> B.field "createStory" variables
+            |> B.extract
+            |> B.mutationDocument
+
+
+createStoryRequest : CreateStoryVariables -> B.Request B.Mutation Story
+createStoryRequest variables =
+    createStoryQuery
+        |> B.request variables
