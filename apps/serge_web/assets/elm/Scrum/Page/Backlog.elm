@@ -2,7 +2,7 @@ module Scrum.Page.Backlog exposing (view, update, Model, Msg, init, subscription
 
 import Dict exposing (Dict)
 import Html exposing (Html, div, text, h2, i)
-import Html.Attributes exposing (class, value)
+import Html.Attributes exposing (class, value, selected)
 import Html.Events exposing (onClick)
 import Task exposing (Task)
 import Bootstrap.Button as Button
@@ -213,21 +213,20 @@ tableRow model team index story =
 
 
 userSelector : List User -> Maybe User -> Html Msg
-userSelector users selected =
+userSelector users selectedUser =
     let
+        makeOption user =
+            Select.item
+                [ value <| toString user.id
+                , selected <| selectedUser == Just user
+                ]
+                [ text user.name ]
+
         options =
-            List.map (\user -> Select.item [ value <| toString user.id ] [ text user.name ]) users
-
-        selectedAttribute =
-            case selected of
-                Just user ->
-                    [ value <| toString user.id ]
-
-                Nothing ->
-                    []
+            List.map makeOption users
     in
         Select.select
-            [ Select.small, Select.attrs selectedAttribute ]
+            [ Select.small ]
             (Select.item [ value "" ] [ text "None" ] :: options)
 
 
