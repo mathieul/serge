@@ -13,13 +13,14 @@ import Bootstrap.Table as Table
 import GraphQL.Request.Builder as B
 import GraphQL.Request.Builder.Arg as Arg
 import GraphQL.Request.Builder.Variable as Var
+import GraphQL.Client.Http as GraphQLClient
 
 
 -- LOCAL IMPORTS
 
 import Scrum.Views.Page as Page
 import Scrum.Page.Errored as Errored exposing (PageLoadError, pageLoadError)
-import Scrum.Data.Session as Session exposing (Session)
+import Scrum.Data.Session as Session exposing (Session, AppMessage(MessageError), setMessage)
 import Scrum.Data.Team as Team exposing (Team)
 import Scrum.Data.User as User exposing (User)
 import Scrum.Data.Story as Story exposing (Story, StoryId)
@@ -88,6 +89,7 @@ type Msg
     = MainDropMsg Dropdown.State
     | DropMsg StoryId Dropdown.State
     | AddBlankStory
+    | CreateStory (Result GraphQLClient.Error Story)
 
 
 update : Session -> Msg -> Model -> ( Model, Cmd Msg )
@@ -100,7 +102,29 @@ update session msg model =
             { model | dropStates = Dict.insert storyId state model.dropStates } => Cmd.none
 
         AddBlankStory ->
-            { model | stories = (Story.newStory model.stories) :: model.stories } => Cmd.none
+            let
+                vars =
+                    storyToCreateVariables session <| Story.newStory model.stories
+
+                cmd =
+                    createStoryRequest vars
+                        |> Api.sendMutationRequest
+                        |> Task.attempt CreateStory
+            in
+                model => cmd
+
+        CreateStory (Ok story) ->
+            { model | stories = story :: model.stories } => Cmd.none
+
+        CreateStory (Err error) ->
+            let
+                message =
+                    Api.graphQLErrorToMessage "Creating the story failed" error
+
+                _ =
+                    Debug.log "ERROR" message
+            in
+                model => Cmd.none
 
 
 
@@ -261,7 +285,6 @@ actionSelector model story =
 
 
 
--- QUERIES, MUTATIONS & REQUESTS
 -- FETCH STORIES
 
 
@@ -294,9 +317,21 @@ type alias CreateStoryVariables =
     , devId : Maybe String
     , pmId : Maybe String
     , sort : Float
-    , epic : String
+    , epic : Maybe String
     , points : Int
     , description : String
+    }
+
+
+storyToCreateVariables : Session -> Story -> CreateStoryVariables
+storyToCreateVariables session story =
+    { teamId = session.team.id
+    , devId = Maybe.map .id story.dev
+    , pmId = Maybe.map .id story.pm
+    , sort = story.sort
+    , epic = story.epic
+    , points = story.points
+    , description = story.description
     }
 
 
@@ -308,7 +343,7 @@ createStoryQuery =
             , ( "devId", Arg.variable (Var.required "devId" .devId (Var.nullable Var.id)) )
             , ( "pmId", Arg.variable (Var.required "pmId" .pmId (Var.nullable Var.id)) )
             , ( "sort", Arg.variable (Var.required "sort" .sort Var.float) )
-            , ( "epic", Arg.variable (Var.required "epic" .epic Var.string) )
+            , ( "epic", Arg.variable (Var.required "epic" .epic (Var.nullable Var.string)) )
             , ( "points", Arg.variable (Var.required "points" .points Var.int) )
             , ( "description", Arg.variable (Var.required "description" .description Var.string) )
             ]

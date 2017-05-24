@@ -4,11 +4,11 @@ defmodule Serge.Web.Schema.StoryTypes do
   alias Serge.Repo
 
   object :story do
-    field :id, :id
+    field :id, non_null(:id)
     field :sort, :float
     field :epic, :string
     field :points, :integer
-    field :description, :string
+    field :description, non_null(:string)
 
     field :team, :team do
       resolve fn story, _args, _ctx ->

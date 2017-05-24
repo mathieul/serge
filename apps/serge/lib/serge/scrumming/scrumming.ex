@@ -345,8 +345,11 @@ defmodule Serge.Scrumming do
   Creates a story.
   """
   def create_story(attrs \\ %{}) do
-    story_changeset(%Story{}, attrs)
-    |> Repo.insert()
+    {:ok, created} =
+      story_changeset(%Story{}, attrs)
+      |> Repo.insert()
+    # TODO: figure out why Repo.insert returns description and epit nil when they're '"'
+    {:ok, Repo.get(Story, created.id)}
   end
 
   defp story_changeset(%Story{} = story, attrs) do

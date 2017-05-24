@@ -1,4 +1,10 @@
-module Scrum.Data.Session exposing (Session, AppMessage(..), decodeFromJson)
+module Scrum.Data.Session
+    exposing
+        ( Session
+        , AppMessage(..)
+        , decodeFromJson
+        , setMessage
+        )
 
 import Json.Decode as Decode exposing (Value, Decoder)
 import Json.Decode.Pipeline as Pipeline exposing (decode, required, hardcoded)
@@ -47,3 +53,8 @@ decoder =
         |> required "user" User.decoder
         |> required "team" Team.decoder
         |> hardcoded MessageNone
+
+
+setMessage : Session -> AppMessage -> Session
+setMessage session message =
+    { session | message = message }

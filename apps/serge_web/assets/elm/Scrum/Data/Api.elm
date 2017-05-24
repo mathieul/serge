@@ -1,6 +1,13 @@
-module Scrum.Data.Api exposing (sendQueryRequest, sendMutationRequest, handleError)
+module Scrum.Data.Api
+    exposing
+        ( sendQueryRequest
+        , sendMutationRequest
+        , handleError
+        , graphQLErrorToMessage
+        )
 
 import Task exposing (Task)
+import Http
 import GraphQL.Request.Builder as B
 import GraphQL.Client.Http as GraphQLClient
 
@@ -44,3 +51,42 @@ handleError page task =
                 pageLoadError page "Backlog is currently unavailable."
     in
         Task.mapError handleLoadError task
+
+
+httpErrorToMessage : Http.Error -> String
+httpErrorToMessage error =
+    case error of
+        Http.BadUrl message ->
+            "error in URL: " ++ message
+
+        Http.NetworkError ->
+            "error with the network connection"
+
+        Http.BadStatus response ->
+            let
+                _ =
+                    Debug.log "BadStatus error" response.body
+            in
+                (toString response.status.code)
+                    ++ " "
+                    ++ response.status.message
+
+        Http.BadPayload message _ ->
+            "decoding Failed: " ++ message
+
+        _ ->
+            (toString error)
+
+
+graphQLErrorToMessage : String -> GraphQLClient.Error -> String
+graphQLErrorToMessage label error =
+    let
+        message =
+            case error of
+                GraphQLClient.HttpError error ->
+                    httpErrorToMessage error
+
+                GraphQLClient.GraphQLError errors ->
+                    toString errors
+    in
+        label ++ ": " ++ message
