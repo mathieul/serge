@@ -277,11 +277,11 @@ defmodule Serge.Scrumming do
   @doc """
   Returns if a user can access a team.
   """
-  def can_access_team?(team, user: user, can_write: can_write)
+  def can_access_team?(team_id, user: user, can_write: can_write)
   when is_boolean(can_write) and is_map(user) do
     query =
       TeamAccess.for_user_id(user.id)
-      |> TeamAccess.for_team_id(team.id)
+      |> TeamAccess.for_team_id(team_id)
       |> TeamAccess.accepted()
     query = if can_write, do: TeamAccess.to_write(query), else: query
 
