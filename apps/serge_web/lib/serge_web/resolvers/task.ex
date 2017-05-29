@@ -4,7 +4,7 @@ defmodule Serge.Web.Resolvers.Task do
   alias Serge.Tasking
   alias Serge.DateHelpers
 
-  def find(_parent, %{ id: id }, %{context: ctx}) do
+  def find(_parent, %{id: id}, %{context: ctx}) do
     case Tasking.get_task(id, user_id: ctx.current_user.id) do
       nil ->
         { :error, "Task id #{id} not found" }

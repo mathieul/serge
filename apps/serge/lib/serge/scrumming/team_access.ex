@@ -33,6 +33,10 @@ defmodule Serge.Scrumming.TeamAccess do
     from(ta in scope, where: ta.team_id == ^team_id)
   end
 
+  def to_write(scope \\ __MODULE__) do
+    from(ta in scope, where: ta.kind == "read_write")
+  end
+
   def count(scope \\ __MODULE__) do
     from(ta in scope, group_by: ta.team_id, select: %{team_id: ta.team_id, count: count(ta.id)})
   end

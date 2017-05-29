@@ -277,13 +277,15 @@ defmodule Serge.Scrumming do
   @doc """
   Returns if a user can access a team.
   """
-  def can_access_team?(team, user: user) do
-    count_accesses =
+  def can_access_team?(team, user: user, can_write: can_write)
+  when is_boolean(can_write) and is_map(user) do
+    query =
       TeamAccess.for_user_id(user.id)
       |> TeamAccess.for_team_id(team.id)
       |> TeamAccess.accepted()
-      |> Repo.aggregate(:count, :id)
+    query = if can_write, do: TeamAccess.to_write(query), else: query
 
+    count_accesses = Repo.aggregate(query, :count, :id)
     count_accesses > 0
   end
 
@@ -334,22 +336,54 @@ defmodule Serge.Scrumming do
   end
 
   @doc """
-  Creates a story for a creator.
+  Gets a story and return nil if not found.
   """
-  def create_story(attrs, creator_id: creator_id) do
-    attrs = Map.put_new(attrs, :creator_id, creator_id)
-    create_story(attrs)
+  def get_story!(id) do
+    Repo.get!(Story, id)
   end
 
   @doc """
-  Creates a story.
+  Creates a story for a creator.
   """
-  def create_story(attrs \\ %{}) do
+  def create_story(attrs, team: team, creator: creator) do
+    if can_access_team?(team, user: creator, can_write: true) do
+      attrs = Map.put_new(attrs, :creator_id, creator.id)
+      create_story(attrs)
+    else
+      changeset = change_story(%Story{})
+      {:error, add_error(changeset, :creator, "user #{inspect creator.name} can't write in team #{team.name}")}
+    end
+  end
+
+  defp create_story(attrs) do
     {:ok, created} =
       story_changeset(%Story{}, attrs)
       |> Repo.insert()
-    # TODO: figure out why Repo.insert returns description and epit nil when they're '"'
+    # TODO: figure out why Repo.insert returns description and epic nil when they're '"'
     {:ok, Repo.get(Story, created.id)}
+  end
+
+  @doc """
+  Updates a story from a story id.
+  """
+  def update_story_by_id(%{id: id} = attrs, user: _user) do
+    case get_story!(id) do
+      nil ->
+        changeset = change_story(%Story{})
+        {:error, add_error(changeset, :story, "doesn't exist")}
+      story ->
+        # TODO: ensure user can write in the story team
+        story
+        |> story_changeset(attrs)
+        |> Repo.update()
+    end
+  end
+
+  @doc """
+  Returns an `%Ecto.Changeset{}` for tracking story changes.
+  """
+  def change_story(%Story{} = story) do
+    story_changeset(story, %{})
   end
 
   defp story_changeset(%Story{} = story, attrs) do

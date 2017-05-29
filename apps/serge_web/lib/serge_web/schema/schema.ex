@@ -68,5 +68,17 @@ defmodule Serge.Web.Schema do
 
       resolve &Resolvers.Story.create/3
     end
+
+    field :update_story, :story do
+      arg :id, non_null(:id)
+      arg :dev_id, :id
+      arg :pm_id, :id
+      arg :sort, :float
+      arg :epic, :string
+      arg :points, :integer
+      arg :description, non_null(:string)
+
+      resolve &Resolvers.Story.update/3
+    end
   end
 end

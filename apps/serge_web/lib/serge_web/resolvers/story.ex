@@ -10,14 +10,22 @@ defmodule Serge.Web.Resolvers.Story do
   end
 
   def create(_parent, attributes = %{team_id: team_id}, %{context: ctx}) do
-    %Serge.Scrumming.Team{} = Scrumming.get_team!(team_id)
-    case Scrumming.create_story(attributes, creator_id: ctx.current_user.id) do
+    team = Scrumming.get_team!(team_id)
+    case Scrumming.create_story(attributes, team: team, creator: ctx.current_user) do
       {:ok, story} ->
-        IO.puts "create_story => #{inspect story}"
         {:ok, story}
 
       {:error, changeset} ->
         {:error, format_changeset_errors(changeset)}
+    end
+  end
+
+  def update(_parent, attributes, %{context: ctx}) do
+    case Scrumming.update_story_by_id(attributes, user: ctx.current_user) do
+      { :error, changeset } ->
+        { :error, format_changeset_errors(changeset) }
+      ok ->
+        ok
     end
   end
 end
