@@ -32,27 +32,38 @@ type alias Model =
     { mainDropState : Dropdown.State
     , dropStates : Dict StoryId Dropdown.State
     , stories : List Story
+    , storyForms : Dict StoryId StoryVariables
     }
 
 
-initialModel : List Story -> Model
-initialModel stories =
+type alias StoryVariables =
+    { teamId : String
+    , devId : Maybe String
+    , pmId : Maybe String
+    , sort : Float
+    , epic : Maybe String
+    , points : Int
+    , description : String
+    }
+
+
+initialModel : Session -> List Story -> Model
+initialModel session stories =
     let
         insertState story dict =
             Dict.insert story.id Dropdown.initialState dict
 
         dropStates =
             List.foldl insertState Dict.empty stories
+
+        insertVariable story dict =
+            Dict.insert story.id (storyToVariables session story) dict
     in
         { mainDropState = Dropdown.initialState
         , dropStates = dropStates
-        , stories = sortStories stories
+        , stories = List.sortBy .sort stories
+        , storyForms = List.foldl insertVariable Dict.empty stories
         }
-
-
-sortStories : List Story -> List Story
-sortStories stories =
-    List.sortBy .sort stories
 
 
 init : Session -> Task PageLoadError Model
@@ -61,7 +72,7 @@ init session =
         |> fetchStoriesRequest
         |> Api.sendQueryRequest
         |> Api.handleError Page.Backlog
-        |> Task.map initialModel
+        |> Task.map (initialModel session)
 
 
 
@@ -90,6 +101,7 @@ type Msg
     | DropMsg StoryId Dropdown.State
     | AddBlankStory
     | CreateStory (Result GraphQLClient.Error Story)
+    | EpicValueChange StoryId String
 
 
 update : Session -> Msg -> Model -> ( Model, Cmd Msg )
@@ -104,7 +116,7 @@ update session msg model =
         AddBlankStory ->
             let
                 vars =
-                    storyToCreateVariables session <| Story.newStory model.stories
+                    storyToVariables session <| Story.newStory model.stories
 
                 cmd =
                     createStoryRequest vars
@@ -125,6 +137,16 @@ update session msg model =
                     Debug.log "ERROR" message
             in
                 model => Cmd.none
+
+        EpicValueChange storyId value ->
+            let
+                updateValue maybeFound =
+                    Maybe.map (\found -> { found | epic = Just value }) maybeFound
+
+                storyForms =
+                    Dict.update storyId updateValue model.storyForms
+            in
+                { model | storyForms = storyForms } => Cmd.none
 
 
 
@@ -161,7 +183,9 @@ view session model =
                         , Table.th [ col_sm ] [ text "Points" ]
                         , Table.th [ col_xs ] [ mainActionSelector model ]
                         ]
-                , tbody = Table.tbody [] (List.indexedMap tableRowWithModelAndTeam model.stories)
+                , tbody =
+                    Table.tbody []
+                        (List.indexedMap tableRowWithModelAndTeam model.stories)
                 }
             ]
 
@@ -218,6 +242,7 @@ tableRow model team index story =
                 [ Input.text
                     [ Input.small
                     , Input.value (Maybe.withDefault "" story.epic)
+                    , Input.onInput <| EpicValueChange story.id
                     ]
                 ]
             , Table.td []
@@ -312,19 +337,8 @@ fetchStoriesRequest teamId =
 -- CREATE STORY
 
 
-type alias CreateStoryVariables =
-    { teamId : String
-    , devId : Maybe String
-    , pmId : Maybe String
-    , sort : Float
-    , epic : Maybe String
-    , points : Int
-    , description : String
-    }
-
-
-storyToCreateVariables : Session -> Story -> CreateStoryVariables
-storyToCreateVariables session story =
+storyToVariables : Session -> Story -> StoryVariables
+storyToVariables session story =
     { teamId = session.team.id
     , devId = Maybe.map .id story.dev
     , pmId = Maybe.map .id story.pm
@@ -335,7 +349,7 @@ storyToCreateVariables session story =
     }
 
 
-createStoryQuery : B.Document B.Mutation Story CreateStoryVariables
+createStoryQuery : B.Document B.Mutation Story StoryVariables
 createStoryQuery =
     let
         variables =
@@ -354,7 +368,7 @@ createStoryQuery =
             |> B.mutationDocument
 
 
-createStoryRequest : CreateStoryVariables -> B.Request B.Mutation Story
+createStoryRequest : StoryVariables -> B.Request B.Mutation Story
 createStoryRequest variables =
     createStoryQuery
         |> B.request variables
