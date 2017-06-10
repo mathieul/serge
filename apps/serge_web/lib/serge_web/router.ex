@@ -16,6 +16,12 @@ defmodule Serge.Web.Router do
     plug Serge.Web.Context
   end
 
+  pipeline :api do
+    plug :accepts, ["json"]
+    plug :fetch_session
+    plug :assign_user_and_token
+  end
+
   scope "/", Serge.Web do
     pipe_through :browser
 
@@ -42,6 +48,14 @@ defmodule Serge.Web.Router do
     get "/graphiql",    Absinthe.Plug.GraphiQL, schema: Serge.Web.Schema
     post "/graphiql",   Absinthe.Plug.GraphiQL, schema: Serge.Web.Schema
     forward "/graphql", Absinthe.Plug, schema: Serge.Web.Schema
+  end
+
+  scope "/api", Serge.Web.Api, as: :api do
+    pipe_through :api
+
+    scope "/teams/:team_id" do
+      resources "/stories", StoryController, only: [:index]
+    end
   end
 
   scope "/auth", Serge.Web do
