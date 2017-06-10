@@ -31,7 +31,7 @@ defmodule Serge.Web.Mixfile do
   defp deps do
     [
       {:absinthe_plug, "~> 1.3.0"},
-      {:absinthe, "~> 1.3.0"},
+      {:absinthe, "~> 1.3.1"},
       {:activity, in_umbrella: true},
       {:bamboo, "~> 1.0.0-rc.1"},
       {:comeonin, "~> 3.0"},
@@ -44,9 +44,9 @@ defmodule Serge.Web.Mixfile do
       {:phoenix_html_simplified_helpers, "~> 1.1"},
       {:phoenix_live_reload, "~> 1.0", only: :dev},
       {:phoenix_pubsub, "~> 1.0"},
-      {:phoenix, "~> 1.3-rc.1"},
+      {:phoenix, "~> 1.3-rc.2"},
       {:serge, in_umbrella: true},
-      {:timex, "~> 3.0"}
+      {:timex, "~> 3.1.15"}
     ]
   end
 
