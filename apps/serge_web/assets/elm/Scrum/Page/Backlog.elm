@@ -157,7 +157,7 @@ view : Session -> Model -> Html Msg
 view session model =
     let
         col_xs =
-            Table.cellAttr <| class "ColXs"
+            Table.cellAttr <| class "ColXs text-center"
 
         col_sm =
             Table.cellAttr <| class "ColSm"
@@ -181,7 +181,14 @@ view session model =
                         , Table.th [ col_md ] [ text "Epic" ]
                         , Table.th [] [ text "Story" ]
                         , Table.th [ col_sm ] [ text "Points" ]
-                        , Table.th [ col_xs ] [ mainActionSelector model ]
+                        , Table.th [ col_xs ]
+                            [ Button.button
+                                [ Button.outlineInfo
+                                , Button.small
+                                ]
+                                [ i [ class "fa fa-plus" ] []
+                                ]
+                            ]
                         ]
                 , tbody =
                     Table.tbody []
@@ -304,6 +311,11 @@ actionSelector model story =
                 , Dropdown.buttonItem [ class "text-success" ]
                     [ i [ class "fa fa-arrow-down" ] []
                     , text " Insert after"
+                    ]
+                , Dropdown.divider
+                , Dropdown.buttonItem [ class "text-danger" ]
+                    [ i [ class "fa fa-trash" ] []
+                    , text " Delete"
                     ]
                 ]
             }
