@@ -11,10 +11,13 @@
   <div class="collapse navbar-collapse">
     <div style="display: flex; width: 100%;">
       <ul class="navbar-nav mr-auto">
-        <%= if length(@team_accesses) == 0 do %>
         <li class="nav-item">
-          <%= active_link @conn, "My Teams", to: team_path(@conn, :index), class: "nav-link" %>
+          <%= active_link @conn, "Tasker", to: tasker_path(@conn, :tasker), class: "nav-link" %>
         </li>
+        <%= if length(@team_accesses) == 0 do %>
+          <li class="nav-item">
+            <%= active_link @conn, "My Teams", to: team_path(@conn, :index), class: "nav-link" %>
+          </li>
         <% else %>
           <li class="nav-item dropdown">
             <%= link "Teams",
@@ -32,9 +35,6 @@
             </div>
           </li>
         <% end %>
-        <li class="nav-item">
-          <%= active_link @conn, "Tasker", to: tasker_path(@conn, :tasker), class: "nav-link" %>
-        </li>
       </ul>
       <span class="pull-right ">
         <a role="button" class="btn btn-danger" href="/auth/logout">Logout</a>

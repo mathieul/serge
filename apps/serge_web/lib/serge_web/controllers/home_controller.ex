@@ -7,7 +7,7 @@ defmodule Serge.Web.HomeController do
     if conn.assigns.current_user do
       conn
       |> put_session(:return_to, nil)
-      |> redirect(external: get_session(conn, :return_to) || team_path(conn, :index))
+      |> redirect(external: get_session(conn, :return_to) || tasker_path(conn, :tasker))
     else
       render(conn, "index.html", activities: Activity.recent_activity)
     end
