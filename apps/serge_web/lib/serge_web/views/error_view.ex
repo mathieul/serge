@@ -1,12 +1,28 @@
 defmodule Serge.Web.ErrorView do
   use Serge.Web, :view
 
+  def render("401.html", _assigns) do
+    "Unauthorized"
+  end
+
+  def render("401.json", _assigns) do
+    %{error: "Unauthorized"}
+  end
+
   def render("404.html", _assigns) do
     "Page not found"
   end
 
+  def render("404.json", _assigns) do
+    %{error: "Not Found"}
+  end
+
   def render("500.html", _assigns) do
     "Internal server error"
+  end
+
+  def render("500.json", _assigns) do
+    %{error: "Internal server error"}
   end
 
   # In case no render clause matches or no

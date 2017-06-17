@@ -17,4 +17,10 @@ defmodule Serge.Web.FallbackController do
     |> put_status(:not_found)
     |> render(Serge.Web.ErrorView, :"404")
   end
+
+  def call(conn, {:error, :not_authorized}) do
+    conn
+    |> put_status(:unauthorized)
+    |> render(Serge.Web.ErrorView, :"401")
+  end
 end

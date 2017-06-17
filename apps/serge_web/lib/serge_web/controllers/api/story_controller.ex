@@ -5,10 +5,13 @@ defmodule Serge.Web.Api.StoryController do
   action_fallback Serge.Web.FallbackController
 
   def index(conn, %{"team_id" => team_id}) do
-    # json conn, %{params: params, assigns: conn.assigns}
     team = Scrumming.get_team!(team_id)
-    stories = Scrumming.list_stories(team: team)
-    render(conn, "index.json", stories: stories)
+    if Scrumming.can_access_team?(team_id, user: conn.assigns.current_user, can_write: false) do
+      stories = Scrumming.list_stories(team: team)
+      render(conn, "index.json", stories: stories)
+    else
+      {:error, :not_authorized}
+    end
   end
 
   # def create(conn, %{"histoire" => histoire_params}) do

@@ -72,6 +72,7 @@ defmodule Serge.Story.MutationCreateStoryTest do
   end
 
   describe "with valid attributes" do
+    @tag :skip
     test "it creates a story", ctx do
       {:ok, %{data: result}} = run(@document, ctx.user.id, ctx.variables)
 
@@ -95,14 +96,6 @@ defmodule Serge.Story.MutationCreateStoryTest do
       # created = Serge.Repo.get(Serge.Scrumming.Story, result["createStory"]["id"])
       # require IEx; IEx.pry
     end
-
-    test "it triggers a :story_created event"
-    # test "it triggers a :story_created event", ctx do
-    #   {:ok, %{data: _data}} = run(@document, ctx.user.id, ctx.variables)
-    #   event = Activity.recent_activity() |> List.first
-    #   assert event.operation == "story_created"
-    #   assert event.user_name == "me"
-    # end
   end
 
   describe "with invalid attributes" do

@@ -288,6 +288,7 @@ defmodule Serge.Scrumming do
     count_accesses = Repo.aggregate(query, :count, :id)
     count_accesses > 0
   end
+  def can_access_team?(_, _), do: false
 
   defp validate_email_or_user_id_present(changeset) do
     cond do
