@@ -54,7 +54,7 @@ defmodule Serge.Web.Router do
     pipe_through :api
 
     scope "/teams/:team_id" do
-      resources "/stories", StoryController, only: [:index]
+      resources "/stories", StoryController, only: [:index, :create]
     end
   end
 

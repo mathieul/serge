@@ -10,6 +10,14 @@ defmodule Serge.Web.Api.StoryView do
     }
   end
 
+  def render("show.json", %{story: story}) do
+    %{
+      data: %{
+        story: render_one(story, StoryView, "story.json")
+      }
+    }
+  end
+
   def render("story.json", %{story: story}) do
     %{
       id: story.id,
@@ -17,6 +25,7 @@ defmodule Serge.Web.Api.StoryView do
       dev_id: story.dev_id,
       pm_id: story.pm_id,
       sort: story.sort,
+      points: story.points,
       epic: story.epic,
       description: story.description
     }

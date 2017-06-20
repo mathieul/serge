@@ -78,7 +78,7 @@ defmodule Serge.Web.TeamController do
 
   def scrum(conn, %{"team_id" => team_id}) do
     team = Scrumming.get_team!(team_id)
-    if Scrumming.can_access_team?(team.id, user: conn.assigns[:current_user], can_write: false) do
+    if Scrumming.can_access_team?(team, user: conn.assigns[:current_user], can_write: false) do
       team = Scrumming.preload_members(team)
       config = elm_app_config(team, conn.assigns.current_user, conn.assigns.access_token)
       render(conn, "scrum.html", elm_module: "Scrum", elm_app_config: config)

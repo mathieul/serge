@@ -277,11 +277,11 @@ defmodule Serge.Scrumming do
   @doc """
   Returns if a user can access a team.
   """
-  def can_access_team?(team_id, user: user, can_write: can_write)
-  when is_boolean(can_write) and is_map(user) do
+  def can_access_team?(team, user: user, can_write: can_write)
+  when is_map(team) and is_map(user) and is_boolean(can_write) do
     query =
       TeamAccess.for_user_id(user.id)
-      |> TeamAccess.for_team_id(team_id)
+      |> TeamAccess.for_team_id(team.id)
       |> TeamAccess.accepted()
     query = if can_write, do: TeamAccess.to_write(query), else: query
 
@@ -348,7 +348,7 @@ defmodule Serge.Scrumming do
   """
   def create_story(attrs, team: team, creator: creator) do
     if can_access_team?(team, user: creator, can_write: true) do
-      attrs = Map.put_new(attrs, :creator_id, creator.id)
+      attrs = Map.put_new(attrs, "creator_id", creator.id)
       create_story(attrs)
     else
       changeset = change_story(%Story{})
@@ -357,11 +357,13 @@ defmodule Serge.Scrumming do
   end
 
   defp create_story(attrs) do
-    {:ok, created} =
-      story_changeset(%Story{}, attrs)
-      |> Repo.insert()
-    # TODO: figure out why Repo.insert returns description and epic nil when they're '"'
-    {:ok, Repo.get(Story, created.id)}
+    case story_changeset(%Story{}, attrs) |> Repo.insert() do
+      {:ok, created} ->
+        # TODO: figure out why Repo.insert returns description and epic nil when they're '"'
+        {:ok, Repo.get(Story, created.id)}
+      error ->
+        error
+    end
   end
 
   @doc """
