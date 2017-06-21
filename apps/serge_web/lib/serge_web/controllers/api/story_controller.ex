@@ -27,26 +27,34 @@ defmodule Serge.Web.Api.StoryController do
       end
     else
       changeset = Scrumming.change_story(%Story{})
-      {:error, add_error(changeset, :creator, "user #{inspect creator.name} can't write in team #{team.name}")}
+      {:error, add_error(changeset, :creator, "user #{inspect creator.name} can't create story in team #{team.name}")}
     end
   end
 
   def update(conn, %{"team_id" => team_id, "id" => id, "story" => story_params}) do
     team = Scrumming.get_team!(team_id)
     user = conn.assigns.current_user
+    story = Scrumming.get_story!(id)
     if Scrumming.can_access_team?(team, user: user, can_write: true) do
-      story = Scrumming.get_story!(id)
       with {:ok, %Story{} = story} <- Scrumming.update_story(story, story_params) do
         render(conn, "show.json", story: story)
       end
     else
+      changeset = Scrumming.change_story(story)
+      {:error, add_error(changeset, :creator, "user #{inspect user.name} can't update story ##{story.id}")}
     end
   end
 
-  # def delete(conn, %{"id" => id}) do
-  #   story = Scrumming.get_story!(id)
-  #   with {:ok, %Story{}} <- Scrumming.delete_story(story) do
-  #     send_resp(conn, :no_content, "")
-  #   end
-  # end
+  def delete(conn, %{"team_id" => team_id, "id" => id}) do
+    team = Scrumming.get_team!(team_id)
+    user = conn.assigns.current_user
+    story = Scrumming.get_story!(id)
+    if Scrumming.can_access_team?(team, user: user, can_write: true) do
+      with {:ok, %Story{}} <- Scrumming.delete_story(story) do
+        render(conn, "show.json", story: story)
+      end
+    else
+      {:error, :not_authorized}
+    end
+  end
 end

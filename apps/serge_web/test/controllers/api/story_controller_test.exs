@@ -111,10 +111,24 @@ defmodule Serge.Web.Api.StoryControllerTest do
       conn =
         conn
         |> init_test_session(current_user_id: user.id)
-        |> patch(api_story_path(conn, :update, team.id, story.id), %{"story" => %{"points" => "invalid"}})
+        |> put(api_story_path(conn, :update, team.id, story.id), %{"story" => %{"points" => "invalid"}})
 
       errors = json_response(conn, 422)["errors"]
       assert errors["points"] == ["is invalid"]
+    end
+  end
+
+  describe "DELETE :delete" do
+    test "deletes the story", %{conn: conn, user: user, team: team} do
+      story = insert(:story, team: team)
+
+      conn =
+        conn
+        |> init_test_session(current_user_id: user.id)
+        |> delete(api_story_path(conn, :delete, team.id, story.id))
+
+      result = json_response(conn, 200)["data"]["story"]
+      assert result["id"] == story.id
     end
   end
 end

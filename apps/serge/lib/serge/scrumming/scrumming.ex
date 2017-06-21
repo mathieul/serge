@@ -347,8 +347,10 @@ defmodule Serge.Scrumming do
   Creates a story for a creator.
   """
   def create_story(attrs, team: team, creator: creator) do
-    attrs = Map.put_new(attrs, "creator_id", creator.id)
-    create_story(attrs)
+    attrs
+    |> Map.put_new("creator_id", creator.id)
+    |> Map.put_new("team_id", team.id)
+    |> create_story()
   end
 
   defp create_story(attrs) do
@@ -375,6 +377,13 @@ defmodule Serge.Scrumming do
   """
   def change_story(%Story{} = story) do
     story_changeset(story, %{})
+  end
+
+  @doc """
+  Deletes a story.
+  """
+  def delete_story(%Story{} = story) do
+    Repo.delete(story)
   end
 
   defp story_changeset(%Story{} = story, attrs) do
