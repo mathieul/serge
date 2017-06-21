@@ -347,13 +347,8 @@ defmodule Serge.Scrumming do
   Creates a story for a creator.
   """
   def create_story(attrs, team: team, creator: creator) do
-    if can_access_team?(team, user: creator, can_write: true) do
-      attrs = Map.put_new(attrs, "creator_id", creator.id)
-      create_story(attrs)
-    else
-      changeset = change_story(%Story{})
-      {:error, add_error(changeset, :creator, "user #{inspect creator.name} can't write in team #{team.name}")}
-    end
+    attrs = Map.put_new(attrs, "creator_id", creator.id)
+    create_story(attrs)
   end
 
   defp create_story(attrs) do
@@ -367,19 +362,12 @@ defmodule Serge.Scrumming do
   end
 
   @doc """
-  Updates a story from a story id.
+  Updates a story.
   """
-  def update_story_by_id(%{id: id} = attrs, user: _user) do
-    case get_story!(id) do
-      nil ->
-        changeset = change_story(%Story{})
-        {:error, add_error(changeset, :story, "doesn't exist")}
-      story ->
-        # TODO: ensure user can write in the story team
-        story
-        |> story_changeset(attrs)
-        |> Repo.update()
-    end
+  def update_story(%Story{} = story, attrs) when is_map(attrs) do
+    story
+    |> story_changeset(attrs)
+    |> Repo.update()
   end
 
   @doc """
