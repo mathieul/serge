@@ -6,7 +6,6 @@ defmodule Serge.Web.Schema do
   import_types Serge.Web.Schema.CommonTypes
   import_types Serge.Web.Schema.UserTypes
   import_types Serge.Web.Schema.TaskTypes
-  import_types Serge.Web.Schema.StoryTypes
   import_types Serge.Web.Schema.TeamTypes
 
   query do
@@ -20,12 +19,6 @@ defmodule Serge.Web.Schema do
       arg :include_yesterday, :boolean
 
       resolve &Resolvers.Task.all/3
-    end
-
-    field :stories, list_of(:story) do
-      arg :team_id, non_null(:id)
-
-      resolve &Resolvers.Story.all/3
     end
   end
 
@@ -55,30 +48,6 @@ defmodule Serge.Web.Schema do
       arg :id, non_null(:id)
 
       resolve &Resolvers.Task.delete/3
-    end
-
-    field :create_story, :story do
-      arg :team_id, non_null(:id)
-      arg :dev_id, :id
-      arg :pm_id, :id
-      arg :sort, :float
-      arg :epic, :string
-      arg :points, :integer
-      arg :description, non_null(:string)
-
-      resolve &Resolvers.Story.create/3
-    end
-
-    field :update_story, :story do
-      arg :id, non_null(:id)
-      arg :dev_id, :id
-      arg :pm_id, :id
-      arg :sort, :float
-      arg :epic, :string
-      arg :points, :integer
-      arg :description, non_null(:string)
-
-      resolve &Resolvers.Story.update/3
     end
   end
 end
